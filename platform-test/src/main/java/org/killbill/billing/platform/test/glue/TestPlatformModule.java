@@ -39,6 +39,8 @@ public abstract class TestPlatformModule extends KillBillModule {
     protected void configure() {
         configureLifecycle();
 
+        configureNotificationQ();
+
         configureBus();
         // For the bus
         install(new MetricsModule(configSource));

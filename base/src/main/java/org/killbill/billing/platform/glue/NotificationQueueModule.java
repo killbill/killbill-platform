@@ -20,7 +20,6 @@ package org.killbill.billing.platform.glue;
 
 import com.google.common.collect.ImmutableMap;
 import org.killbill.billing.platform.api.KillbillConfigSource;
-import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.notificationq.DefaultNotificationQueueService;
 import org.killbill.notificationq.api.NotificationQueueConfig;
 import org.killbill.notificationq.api.NotificationQueueService;
@@ -32,15 +31,19 @@ public class NotificationQueueModule extends KillBillModule {
         super(configSource);
     }
 
+    @Override
+    protected void configure() {
+        configureNotificationQueueService();
+        configureNotificationQueueConfig();
+    }
+
+    protected void configureNotificationQueueService() {
+        bind(NotificationQueueService.class).to(DefaultNotificationQueueService.class).asEagerSingleton();
+    }
+
     protected void configureNotificationQueueConfig() {
         final NotificationQueueConfig config = new ConfigurationObjectFactory(skifeConfigSource).buildWithReplacements(NotificationQueueConfig.class,
                                                                                                                        ImmutableMap.<String, String>of("instanceName", "main"));
         bind(NotificationQueueConfig.class).toInstance(config);
-    }
-
-    @Override
-    protected void configure() {
-        bind(NotificationQueueService.class).to(DefaultNotificationQueueService.class).asEagerSingleton();
-        configureNotificationQueueConfig();
     }
 }
