@@ -47,16 +47,17 @@ import org.skife.jdbi.v2.IDBI;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
-public class KillbillServerModule extends KillBillModule {
+public class KillbillPlatformModule extends KillBillModule {
 
     protected final ServletContext servletContext;
 
-    private final KillbillServerConfig serverConfig;
+    protected final KillbillServerConfig serverConfig;
 
     protected DaoConfig daoConfig;
     protected DBI dbi;
+    protected EmbeddedDB embeddedDB;
 
-    public KillbillServerModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
+    public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
         super(configSource);
         this.servletContext = servletContext;
         this.serverConfig = serverConfig;
@@ -116,7 +117,7 @@ public class KillbillServerModule extends KillBillModule {
     protected void configureEmbeddedDB() {
         // TODO Pierre Refactor GlobalLockerModule for this to be a real provider?
         final EmbeddedDBProvider embeddedDBProvider = new EmbeddedDBProvider(daoConfig);
-        final EmbeddedDB embeddedDB = embeddedDBProvider.get();
+        embeddedDB = embeddedDBProvider.get();
         bind(EmbeddedDB.class).toInstance(embeddedDB);
     }
 

@@ -17,6 +17,7 @@
 package org.killbill.billing.server.modules;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.Resources;
@@ -59,7 +60,7 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
         return embeddedDB;
     }
 
-    private void initializeEmbeddedDB(final EmbeddedDB embeddedDB) throws IOException {
+    protected void initializeEmbeddedDB(final EmbeddedDB embeddedDB) throws IOException {
         embeddedDB.initialize();
         embeddedDB.start();
 
@@ -68,14 +69,18 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
             return;
         }
 
-        for (final String module : new String[]{"server"}) {
-            final String ddl = streamToString(Resources.getResource("org/killbill/billing/" + module + "/ddl.sql").openStream());
+        for (final String ddlFile : getDDLFiles()) {
+            final String ddl = streamToString(Resources.getResource(ddlFile).openStream());
             embeddedDB.executeScript(ddl);
         }
         embeddedDB.refreshTableNames();
     }
 
-    private String streamToString(final InputStream inputStream) throws IOException {
+    protected Iterable<String> getDDLFiles() {
+        return ImmutableList.<String>of("org/killbill/billing/server/ddl.sql");
+    }
+
+    protected String streamToString(final InputStream inputStream) throws IOException {
         final InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
             @Override
             public InputStream getInput() throws IOException {

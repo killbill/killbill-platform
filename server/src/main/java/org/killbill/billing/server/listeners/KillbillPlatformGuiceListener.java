@@ -37,7 +37,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
-import org.killbill.billing.server.modules.KillbillServerModule;
+import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.skeleton.listeners.GuiceServletContextListener;
@@ -69,15 +69,6 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
     protected EmbeddedDB embeddedDB;
-
-    protected ServletModule getServletModule() {
-        final BaseServerModuleBuilder builder = new BaseServerModuleBuilder();
-        return builder.build();
-    }
-
-    protected Module getModule(ServletContext servletContext) {
-        return new KillbillServerModule(servletContext, config, configSource);
-    }
 
     @Override
     public void contextInitialized(final ServletContextEvent event) {
@@ -118,7 +109,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         guiceModules = ImmutableList.<Module>of(getServletModule(),
-                                                new JaxrsJacksonModule(new ObjectMapper()),
+                                                getJacksonModule(),
                                                 new JMXModule(KillbillHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
                                                 new StatsModule(METRICS_SERVLETS_PATHS.get(0),
                                                                 METRICS_SERVLETS_PATHS.get(1),
@@ -138,6 +129,22 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         killbillLifecycle = injector.getInstance(Lifecycle.class);
         killbillBusService = injector.getInstance(BusService.class);
+    }
+
+    protected ServletModule getServletModule() {
+        final BaseServerModuleBuilder builder = new BaseServerModuleBuilder();
+        return builder.build();
+    }
+
+    protected Module getModule(ServletContext servletContext) {
+        return new KillbillPlatformModule(servletContext, config, configSource);
+    }
+
+    protected JaxrsJacksonModule getJacksonModule() {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JodaModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return new JaxrsJacksonModule(objectMapper);
     }
 
     protected void initializeMetrics(final ServletContextEvent event) {
