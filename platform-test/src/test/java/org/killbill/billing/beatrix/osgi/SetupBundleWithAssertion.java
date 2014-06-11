@@ -78,9 +78,9 @@ public class SetupBundleWithAssertion {
 
             unTar(unzippedRubyPlugin, destination);
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail(e.getMessage());
-        } catch (ArchiveException e) {
+        } catch (final ArchiveException e) {
             Assert.fail(e.getMessage());
         }
     }
@@ -102,7 +102,7 @@ public class SetupBundleWithAssertion {
             // Create the osgiConfig file
             createConfigFile(pluginConfig);
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail(e.getMessage());
         }
     }

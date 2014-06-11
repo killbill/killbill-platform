@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,8 +18,10 @@
 
 package org.killbill.billing.osgi.glue;
 
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServlet;
+import javax.sql.DataSource;
+
 import org.killbill.billing.osgi.DefaultOSGIKillbill;
 import org.killbill.billing.osgi.DefaultOSGIService;
 import org.killbill.billing.osgi.KillbillActivator;
@@ -41,9 +45,8 @@ import org.killbill.commons.jdbi.guice.DataSourceProvider;
 import org.osgi.service.http.HttpService;
 import org.skife.config.ConfigurationObjectFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
-import javax.sql.DataSource;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
 public class DefaultOSGIModule extends KillBillModule {
 
@@ -51,7 +54,7 @@ public class DefaultOSGIModule extends KillBillModule {
 
     private final OSGIConfigProperties osgiConfigProperties;
 
-    public DefaultOSGIModule(KillbillConfigSource configSource, OSGIConfigProperties osgiConfigProperties) {
+    public DefaultOSGIModule(final KillbillConfigSource configSource, final OSGIConfigProperties osgiConfigProperties) {
         super(configSource);
         this.osgiConfigProperties = osgiConfigProperties;
     }

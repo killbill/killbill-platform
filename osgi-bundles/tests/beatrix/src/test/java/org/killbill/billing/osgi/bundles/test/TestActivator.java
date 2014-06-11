@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -20,11 +22,6 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.UUID;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.IDBI;
-
 import org.killbill.billing.account.api.Account;
 import org.killbill.billing.account.api.AccountApiException;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
@@ -35,6 +32,10 @@ import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.log.LogService;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.IDBI;
 
 /**
  * Test class used by Beatrix OSGI test to verify that:
@@ -96,10 +97,10 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
         };
 
         try {
-            Account account = killbillAPI.getAccountUserApi().getAccountById(killbillEvent.getAccountId(), tenantContext);
+            final Account account = killbillAPI.getAccountUserApi().getAccountById(killbillEvent.getAccountId(), tenantContext);
             testDao.insertAccountExternalKey(account.getExternalKey());
 
-        } catch (AccountApiException e) {
+        } catch (final AccountApiException e) {
             logService.log(LogService.LOG_ERROR, e.getMessage());
         }
     }

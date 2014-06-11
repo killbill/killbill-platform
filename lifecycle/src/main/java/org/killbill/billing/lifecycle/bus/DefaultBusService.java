@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2011 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,13 +18,13 @@
 
 package org.killbill.billing.lifecycle.bus;
 
-import com.google.inject.Inject;
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.bus.api.PersistentBus;
 
-public class DefaultBusService implements BusService {
+import com.google.inject.Inject;
 
+public class DefaultBusService implements BusService {
 
     public static final String EVENT_BUS_GROUP_NAME = "bus-grp";
     public static final String EVENT_BUS_TH_NAME = "bus-th";

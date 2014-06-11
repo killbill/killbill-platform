@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -27,7 +29,6 @@ import java.util.List;
 @Target(ElementType.METHOD)
 public @interface LifecycleHandlerType {
 
-
     //
     // The level themselves are still work in progress depending on what we really need
     //
@@ -44,8 +45,8 @@ public @interface LifecycleHandlerType {
          */
         INIT_BUS(Sequence.STARTUP_PRE_EVENT_REGISTRATION),
         /**
-        * Start Felix Framework along with its system bundle
-        */
+         * Start Felix Framework along with its system bundle
+         */
         INIT_PLUGIN(Sequence.STARTUP_PRE_EVENT_REGISTRATION),
         /**
          * Service specific initalization-- service does not start yet

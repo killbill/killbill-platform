@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,12 +18,11 @@
 
 package org.killbill.billing.server.modules;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.CharStreams;
-import com.google.common.io.InputSupplier;
-import com.google.common.io.Resources;
-import com.google.inject.Provider;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.inject.Inject;
+
 import org.killbill.billing.server.dao.EmbeddedDBFactory;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.EmbeddedDB.DBEngine;
@@ -29,9 +30,12 @@ import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import java.io.IOException;
-import java.io.InputStream;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
+import com.google.common.io.CharStreams;
+import com.google.common.io.InputSupplier;
+import com.google.common.io.Resources;
+import com.google.inject.Provider;
 
 public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
 

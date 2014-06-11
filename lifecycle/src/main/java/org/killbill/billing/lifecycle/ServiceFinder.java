@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,10 +18,6 @@
 
 package org.killbill.billing.lifecycle;
 
-import org.killbill.billing.platform.api.KillbillService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,6 +30,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
+
+import org.killbill.billing.platform.api.KillbillService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServiceFinder {
 
@@ -59,7 +61,7 @@ public class ServiceFinder {
             packageFilter.add("org.killbill.billing");
             final String jarFilter = "killbill";
             return findClasses(loader, KillbillService.class.getName(), jarFilter, packageFilter);
-        } catch (ClassNotFoundException nfe) {
+        } catch (final ClassNotFoundException nfe) {
             throw new RuntimeException("Failed to initialize ClassFinder", nfe);
         }
     }
@@ -79,7 +81,7 @@ public class ServiceFinder {
         Object[] classPaths;
         try {
             classPaths = ((java.net.URLClassLoader) classLoader).getURLs();
-        } catch (ClassCastException cce) {
+        } catch (final ClassCastException cce) {
             classPaths = System.getProperty("java.class.path", "").split(File.pathSeparator);
         }
 
@@ -119,9 +121,9 @@ public class ServiceFinder {
                 try {
                     module = new JarFile(classPath);
                     failed = false;
-                } catch (MalformedURLException mue) {
+                } catch (final MalformedURLException mue) {
                     throw new ClassNotFoundException("Bad classpath. Error: " + mue.getMessage());
-                } catch (IOException io) {
+                } catch (final IOException io) {
                     throw new ClassNotFoundException("jar file '" + classPath.getName() +
                                                      "' could not be instantiate from file path. Error: " + io.getMessage());
                 }
@@ -152,7 +154,7 @@ public class ServiceFinder {
                     Class<?> theClass = null;
                     try {
                         theClass = Class.forName(className, false, classLoader);
-                    } catch (NoClassDefFoundError e) {
+                    } catch (final NoClassDefFoundError e) {
                         continue;
                     }
                     if (!theClass.isInterface()) {
@@ -175,7 +177,7 @@ public class ServiceFinder {
             if (module != null) {
                 try {
                     module.close();
-                } catch (IOException ioe) {
+                } catch (final IOException ioe) {
                     throw new ClassNotFoundException("The module jar file '" + classPath.getName() +
                                                      "' could not be closed. Error: " + ioe.getMessage());
                 }

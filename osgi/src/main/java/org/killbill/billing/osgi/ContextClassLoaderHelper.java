@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -58,7 +60,7 @@ public class ContextClassLoaderHelper {
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                     return method.invoke(service, args);
-                } catch (InvocationTargetException e) {
+                } catch (final InvocationTargetException e) {
                     if (e.getCause() != null) {
                         throw e.getCause();
                     } else {
@@ -75,22 +77,21 @@ public class ContextClassLoaderHelper {
         return wrappedService;
     }
 
-
     // From apache-commons
     private static List getAllInterfaces(Class cls) {
         if (cls == null) {
             return null;
         }
-        List list = new ArrayList();
+        final List list = new ArrayList();
         while (cls != null) {
-            Class[] interfaces = cls.getInterfaces();
+            final Class[] interfaces = cls.getInterfaces();
             for (int i = 0; i < interfaces.length; i++) {
                 if (list.contains(interfaces[i]) == false) {
                     list.add(interfaces[i]);
                 }
-                List superInterfaces = getAllInterfaces(interfaces[i]);
-                for (Iterator it = superInterfaces.iterator(); it.hasNext(); ) {
-                    Class intface = (Class) it.next();
+                final List superInterfaces = getAllInterfaces(interfaces[i]);
+                for (final Iterator it = superInterfaces.iterator(); it.hasNext(); ) {
+                    final Class intface = (Class) it.next();
                     if (list.contains(intface) == false) {
                         list.add(intface);
                     }

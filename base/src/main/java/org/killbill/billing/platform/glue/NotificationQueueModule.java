@@ -18,12 +18,13 @@
 
 package org.killbill.billing.platform.glue;
 
-import com.google.common.collect.ImmutableMap;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.notificationq.DefaultNotificationQueueService;
 import org.killbill.notificationq.api.NotificationQueueConfig;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.skife.config.ConfigurationObjectFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 public class NotificationQueueModule extends KillBillModule {
 

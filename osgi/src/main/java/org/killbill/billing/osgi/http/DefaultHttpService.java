@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -24,11 +26,10 @@ import javax.inject.Singleton;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
+import org.killbill.billing.osgi.ContextClassLoaderHelper;
 import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
-
-import org.killbill.billing.osgi.ContextClassLoaderHelper;
 
 @Singleton
 public class DefaultHttpService implements HttpService {
@@ -58,7 +59,7 @@ public class DefaultHttpService implements HttpService {
         final Servlet staticServlet = new StaticServlet(httpContext);
         try {
             registerServlet(alias, staticServlet, new Hashtable(), httpContext);
-        } catch (ServletException e) {
+        } catch (final ServletException e) {
             throw new IllegalArgumentException(e);
         }
     }

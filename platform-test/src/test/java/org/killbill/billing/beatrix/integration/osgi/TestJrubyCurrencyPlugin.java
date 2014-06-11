@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,6 +18,11 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
+import java.math.BigDecimal;
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import org.joda.time.DateTime;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.currency.api.Rate;
@@ -24,10 +31,6 @@ import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import javax.inject.Inject;
-import java.math.BigDecimal;
-import java.util.Set;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -57,7 +60,7 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
     @Test(groups = "slow")
     public void testCurrencyApis() throws Exception {
 
-        CurrencyPluginApi api = getTestPluginCurrencyApi();
+        final CurrencyPluginApi api = getTestPluginCurrencyApi();
 
         final Set<Currency> currencies = api.getBaseCurrencies();
         assertEquals(currencies.size(), 1);
@@ -86,7 +89,7 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
                 try {
 //                    log.info("Waiting for Killbill initialization to complete time = " + clock.getUTCNow());
                     Thread.sleep(1000);
-                } catch (InterruptedException ignore) {
+                } catch (final InterruptedException ignore) {
                 }
             }
         } while (result == null && retry-- > 0);

@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -15,7 +17,6 @@
  */
 
 package org.killbill.billing.osgi.bundles.test.dao;
-
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -40,15 +41,15 @@ public class TestDao {
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
                 conn.execute("DROP TABLE IF EXISTS test_bundle;");
                 conn.execute("CREATE TABLE test_bundle (" +
-                "record_id int(11) unsigned NOT NULL AUTO_INCREMENT, " +
-                "is_started bool DEFAULT false, " +
-                "is_logged bool DEFAULT false, " +
-                "external_key varchar(128) NULL, " +
-                "payment_id char(36) NULL," +
-                "payment_method_id char(36) NULL," +
-                "payment_amount decimal(10,4) NULL," +
-                "PRIMARY KEY(record_id)" +
-                ");");
+                             "record_id int(11) unsigned NOT NULL AUTO_INCREMENT, " +
+                             "is_started bool DEFAULT false, " +
+                             "is_logged bool DEFAULT false, " +
+                             "external_key varchar(128) NULL, " +
+                             "payment_id char(36) NULL," +
+                             "payment_method_id char(36) NULL," +
+                             "payment_amount decimal(10,4) NULL," +
+                             "PRIMARY KEY(record_id)" +
+                             ");");
                 return null;
             }
         });

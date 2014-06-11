@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,6 +18,22 @@
 
 package org.killbill.billing.lifecycle;
 
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.annotation.Nullable;
+
+import org.killbill.billing.lifecycle.api.Lifecycle;
+import org.killbill.billing.platform.api.KillbillService;
+import org.killbill.billing.platform.api.LifecycleHandlerType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Supplier;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -25,20 +43,6 @@ import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
-import org.killbill.billing.lifecycle.api.Lifecycle;
-import org.killbill.billing.platform.api.KillbillService;
-import org.killbill.billing.platform.api.LifecycleHandlerType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class DefaultLifecycle implements Lifecycle {
 
@@ -89,7 +93,7 @@ public class DefaultLifecycle implements Lifecycle {
         fireSequence(LifecycleHandlerType.LifecycleLevel.Sequence.SHUTDOWN_POST_EVENT_UNREGISTRATION);
     }
 
-    private Set<? extends KillbillService> findServices(Set<Class<? extends KillbillService>> services, Injector injector) {
+    private Set<? extends KillbillService> findServices(final Set<Class<? extends KillbillService>> services, final Injector injector) {
         final Set<KillbillService> result = new HashSet<KillbillService>();
         for (final Class<? extends KillbillService> cur : services) {
             log.debug("Found service {}", cur.getName());
@@ -116,12 +120,12 @@ public class DefaultLifecycle implements Lifecycle {
         init(serviceFinder.getServices(), injector);
     }
 
-    private void init(Set<Class<? extends KillbillService>> servicesClasses, final Injector injector) {
+    private void init(final Set<Class<? extends KillbillService>> servicesClasses, final Injector injector) {
         final Set<? extends KillbillService> services = findServices(servicesClasses, injector);
         init(services);
     }
 
-    private void init(Set<? extends KillbillService> services) {
+    private void init(final Set<? extends KillbillService> services) {
         for (final KillbillService service : services) {
             handlersByLevel.putAll(findAllHandlers(service));
         }

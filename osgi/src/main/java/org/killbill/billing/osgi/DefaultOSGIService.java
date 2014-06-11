@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,7 +18,14 @@
 
 package org.killbill.billing.osgi;
 
-import com.google.common.collect.ImmutableList;
+import java.io.File;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
 import org.apache.felix.framework.Felix;
 import org.apache.felix.framework.util.FelixConstants;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
@@ -31,12 +40,7 @@ import org.osgi.framework.launch.Framework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
 
 public class DefaultOSGIService implements OSGIService {
 
@@ -67,7 +71,6 @@ public class DefaultOSGIService implements OSGIService {
         return OSGI_SERVICE_NAME;
     }
 
-
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.INIT_PLUGIN)
     public void initialize() {
         try {
@@ -79,7 +82,7 @@ public class DefaultOSGIService implements OSGIService {
             framework.start();
 
             installedBundles.addAll(fileInstall.installBundles(framework));
-        } catch (BundleException e) {
+        } catch (final BundleException e) {
             logger.error("Failed to initialize Killbill OSGIService", e);
         }
 
@@ -91,7 +94,6 @@ public class DefaultOSGIService implements OSGIService {
         fileInstall.startBundles(installedBundles);
     }
 
-
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.STOP_PLUGIN)
     public void stop() {
         try {
@@ -99,9 +101,9 @@ public class DefaultOSGIService implements OSGIService {
             framework.waitForStop(0);
 
             installedBundles.clear();
-        } catch (BundleException e) {
+        } catch (final BundleException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         }
     }

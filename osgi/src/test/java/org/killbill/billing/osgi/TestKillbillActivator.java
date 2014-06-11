@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -21,10 +23,9 @@ import java.util.regex.Matcher;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-
 public class TestKillbillActivator /*extends GuicyKillbillTestSuiteNoDB*/ {
 
-    @Test(groups= "fast")
+    @Test(groups = "fast")
     public void testPluginNamePatternGood() {
         Matcher m = KillbillActivator.PLUGIN_NAME_PATTERN.matcher("a");
         Assert.assertTrue(m.matches());
@@ -45,15 +46,13 @@ public class TestKillbillActivator /*extends GuicyKillbillTestSuiteNoDB*/ {
         Assert.assertTrue(m.matches());
     }
 
-
-    @Test(groups= "fast")
+    @Test(groups = "fast")
     public void testPluginNamePatternBad() {
         Matcher m = KillbillActivator.PLUGIN_NAME_PATTERN.matcher("1abd");
         Assert.assertFalse(m.matches());
 
         m = KillbillActivator.PLUGIN_NAME_PATTERN.matcher("Tata");
         Assert.assertFalse(m.matches());
-
 
         m = KillbillActivator.PLUGIN_NAME_PATTERN.matcher("Tata#");
         Assert.assertFalse(m.matches());
@@ -65,10 +64,10 @@ public class TestKillbillActivator /*extends GuicyKillbillTestSuiteNoDB*/ {
     @Test(groups = "false")
     public void testPluginNameLength() {
 
-        String pluginNameGood = "foofofoSuperFoo";
+        final String pluginNameGood = "foofofoSuperFoo";
         Assert.assertTrue(pluginNameGood.length() < KillbillActivator.PLUGIN_NAME_MAX_LENGTH);
 
-        String pluginNameBAd = "foofoofooSuperFoosupersuperLongreallyLong";
+        final String pluginNameBAd = "foofoofooSuperFoosupersuperLongreallyLong";
         Assert.assertFalse(pluginNameBAd.length() < KillbillActivator.PLUGIN_NAME_MAX_LENGTH);
     }
 }

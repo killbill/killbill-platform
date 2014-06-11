@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,8 +18,9 @@
 
 package org.killbill.billing.server.modules;
 
-import com.google.inject.Key;
-import com.google.inject.name.Names;
+import javax.servlet.ServletContext;
+import javax.sql.DataSource;
+
 import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.bus.ExternalPersistentBusConfig;
@@ -44,8 +47,8 @@ import org.skife.config.ConfigurationObjectFactory;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
 
-import javax.servlet.ServletContext;
-import javax.sql.DataSource;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillModule {
 

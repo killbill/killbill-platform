@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,21 +18,13 @@
 
 package org.killbill.billing.server.listeners;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheck;
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.codahale.metrics.servlets.HealthCheckServlet;
-import com.codahale.metrics.servlets.MetricsServlet;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.servlet.ServletModule;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.management.ManagementService;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+
+import javax.management.MBeanServer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillConfigSource;
@@ -51,11 +45,21 @@ import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.management.MBeanServer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheck;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.servlets.HealthCheckServlet;
+import com.codahale.metrics.servlets.MetricsServlet;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.servlet.ServletModule;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.management.ManagementService;
 
 public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
@@ -136,7 +140,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         return builder.build();
     }
 
-    protected Module getModule(ServletContext servletContext) {
+    protected Module getModule(final ServletContext servletContext) {
         return new KillbillPlatformModule(servletContext, config, configSource);
     }
 
@@ -190,14 +194,15 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     private static final class KillbillPlatformConfigSource implements ConfigSource {
+
         private final KillbillConfigSource configSource;
 
-        private KillbillPlatformConfigSource(KillbillConfigSource configSource) {
+        private KillbillPlatformConfigSource(final KillbillConfigSource configSource) {
             this.configSource = configSource;
         }
 
         @Override
-        public String getString(String propertyName) {
+        public String getString(final String propertyName) {
             return configSource.getString(propertyName);
         }
     }

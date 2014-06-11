@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -21,18 +23,17 @@ import java.util.Observable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.bus.api.PersistentBus.EventBusException;
-import org.killbill.billing.notification.plugin.api.ExtBusEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
 
 public class KillbillEventObservable extends Observable {
 
-    private Logger logger = LoggerFactory.getLogger(KillbillEventObservable.class);
+    private final Logger logger = LoggerFactory.getLogger(KillbillEventObservable.class);
 
     private final PersistentBus externalBus;
 

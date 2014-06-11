@@ -18,7 +18,11 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import javax.inject.Inject;
+
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.api.PluginProperty;
@@ -30,9 +34,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.inject.Inject;
-import java.math.BigDecimal;
-import java.util.UUID;
+import com.google.common.collect.ImmutableList;
 
 public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 

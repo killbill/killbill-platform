@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -33,6 +35,12 @@ import java.util.jar.Manifest;
 
 import javax.annotation.Nullable;
 
+import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.billing.osgi.api.config.PluginJavaConfig;
+import org.killbill.billing.osgi.api.config.PluginRubyConfig;
+import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
+import org.killbill.billing.osgi.pluginconf.PluginConfigException;
+import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -41,13 +49,6 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.wiring.BundleRevision;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
-import org.killbill.billing.osgi.api.config.PluginJavaConfig;
-import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
-import org.killbill.billing.osgi.pluginconf.PluginConfigException;
-import org.killbill.billing.osgi.pluginconf.PluginFinder;
 
 import com.google.common.io.ByteStreams;
 
@@ -66,7 +67,6 @@ public class FileInstall {
         this.pluginConfigServiceApi = pluginConfigServiceApi;
     }
 
-
     public List<Bundle> installBundles(final Framework framework) {
 
         final List<Bundle> installedBundles = new LinkedList<Bundle>();
@@ -80,9 +80,9 @@ public class FileInstall {
             installAllJavaPluginBundles(context, installedBundles);
             installAllJRubyPluginBundles(context, installedBundles, jrubyBundlePath);
 
-        } catch (PluginConfigException e) {
+        } catch (final PluginConfigException e) {
             logger.error("Error while parsing plugin configurations", e);
-        } catch (BundleException e) {
+        } catch (final BundleException e) {
             logger.error("Error while parsing plugin configurations", e);
         }
         return installedBundles;
@@ -137,26 +137,24 @@ public class FileInstall {
                 final Bundle bundle = context.installBundle(uniqueJrubyBundlePath, tweakedInputStream);
                 ((DefaultPluginConfigServiceApi) pluginConfigServiceApi).registerBundle(bundle.getBundleId(), cur);
                 installedBundles.add(bundle);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 logger.warn("Failed to open file {}", jrubyBundlePath);
             } finally {
                 if (tweakedInputStream != null) {
                     try {
                         tweakedInputStream.close();
-                    } catch (IOException ignore) {
+                    } catch (final IOException ignore) {
                     }
                 }
             }
         }
     }
 
-
-    private InputStream tweakRubyManifestToBeUnique(final String rubyJar, int index) throws IOException {
+    private InputStream tweakRubyManifestToBeUnique(final String rubyJar, final int index) throws IOException {
 
         final Attributes.Name attrName = new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME);
         final JarInputStream in = new JarInputStream(new FileInputStream(new File(rubyJar)));
         final Manifest manifest = in.getManifest();
-
 
         final Object currentValue = manifest.getMainAttributes().get(attrName);
         manifest.getMainAttributes().put(attrName, currentValue.toString() + "-" + index);
@@ -203,7 +201,7 @@ public class FileInstall {
             try {
                 bundle.start();
                 return true;
-            } catch (BundleException e) {
+            } catch (final BundleException e) {
                 logger.warn("Unable to start bundle", e);
             }
         }

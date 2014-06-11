@@ -1,7 +1,9 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
  *
- * Ning licenses this file to you under the Apache License, version 2.0
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -16,7 +18,18 @@
 
 package org.killbill.billing.osgi;
 
-import com.google.inject.Inject;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Observable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.inject.Named;
+import javax.servlet.Servlet;
+import javax.sql.DataSource;
+
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
@@ -35,16 +48,7 @@ import org.osgi.service.http.HttpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Named;
-import javax.servlet.Servlet;
-import javax.sql.DataSource;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Observable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.inject.Inject;
 
 public class KillbillActivator implements BundleActivator, ServiceListener {
 
@@ -128,7 +132,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         }
 
         final ServiceReference serviceReference = event.getServiceReference();
-        for (OSGIServiceRegistration cur : allRegistrationHandlers) {
+        for (final OSGIServiceRegistration cur : allRegistrationHandlers) {
             if (listenForServiceType(serviceReference, event.getType(), cur.getServiceType(), cur)) {
                 break;
             }
@@ -165,7 +169,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         }
         return true;
     }
-
 
     private final boolean checkSanityPluginRegistrationName(final String pluginName) {
         final Matcher m = PLUGIN_NAME_PATTERN.matcher(pluginName);
