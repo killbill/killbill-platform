@@ -20,7 +20,7 @@
       <module fileurl="file://$PROJECT_DIR$/killbill-platform.iml" filepath="$PROJECT_DIR$/killbill-platform.iml" />
       <module fileurl="file://$PROJECT_DIR$/platform-api/killbill-platform-api.iml" filepath="$PROJECT_DIR$/platform-api/killbill-platform-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/osgi-api/killbill-platform-osgi-api.iml" filepath="$PROJECT_DIR$/osgi-api/killbill-platform-osgi-api.iml" />
-      <module fileurl="file://$PROJECT_DIR$/platform-test/killbill-platform-api (1).iml" filepath="$PROJECT_DIR$/platform-test/killbill-platform-api (1).iml" />
+      <module fileurl="file://$PROJECT_DIR$/platform-test/killbill-platform-test.iml" filepath="$PROJECT_DIR$/platform-test/killbill-platform-test.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/killbill-server.iml" filepath="$PROJECT_DIR$/server/killbill-server.iml" />
     </modules>
   </component>
