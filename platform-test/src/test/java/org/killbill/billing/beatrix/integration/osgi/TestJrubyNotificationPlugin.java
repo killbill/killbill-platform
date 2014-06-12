@@ -31,9 +31,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
     public void beforeClass() throws Exception {
         super.beforeClass();
 
-        // This is extracted from surefire system configuration -- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
-
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJrubyBundle();
     }

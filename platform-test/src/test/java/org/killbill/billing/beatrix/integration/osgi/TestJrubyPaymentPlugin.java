@@ -37,8 +37,6 @@ import org.killbill.billing.payment.plugin.api.PaymentMethodInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginStatus;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -50,8 +48,6 @@ import static org.testng.Assert.assertEquals;
 
 public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
-    private static final Logger log = LoggerFactory.getLogger(TestJrubyPaymentPlugin.class);
-
     private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-payment-test";
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
 
@@ -62,9 +58,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
     public void beforeClass() throws Exception {
         super.beforeClass();
 
-        // This is extracted from surefire system configuration -- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
-
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJrubyBundle();
     }

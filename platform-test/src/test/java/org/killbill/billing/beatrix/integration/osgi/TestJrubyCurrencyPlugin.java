@@ -30,8 +30,6 @@ import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.currency.api.Rate;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -41,13 +39,10 @@ import com.jayway.awaitility.Awaitility;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-@Test
 public class TestJrubyCurrencyPlugin extends TestOSGIBase {
 
-    private static final Logger log = LoggerFactory.getLogger(TestJrubyCurrencyPlugin.class);
-
-    private final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-currency-plugin-test";
-    private final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
+    private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-currency-plugin-test";
+    private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
 
     @Inject
     private OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
@@ -56,10 +51,8 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
     public void beforeClass() throws Exception {
         super.beforeClass();
 
-        // This is extracted from surefire system configuration -- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
-
-        SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJrubyBundle();
     }
 

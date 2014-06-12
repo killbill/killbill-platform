@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
@@ -45,15 +46,22 @@ public class TestIntegrationModule extends KillBillModule {
 
         bind(Clock.class).to(ClockMock.class).asEagerSingleton();
         bind(TestApiListener.class).asEagerSingleton();
-        bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry());
+        bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentPluginApi>(PaymentPluginApi.class));
+        bind(new TypeLiteral<OSGIServiceRegistration<CurrencyPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CurrencyPluginApi>(CurrencyPluginApi.class));
     }
 
-    public static final class TestPlatformPaymentProviderPluginRegistry implements OSGIServiceRegistration<PaymentPluginApi> {
+    public static final class TestPlatformPaymentProviderPluginRegistry<T> implements OSGIServiceRegistration<T> {
 
-        private final Map<String, PaymentPluginApi> pluginsByName = new ConcurrentHashMap<String, PaymentPluginApi>();
+        private final Map<String, T> pluginsByName = new ConcurrentHashMap<String, T>();
+
+        private final Class<T> serviceType;
+
+        public TestPlatformPaymentProviderPluginRegistry(final Class<T> serviceType) {
+            this.serviceType = serviceType;
+        }
 
         @Override
-        public void registerService(final OSGIServiceDescriptor desc, final PaymentPluginApi service) {
+        public void registerService(final OSGIServiceDescriptor desc, final T service) {
             pluginsByName.put(desc.getRegistrationName(), service);
         }
 
@@ -63,7 +71,7 @@ public class TestIntegrationModule extends KillBillModule {
         }
 
         @Override
-        public PaymentPluginApi getServiceForName(final String name) {
+        public T getServiceForName(final String name) {
             return pluginsByName.get(name);
         }
 
@@ -73,8 +81,8 @@ public class TestIntegrationModule extends KillBillModule {
         }
 
         @Override
-        public Class<PaymentPluginApi> getServiceType() {
-            return PaymentPluginApi.class;
+        public Class<T> getServiceType() {
+            return serviceType;
         }
     }
 }

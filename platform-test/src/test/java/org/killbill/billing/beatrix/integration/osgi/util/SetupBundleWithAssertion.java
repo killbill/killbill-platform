@@ -72,7 +72,7 @@ public class SetupBundleWithAssertion {
 
             final File destination = new File(tmp.toString());
             if (!destination.exists()) {
-                Assert.assertTrue(destination.mkdir(), "Unable to create directory " + destination.getAbsolutePath());
+                Assert.assertTrue(destination.mkdirs(), "Unable to create directory " + destination.getAbsolutePath());
             }
 
             unTar(unzippedRubyPlugin, destination);
