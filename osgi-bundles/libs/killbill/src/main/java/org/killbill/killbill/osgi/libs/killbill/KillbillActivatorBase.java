@@ -82,7 +82,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             // If the system bundle shut down prior to that bundle, we can' unregister our Observer, which is fine.
         }
 
-        // Unregister all servies from that bundle
+        // Unregister all services from that bundle
         if (registrar != null) {
             registrar.unregisterAll();
             registrar = null;

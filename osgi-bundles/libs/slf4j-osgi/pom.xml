@@ -29,7 +29,7 @@
     <dependencies>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-osgi-bundles-lib-killbill</artifactId>
+            <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

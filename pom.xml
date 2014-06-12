@@ -30,13 +30,15 @@
     <url>http://github.com/killbill/killbill-platform</url>
     <modules>
         <module>platform-api</module>
-        <module>platform-test</module>
-        <module>lifecycle</module>
         <module>osgi-api</module>
-        <module>osgi</module>
-        <module>osgi-bundles</module>
-        <module>server</module>
         <module>base</module>
+        <module>lifecycle</module>
+        <module>osgi</module>
+        <!-- Impose the order here - need tests bundles for platform-test,
+             see http://maven.apache.org/guides/mini/guide-multiple-modules.html-->
+        <module>osgi-bundles</module>
+        <module>platform-test</module>
+        <module>server</module>
     </modules>
     <scm>
         <connection>scm:git:git://github.com/killbill/killbill-platform.git</connection>

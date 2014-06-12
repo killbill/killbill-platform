@@ -22,30 +22,34 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiWithTestControl;
+import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.log.LogService;
 
 /**
  * Test class used by Payment tests-- to test fake OSGI payment bundle
  */
 public class PaymentActivator extends KillbillActivatorBase {
 
+    private static final String TEST_PLUGIN_NAME = "osgi-payment-plugin";
+
     @Override
     public void start(final BundleContext context) throws Exception {
+        super.start(context);
 
         final String bundleName = context.getBundle().getSymbolicName();
-        System.out.println("PaymentActivator starting bundle = " + bundleName);
+        logService.log(LogService.LOG_INFO, "PaymentActivator: starting bundle = " + bundleName);
 
-        super.start(context);
         registerPaymentApi(context);
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
+        logService.log(LogService.LOG_INFO, "PaymentActivator: stopping bundle");
+
         super.stop(context);
-        System.out.println("Good bye world from PaymentActivator!");
     }
 
     @Override
@@ -54,10 +58,9 @@ public class PaymentActivator extends KillbillActivatorBase {
     }
 
     private void registerPaymentApi(final BundleContext context) {
-
         final Dictionary props = new Hashtable();
         // Same name the beatrix tests expect when using that payment plugin
-        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, "osgi-payment-plugin");
-        registrar.registerService(context, PaymentPluginApiWithTestControl.class, new TestPaymentPluginApi("test"), props);
+        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, TEST_PLUGIN_NAME);
+        registrar.registerService(context, PaymentPluginApi.class, new TestPaymentPluginApi(), props);
     }
 }

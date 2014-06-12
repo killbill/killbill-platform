@@ -99,15 +99,15 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-osgi-bundles-jruby</artifactId>
+            <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-osgi-bundles-logger</artifactId>
+            <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-osgi-bundles-webconsolebranding</artifactId>
+            <artifactId>killbill-platform-osgi-bundles-webconsolebranding</artifactId>
         </dependency>
     </dependencies>
     <build>

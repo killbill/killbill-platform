@@ -18,15 +18,19 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
+import java.util.concurrent.Callable;
+
 import javax.inject.Inject;
 
 import org.killbill.billing.beatrix.integration.osgi.glue.TestApiListener;
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;
+import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.glue.BusModule;
+import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.config.OSGIConfig;
-import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.util.callcontext.CallContext;
@@ -44,6 +48,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.name.Named;
+import com.jayway.awaitility.Awaitility;
 
 public class TestOSGIBase {
 
@@ -66,7 +71,13 @@ public class TestOSGIBase {
     @Inject
     protected ClockMock clock;
 
-    protected final KillbillConfigSource configSource;
+    @Inject
+    protected OSGIServiceRegistration<PaymentPluginApi> paymentPluginApiOSGIServiceRegistration;
+
+    @Inject
+    protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
+
+    protected final TestKillbillConfigSource configSource;
     protected CallContext callContext;
     protected TestApiListener busHandler;
 
@@ -130,5 +141,17 @@ public class TestOSGIBase {
             PlatformDBTestingHelper.get().getInstance().stop();
         } catch (final Exception ignored) {
         }
+    }
+
+    protected <T> T getTestApi(final OSGIServiceRegistration<T> serviceRegistration, final String serviceName) throws Exception {
+        Awaitility.await().until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
+                return serviceRegistration.getServiceForName(serviceName) != null;
+            }
+        });
+
+        return serviceRegistration.getServiceForName(serviceName);
     }
 }

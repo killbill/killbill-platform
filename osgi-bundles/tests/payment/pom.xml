@@ -46,36 +46,20 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
+            <artifactId>killbill-platform-osgi-api</artifactId>
+            <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-util</artifactId>
-            <type>test-jar</type>
-            <!-- Override the scope since we build this test as 'source' -->
-            <scope>compile</scope>
+            <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-payment</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>osgi-over-slf4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>

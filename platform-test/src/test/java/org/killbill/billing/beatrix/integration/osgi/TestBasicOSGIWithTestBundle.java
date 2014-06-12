@@ -26,12 +26,9 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
-import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
@@ -62,12 +59,9 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
-    // Magic name, see TestActivator
+    // Magic name, see org.killbill.billing.osgi.bundles.test.TestActivator
     private static final String TEST_PLUGIN_NAME = "test";
     private static final String BUNDLE_TEST_RESOURCE = "killbill-osgi-bundles-test-beatrix";
-
-    @Inject
-    private OSGIServiceRegistration<PaymentPluginApi> paymentPluginApiOSGIServiceRegistration;
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
@@ -90,7 +84,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         assertTor.assertPluginReceivedEvent(event.getAccountId().toString());
 
         // Retrieve the PaymentPluginApi that the test bundle registered
-        final PaymentPluginApi paymentPluginApi = getTestPluginPaymentApi();
+        final PaymentPluginApi paymentPluginApi = getTestApi(paymentPluginApiOSGIServiceRegistration, TEST_PLUGIN_NAME);
 
         // Make a payment and expect the test bundle to correctly write in its table the input values
         final UUID paymentId = UUID.randomUUID();
@@ -102,12 +96,6 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         Assert.assertEquals(paymentInfoPlugin.getAmount().compareTo(paymentAmount), 0);
         Assert.assertEquals(paymentInfoPlugin.getCurrency(), currency);
         assertTor.assertPluginCreatedPayment(paymentId, paymentMethodId, paymentAmount);
-    }
-
-    private PaymentPluginApi getTestPluginPaymentApi() {
-        final PaymentPluginApi result = paymentPluginApiOSGIServiceRegistration.getServiceForName(TEST_PLUGIN_NAME);
-        Assert.assertNotNull(result);
-        return result;
     }
 
     private static final class TestActivatorWithAssertion {

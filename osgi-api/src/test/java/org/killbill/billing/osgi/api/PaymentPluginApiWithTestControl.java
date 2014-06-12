@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.killbill.billing.beatrix.integration.osgi;
+package org.killbill.billing.osgi.api;
 
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;

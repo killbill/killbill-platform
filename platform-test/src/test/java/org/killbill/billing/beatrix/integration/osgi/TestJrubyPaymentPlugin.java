@@ -21,15 +21,11 @@ package org.killbill.billing.beatrix.integration.osgi;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-
-import javax.inject.Inject;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
-import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
@@ -42,7 +38,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.jayway.awaitility.Awaitility;
 
 import static org.testng.Assert.assertEquals;
 
@@ -50,9 +45,6 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-payment-test";
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
-
-    @Inject
-    private OSGIServiceRegistration<PaymentPluginApi> paymentPluginApiOSGIServiceRegistration;
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
@@ -65,7 +57,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testProcessPayment() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         // TODO change plugin not to retrieve the account
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
@@ -87,7 +79,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testGetPaymentInfo() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
         final PaymentInfoPlugin res = api.getPaymentInfo(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
@@ -108,7 +100,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testProcessRefund() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
         final PaymentInfoPlugin res = api.processRefund(UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
@@ -129,7 +121,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testAddPaymentMethod() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final PaymentMethodPlugin paymentMethodPlugin = Mockito.mock(PaymentMethodPlugin.class);
         Mockito.when(paymentMethodPlugin.getExternalPaymentMethodId()).thenReturn(UUID.randomUUID().toString());
@@ -151,13 +143,13 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testDeletePaymentMethod() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         api.deletePaymentMethod(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
     }
 
     @Test(groups = "slow")
     public void testGetPaymentMethodDetail() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         final PaymentMethodPlugin res = api.getPaymentMethodDetail(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
 
         assertEquals(res.getExternalPaymentMethodId(), "external_payment_method_id");
@@ -171,13 +163,13 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testSetDefaultPaymentMethod() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         api.setDefaultPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
     }
 
     @Test(groups = "slow")
     public void testGetPaymentMethods() throws Exception {
-        final PaymentPluginApi api = getTestPluginPaymentApi();
+        final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         final UUID kbAccountId = UUID.randomUUID();
         final List<PaymentMethodInfoPlugin> res = api.getPaymentMethods(kbAccountId, true, ImmutableList.<PluginProperty>of(), callContext);
 
@@ -188,17 +180,5 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         assertEquals(res0.getExternalPaymentMethodId(), "external_payment_method_id");
         assertEquals(res0.getAccountId(), kbAccountId);
         assertEquals(res0.getPaymentMethodId(), kbAccountId);
-    }
-
-    private PaymentPluginApi getTestPluginPaymentApi() throws Exception {
-        Awaitility.await().until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
-                return paymentPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX) != null;
-            }
-        });
-
-        return paymentPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX);
     }
 }

@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.joda.time.DateTime;
 import org.killbill.billing.catalog.api.Currency;
+import org.killbill.billing.osgi.api.PaymentPluginApiWithTestControl;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.GatewayNotification;
@@ -33,7 +34,6 @@ import org.killbill.billing.payment.plugin.api.HostedPaymentPageFormDescriptor;
 import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentMethodInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiWithTestControl;
 import org.killbill.billing.payment.plugin.api.PaymentPluginStatus;
 import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.billing.util.callcontext.TenantContext;
@@ -43,14 +43,11 @@ import com.google.common.collect.ImmutableList;
 
 public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
 
-    private final String name;
-
     private PaymentPluginApiException paymentPluginApiExceptionOnNextCalls;
     private RuntimeException runtimeExceptionOnNextCalls;
 
-    public TestPaymentPluginApi(final String name) {
-        this.name = name;
-        resetToNormalbehavior();
+    public TestPaymentPluginApi() {
+        resetToNormalBehavior();
     }
 
     @Override
@@ -353,18 +350,18 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
 
     @Override
     public void setPaymentPluginApiExceptionOnNextCalls(final PaymentPluginApiException e) {
-        resetToNormalbehavior();
+        resetToNormalBehavior();
         paymentPluginApiExceptionOnNextCalls = e;
     }
 
     @Override
     public void setPaymentRuntimeExceptionOnNextCalls(final RuntimeException e) {
-        resetToNormalbehavior();
+        resetToNormalBehavior();
         runtimeExceptionOnNextCalls = e;
     }
 
     @Override
-    public void resetToNormalbehavior() {
+    public void resetToNormalBehavior() {
         paymentPluginApiExceptionOnNextCalls = null;
         runtimeExceptionOnNextCalls = null;
     }

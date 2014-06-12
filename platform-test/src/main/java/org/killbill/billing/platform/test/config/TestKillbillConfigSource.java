@@ -29,7 +29,6 @@ import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
-import com.google.common.io.Resources;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 

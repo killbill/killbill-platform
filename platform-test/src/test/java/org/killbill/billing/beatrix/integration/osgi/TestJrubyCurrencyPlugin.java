@@ -20,21 +20,15 @@ package org.killbill.billing.beatrix.integration.osgi;
 
 import java.math.BigDecimal;
 import java.util.Set;
-import java.util.concurrent.Callable;
-
-import javax.inject.Inject;
 
 import org.joda.time.DateTime;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.currency.api.Rate;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
-import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import com.jayway.awaitility.Awaitility;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -43,9 +37,6 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
 
     private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-currency-plugin-test";
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
-
-    @Inject
-    private OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
@@ -58,7 +49,7 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testCurrencyApis() throws Exception {
-        final CurrencyPluginApi api = getTestPluginCurrencyApi();
+        final CurrencyPluginApi api = getTestApi(currencyPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final Set<Currency> currencies = api.getBaseCurrencies();
         assertEquals(currencies.size(), 1);
@@ -73,17 +64,5 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
         assertEquals(theRate.getBaseCurrency(), Currency.USD);
         assertEquals(theRate.getCurrency(), Currency.BRL);
         Assert.assertTrue(theRate.getValue().compareTo(new BigDecimal("12.3")) == 0);
-    }
-
-    private CurrencyPluginApi getTestPluginCurrencyApi() throws Exception {
-        Awaitility.await().until(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
-                return currencyPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX) != null;
-            }
-        });
-
-        return currencyPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX);
     }
 }

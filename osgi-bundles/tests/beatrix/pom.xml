@@ -57,21 +57,8 @@
             <artifactId>killbill-plugin-api-payment</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.skife.config</groupId>
-            <artifactId>config-magic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>osgi-over-slf4j</artifactId>
         </dependency>
     </dependencies>
     <build>
