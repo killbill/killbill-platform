@@ -1,5 +1,4 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
  * Copyright 2014 Groupon, Inc
  * Copyright 2014 The Billing Project, LLC
  *
@@ -16,13 +15,15 @@
  * under the License.
  */
 
-package org.killbill.billing.payment.plugin.api;
+package org.killbill.billing.beatrix.integration.osgi.glue;
 
-public interface PaymentPluginApiWithTestControl extends PaymentPluginApi {
+public class TestApiListener {
 
-    public void setPaymentPluginApiExceptionOnNextCalls(PaymentPluginApiException e);
+    public void reset() {
 
-    public void setPaymentRuntimeExceptionOnNextCalls(RuntimeException e);
+    }
 
-    public void resetToNormalbehavior();
+    public void assertListenerStatus() {
+
+    }
 }

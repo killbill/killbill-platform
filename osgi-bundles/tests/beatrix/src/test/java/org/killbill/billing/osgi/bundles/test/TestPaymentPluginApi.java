@@ -44,11 +44,9 @@ import org.killbill.billing.util.entity.Pagination;
 public class TestPaymentPluginApi implements PaymentPluginApi {
 
     private final TestDao testDao;
-    private final String name;
 
-    public TestPaymentPluginApi(final String name, final TestDao testDao) {
+    public TestPaymentPluginApi(final TestDao testDao) {
         this.testDao = testDao;
-        this.name = name;
     }
 
     @Override

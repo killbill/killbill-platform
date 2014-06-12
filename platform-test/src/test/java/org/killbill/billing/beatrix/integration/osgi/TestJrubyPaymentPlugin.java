@@ -21,12 +21,13 @@ package org.killbill.billing.beatrix.integration.osgi;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.killbill.billing.account.api.Account;
+import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
@@ -35,47 +36,46 @@ import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentMethodInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginStatus;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.jayway.awaitility.Awaitility;
 
 import static org.testng.Assert.assertEquals;
 
 public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
-    private final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-payment-test";
-    private final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
+    private static final Logger log = LoggerFactory.getLogger(TestJrubyPaymentPlugin.class);
 
-    private Account account;
+    private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-payment-test";
+    private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
 
     @Inject
     private OSGIServiceRegistration<PaymentPluginApi> paymentPluginApiOSGIServiceRegistration;
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
+        super.beforeClass();
 
-        // OSGIDataSourceConfig
-        //super.beforeClass();
-
-        // This is extracted from surefire system configuration-- needs to be added explicitly in IntelliJ for correct running
+        // This is extracted from surefire system configuration -- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
 
-        //final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
-        //setupTest.setupJrubyBundle();
-
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        setupTest.setupJrubyBundle();
     }
 
     @Test(groups = "slow")
     public void testProcessPayment() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
 
-        //account = createAccountWithNonOsgiPaymentMethod(getAccountData(4));
-
+        // TODO change plugin not to retrieve the account
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        final PaymentInfoPlugin res = api.processPayment(account.getId(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentInfoPlugin res = api.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
 
         Assert.assertTrue(res.getAmount().compareTo(BigDecimal.TEN) == 0);
@@ -93,7 +93,6 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testGetPaymentInfo() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
@@ -115,7 +114,6 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testProcessRefund() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
@@ -137,25 +135,34 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testAddPaymentMethod() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
 
-        final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        //final PaymentMethodPlugin info = createPaymentMethodPlugin();
-        //api.addPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), info, true, ImmutableList.<PluginProperty>of(), callContext);
-        final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
+        final PaymentMethodPlugin paymentMethodPlugin = Mockito.mock(PaymentMethodPlugin.class);
+        Mockito.when(paymentMethodPlugin.getExternalPaymentMethodId()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getType()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCCName()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCCType()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCCExpirationMonth()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCCExpirationYear()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCCLast4()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getAddress1()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getAddress2()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCity()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getState()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getZip()).thenReturn(UUID.randomUUID().toString());
+        Mockito.when(paymentMethodPlugin.getCountry()).thenReturn(UUID.randomUUID().toString());
+
+        api.addPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), paymentMethodPlugin, true, ImmutableList.<PluginProperty>of(), callContext);
     }
 
     @Test(groups = "slow")
     public void testDeletePaymentMethod() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
         api.deletePaymentMethod(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
     }
 
     @Test(groups = "slow")
     public void testGetPaymentMethodDetail() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
         final PaymentMethodPlugin res = api.getPaymentMethodDetail(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
 
@@ -170,15 +177,12 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testSetDefaultPaymentMethod() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
-        //final PaymentMethodPlugin info = createPaymentMethodPlugin();
         api.setDefaultPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
     }
 
     @Test(groups = "slow")
     public void testGetPaymentMethods() throws Exception {
-
         final PaymentPluginApi api = getTestPluginPaymentApi();
         final UUID kbAccountId = UUID.randomUUID();
         final List<PaymentMethodInfoPlugin> res = api.getPaymentMethods(kbAccountId, true, ImmutableList.<PluginProperty>of(), callContext);
@@ -192,22 +196,15 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         assertEquals(res0.getPaymentMethodId(), kbAccountId);
     }
 
-    private PaymentPluginApi getTestPluginPaymentApi() {
-        int retry = 5;
-
-        // It is expected to have a nul result if the initialization of Killbill went faster than the registration of the plugin services
-        PaymentPluginApi result = null;
-        do {
-            result = paymentPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX);
-            if (result == null) {
-                try {
-                    //log.info("Waiting for Killbill initialization to complete time = " + clock.getUTCNow());
-                    Thread.sleep(1000);
-                } catch (final InterruptedException ignore) {
-                }
+    private PaymentPluginApi getTestPluginPaymentApi() throws Exception {
+        Awaitility.await().until(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
+                return paymentPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX) != null;
             }
-        } while (result == null && retry-- > 0);
-        Assert.assertNotNull(result);
-        return result;
+        });
+
+        return paymentPluginApiOSGIServiceRegistration.getServiceForName(BUNDLE_TEST_RESOURCE_PREFIX);
     }
 }

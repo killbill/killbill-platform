@@ -17,15 +17,15 @@
 
 package org.killbill.billing.platform.test.glue;
 
+import java.io.IOException;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.sql.DataSource;
 
 import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
-import org.killbill.billing.lifecycle.bus.ExternalPersistentBusConfig;
 import org.killbill.billing.lifecycle.glue.BusModule;
-import org.killbill.billing.lifecycle.glue.PersistentBusProvider;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
@@ -33,15 +33,11 @@ import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.MetricsModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
-import org.killbill.bus.api.PersistentBus;
-import org.killbill.bus.api.PersistentBusConfig;
-
-import com.google.inject.Key;
-import com.google.inject.name.Names;
+import org.killbill.billing.platform.test.PlatformDBTestingHelper;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.skife.jdbi.v2.IDBI;
 
 public abstract class TestPlatformModule extends KillBillModule {
-
-    private static final String EXTERNAL_BUS = "externalBus";
 
     private final boolean withOSGI;
     private final OSGIConfigProperties osgiConfigProperties;
@@ -56,16 +52,35 @@ public abstract class TestPlatformModule extends KillBillModule {
 
     @Override
     protected void configure() {
+        configureEmbeddedDB();
+
         configureLifecycle();
 
         configureNotificationQ();
 
         configureBus();
-        // For the bus
+        if (withOSGI) {
+            configureExternalBus();
+        }
+
+        // For the buses
         install(new MetricsModule(configSource));
 
         if (withOSGI) {
             configureOSGI();
+        }
+    }
+
+    protected void configureEmbeddedDB() {
+        final PlatformDBTestingHelper platformDBTestingHelper = PlatformDBTestingHelper.get();
+        final EmbeddedDB instance = platformDBTestingHelper.getInstance();
+        bind(EmbeddedDB.class).toInstance(instance);
+
+        try {
+            bind(DataSource.class).toInstance(instance.getDataSource());
+            bind(IDBI.class).toInstance(platformDBTestingHelper.getDBI());
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -78,7 +93,11 @@ public abstract class TestPlatformModule extends KillBillModule {
     }
 
     protected void configureBus() {
-        install(new BusModule(BusModule.BusType.PERSISTENT, configSource));
+        install(new BusModule(BusModule.BusType.PERSISTENT, false, configSource));
+    }
+
+    protected void configureExternalBus() {
+        install(new BusModule(BusModule.BusType.PERSISTENT, true, configSource));
     }
 
     protected void configureNotificationQ() {
@@ -86,10 +105,6 @@ public abstract class TestPlatformModule extends KillBillModule {
     }
 
     protected void configureOSGI() {
-        final PersistentBusConfig extBusConfig = new ExternalPersistentBusConfig(skifeConfigSource);
         install(new DefaultOSGIModule(configSource, osgiConfigProperties));
-
-        bind(PersistentBusProvider.class).annotatedWith(Names.named(EXTERNAL_BUS)).toInstance(new PersistentBusProvider(extBusConfig));
-        bind(PersistentBus.class).annotatedWith(Names.named(EXTERNAL_BUS)).toProvider(Key.get(PersistentBusProvider.class, Names.named(EXTERNAL_BUS))).asEagerSingleton();
     }
 }

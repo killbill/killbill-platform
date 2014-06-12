@@ -20,6 +20,8 @@ package org.killbill.billing.platform.test.glue;
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.glue.MockNotificationQueueModule;
+import org.mockito.Mockito;
+import org.skife.jdbi.v2.IDBI;
 
 public class TestPlatformModuleNoDB extends TestPlatformModule {
 
@@ -28,8 +30,19 @@ public class TestPlatformModuleNoDB extends TestPlatformModule {
     }
 
     @Override
+    protected void configureEmbeddedDB() {
+        final IDBI idbi = Mockito.mock(IDBI.class);
+        bind(IDBI.class).toInstance(idbi);
+    }
+
+    @Override
     protected void configureBus() {
-        install(new BusModule(BusModule.BusType.MEMORY, configSource));
+        install(new BusModule(BusModule.BusType.MEMORY, false, configSource));
+    }
+
+    @Override
+    protected void configureExternalBus() {
+        install(new BusModule(BusModule.BusType.MEMORY, true, configSource));
     }
 
     @Override

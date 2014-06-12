@@ -1,0 +1,108 @@
+/*
+ * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014 Groupon, Inc
+ * Copyright 2014 The Billing Project, LLC
+ *
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.killbill.billing.platform.test;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
+import org.killbill.commons.embeddeddb.mysql.MySQLEmbeddedDB;
+import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
+import org.killbill.commons.jdbi.guice.DBIProvider;
+import org.skife.jdbi.v2.IDBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+import com.google.common.io.InputSupplier;
+import com.google.common.io.Resources;
+
+public class PlatformDBTestingHelper {
+
+    private static final Logger log = LoggerFactory.getLogger(PlatformDBTestingHelper.class);
+
+    protected EmbeddedDB instance;
+
+    private static final PlatformDBTestingHelper dbTestingHelper = new PlatformDBTestingHelper();
+
+    public static PlatformDBTestingHelper get() {
+        return dbTestingHelper;
+    }
+
+    private PlatformDBTestingHelper() {
+        if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.h2"))) {
+            log.info("Using h2 as the embedded database");
+            instance = new H2EmbeddedDB();
+        } else {
+            if (isUsingLocalInstance()) {
+                log.info("Using MySQL local database");
+                final String databaseName = System.getProperty("org.killbill.billing.dbi.test.localDb.database", "killbill");
+                final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "root");
+                final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "root");
+                instance = new MySQLStandaloneDB(databaseName, username, password);
+            } else {
+                log.info("Using MySQL as the embedded database");
+                instance = new MySQLEmbeddedDB();
+            }
+        }
+    }
+
+    public EmbeddedDB getInstance() {
+        return instance;
+    }
+
+    public synchronized IDBI getDBI() throws IOException {
+        return new DBIProvider(instance.getDataSource()).get();
+    }
+
+    public synchronized void start() throws IOException {
+        instance.initialize();
+        instance.start();
+
+        if (isUsingLocalInstance()) {
+            return;
+        }
+
+        executePostStartupScripts();
+
+        instance.refreshTableNames();
+    }
+
+    protected synchronized void executePostStartupScripts() throws IOException {
+        final String ddl = streamToString(Resources.getResource("org/killbill/billing/beatrix/ddl.sql").openStream());
+        instance.executeScript(ddl);
+    }
+
+    protected String streamToString(final InputStream inputStream) throws IOException {
+        final InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
+            @Override
+            public InputStream getInput() throws IOException {
+                return inputStream;
+            }
+        };
+
+        return CharStreams.toString(CharStreams.newReaderSupplier(inputSupplier, Charsets.UTF_8));
+    }
+
+    private boolean isUsingLocalInstance() {
+        return (System.getProperty("org.killbill.billing.dbi.test.useLocalDb") != null);
+    }
+}

@@ -21,20 +21,14 @@ package org.killbill.billing.server.modules;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
-import org.killbill.billing.lifecycle.DefaultLifecycle;
-import org.killbill.billing.lifecycle.api.Lifecycle;
-import org.killbill.billing.lifecycle.bus.ExternalPersistentBusConfig;
 import org.killbill.billing.lifecycle.glue.BusModule;
-import org.killbill.billing.lifecycle.glue.PersistentBusProvider;
-import org.killbill.billing.osgi.api.ExternalBus;
+import org.killbill.billing.lifecycle.glue.LifecycleModule;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.server.config.KillbillServerConfig;
-import org.killbill.bus.api.PersistentBus;
-import org.killbill.bus.api.PersistentBusConfig;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
 import org.killbill.clock.DefaultClock;
@@ -46,9 +40,6 @@ import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
-
-import com.google.inject.Key;
-import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillModule {
 
@@ -73,7 +64,7 @@ public class KillbillPlatformModule extends KillBillModule {
         configureConfig();
         configureEmbeddedDB();
         configureLifecycle();
-        configureBus();
+        configureBuses();
         configureNotificationQ();
         configureOSGI();
 
@@ -125,11 +116,12 @@ public class KillbillPlatformModule extends KillBillModule {
     }
 
     protected void configureLifecycle() {
-        bind(Lifecycle.class).to(DefaultLifecycle.class).asEagerSingleton();
+        install(new LifecycleModule());
     }
 
-    protected void configureBus() {
-        install(new BusModule(BusModule.BusType.PERSISTENT, configSource));
+    protected void configureBuses() {
+        install(new BusModule(BusModule.BusType.PERSISTENT, false, configSource));
+        install(new BusModule(BusModule.BusType.PERSISTENT, true, configSource));
         //install(new MetricsModule(configSource));
     }
 
@@ -138,10 +130,7 @@ public class KillbillPlatformModule extends KillBillModule {
     }
 
     protected void configureOSGI() {
-        final PersistentBusConfig extBusConfig = new ExternalPersistentBusConfig(skifeConfigSource);
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource));
-        bind(PersistentBusProvider.class).annotatedWith(Names.named(ExternalBus.EXTERNAL_BUS)).toInstance(new PersistentBusProvider(extBusConfig));
-        bind(PersistentBus.class).annotatedWith(Names.named(ExternalBus.EXTERNAL_BUS)).toProvider(Key.get(PersistentBusProvider.class, Names.named(ExternalBus.EXTERNAL_BUS))).asEagerSingleton();
     }
 
     protected void installKillbillModules() {

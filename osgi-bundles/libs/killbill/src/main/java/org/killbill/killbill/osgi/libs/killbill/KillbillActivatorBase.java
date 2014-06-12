@@ -34,7 +34,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     @Override
     public void start(final BundleContext context) throws Exception {
-
         // Tracked resource
         killbillAPI = new OSGIKillbillAPI(context);
         logService = new OSGIKillbillLogService(context);
@@ -54,7 +53,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-
         // Close trackers
         if (killbillAPI != null) {
             killbillAPI.close();

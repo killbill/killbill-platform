@@ -1,5 +1,4 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
  * Copyright 2014 Groupon, Inc
  * Copyright 2014 The Billing Project, LLC
  *
@@ -16,15 +15,13 @@
  * under the License.
  */
 
-package org.killbill.billing.beatrix.integration.osgi;
+package org.killbill.billing.lifecycle.api;
 
-import org.testng.annotations.Test;
+import org.killbill.billing.platform.api.KillbillService;
+import org.killbill.bus.api.PersistentBus;
 
-@Test(enabled = false)
-public class TestOSGIIntegration extends TestOSGIBase {
+// TODO Move API?
+public interface ExternalBusService extends KillbillService {
 
-    @Test(groups = "slow")
-    public void testJRubyIntegration() throws Exception {
-//        createAccountWithNonOsgiPaymentMethod(getAccountData(1));
-    }
+    public PersistentBus getBus();
 }

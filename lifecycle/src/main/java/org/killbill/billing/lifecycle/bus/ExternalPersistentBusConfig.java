@@ -33,6 +33,9 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalPersistentBusConfig.class);
 
+    public static final String MAIN_BUS_NAME = "main";
+    public static final String EXTERNAL_BUS_NAME = "external";
+
     private static final String TABLE_NAME_DEFAULT_VALUE = "bus_events";
     private static final String TABLE_NAME_ALTERNATE_DEFAULT_VALUE = "bus_ext_events";
 
@@ -45,9 +48,9 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     public ExternalPersistentBusConfig(final ConfigSource configSource) {
         // See org.killbill.billing.util.glue.BusModule
         internalPersistentBusConfig = new ConfigurationObjectFactory(configSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                         ImmutableMap.<String, String>of("instanceName", "main"));
+                                                                                                         ImmutableMap.<String, String>of("instanceName", MAIN_BUS_NAME));
         externalPersistentBusConfig = new ConfigurationObjectFactory(configSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                         ImmutableMap.<String, String>of("instanceName", "external"));
+                                                                                                         ImmutableMap.<String, String>of("instanceName", EXTERNAL_BUS_NAME));
     }
 
     @Override

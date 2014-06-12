@@ -1,5 +1,4 @@
 /*
- * Copyright 2010-2011 Ning, Inc.
  * Copyright 2014 Groupon, Inc
  * Copyright 2014 The Billing Project, LLC
  *
@@ -18,26 +17,28 @@
 
 package org.killbill.billing.lifecycle.bus;
 
-import org.killbill.billing.lifecycle.api.BusService;
+import org.killbill.billing.lifecycle.api.ExternalBusService;
+import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.bus.api.PersistentBus;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
-public class DefaultBusService implements BusService {
+public class DefaultExternalBusService implements ExternalBusService {
 
-    public static final String EVENT_BUS_SERVICE = "bus-service";
+    public static final String EXTERNAL_BUS_SERVICE = "external-bus-service";
 
     private final PersistentBus eventBus;
 
     @Inject
-    public DefaultBusService(final PersistentBus eventBus) {
+    public DefaultExternalBusService(@Named(BusModule.EXTERNAL_BUS_NAMED) final PersistentBus eventBus) {
         this.eventBus = eventBus;
     }
 
     @Override
     public String getName() {
-        return EVENT_BUS_SERVICE;
+        return EXTERNAL_BUS_SERVICE;
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.INIT_BUS)

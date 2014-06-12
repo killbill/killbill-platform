@@ -1,4 +1,5 @@
 /*
+ * Copyright 2010-2013 Ning, Inc.
  * Copyright 2014 Groupon, Inc
  * Copyright 2014 The Billing Project, LLC
  *
@@ -15,9 +16,16 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.api;
+package org.killbill.billing.beatrix.integration.osgi;
 
-public interface ExternalBus {
+import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
+import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 
-    public static final String EXTERNAL_BUS = "externalBus";
+public interface PaymentPluginApiWithTestControl extends PaymentPluginApi {
+
+    public void setPaymentPluginApiExceptionOnNextCalls(PaymentPluginApiException e);
+
+    public void setPaymentRuntimeExceptionOnNextCalls(RuntimeException e);
+
+    public void resetToNormalBehavior();
 }

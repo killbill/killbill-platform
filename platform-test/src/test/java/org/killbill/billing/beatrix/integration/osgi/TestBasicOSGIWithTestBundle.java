@@ -28,7 +28,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import org.killbill.billing.account.api.Account;
+import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
+import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.api.PluginProperty;
@@ -61,46 +62,50 @@ import static com.jayway.awaitility.Awaitility.await;
  */
 public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
-    private final String BUNDLE_TEST_RESOURCE = "killbill-osgi-bundles-test-beatrix";
+    // Magic name, see TestActivator
+    private static final String TEST_PLUGIN_NAME = "test";
+    private static final String BUNDLE_TEST_RESOURCE = "killbill-osgi-bundles-test-beatrix";
 
     @Inject
     private OSGIServiceRegistration<PaymentPluginApi> paymentPluginApiOSGIServiceRegistration;
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        // OSGIDataSourceConfig
-//        super.beforeClass();
+        super.beforeClass();
 
-        // This is extracted from surefire system configuration-- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
-//        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
-//        setupTest.setupJavaBundle();
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        setupTest.setupJavaBundle();
     }
 
     @Test(groups = "slow")
     public void testBundleTest() throws Exception {
-
         // At this point test bundle should have been started already
         final TestActivatorWithAssertion assertTor = new TestActivatorWithAssertion(dbi);
         assertTor.assertPluginInitialized();
 
-        // Create an account and expect test bundle listen to KB events and write the external name in its table
-        final Account account = null;//createAccountWithNonOsgiPaymentMethod(getAccountData(1));
-
-        assertTor.assertPluginReceievdAccountCreationEvent(account.getExternalKey());
+        // Send an event and expect the test bundle to listen to KB events and write the account id in its table
+        final ExternalBusTestEvent event = new ExternalBusTestEvent();
+        externalBus.post(event);
+        assertTor.assertPluginReceivedEvent(event.getAccountId().toString());
 
         // Retrieve the PaymentPluginApi that the test bundle registered
         final PaymentPluginApi paymentPluginApi = getTestPluginPaymentApi();
 
-        // Make a payment and expect test bundle to correcly write in its table the input values
+        // Make a payment and expect the test bundle to correctly write in its table the input values
         final UUID paymentId = UUID.randomUUID();
+        final UUID paymentMethodId = UUID.randomUUID();
         final BigDecimal paymentAmount = new BigDecimal("14.32");
-        final PaymentInfoPlugin r = paymentPluginApi.processPayment(account.getId(), paymentId, account.getPaymentMethodId(), paymentAmount, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
-        assertTor.assertPluginCreatedPayment(paymentId, account.getPaymentMethodId(), paymentAmount);
+        final Currency currency = Currency.USD;
+        final PaymentInfoPlugin paymentInfoPlugin = paymentPluginApi.processPayment(event.getAccountId(), paymentId, paymentMethodId, paymentAmount, currency, ImmutableList.<PluginProperty>of(), callContext);
+        Assert.assertEquals(paymentInfoPlugin.getKbPaymentId(), paymentId);
+        Assert.assertEquals(paymentInfoPlugin.getAmount().compareTo(paymentAmount), 0);
+        Assert.assertEquals(paymentInfoPlugin.getCurrency(), currency);
+        assertTor.assertPluginCreatedPayment(paymentId, paymentMethodId, paymentAmount);
     }
 
     private PaymentPluginApi getTestPluginPaymentApi() {
-        final PaymentPluginApi result = paymentPluginApiOSGIServiceRegistration.getServiceForName("test");
+        final PaymentPluginApi result = paymentPluginApiOSGIServiceRegistration.getServiceForName(TEST_PLUGIN_NAME);
         Assert.assertNotNull(result);
         return result;
     }
@@ -122,13 +127,13 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
             }, "Plugin did not complete initialization");
         }
 
-        public void assertPluginReceievdAccountCreationEvent(final String expectedExternalKey) {
+        public void assertPluginReceivedEvent(final String expectedExternalKey) {
             assertWithCallback(new AwaitCallback() {
                 @Override
                 public boolean isSuccess() {
                     return isValidAccountExternalKey(expectedExternalKey);
                 }
-            }, "Plugin did not receive account creation event");
+            }, "Plugin did not receive event");
         }
 
         public void assertPluginCreatedPayment(final UUID expectedPaymentId, final UUID expectedPaymentMethodId, final BigDecimal expectedAmount) {
@@ -142,7 +147,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
         private void assertWithCallback(final AwaitCallback callback, final String error) {
             try {
-                await().atMost(5000000, TimeUnit.SECONDS).until(new Callable<Boolean>() {
+                await().atMost(15, TimeUnit.SECONDS).until(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         return callback.isSuccess();
@@ -171,19 +176,17 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         }
 
         private TestModel getTestModelFirstRecord() {
-            final TestModel test = dbi.inTransaction(new TransactionCallback<TestModel>() {
+            return dbi.inTransaction(new TransactionCallback<TestModel>() {
                 @Override
                 public TestModel inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
                     final Query<Map<String, Object>> q = conn.createQuery("SELECT is_started, external_key, payment_id, payment_method_id, payment_amount FROM test_bundle WHERE record_id = 1;");
-                    final TestModel test = q.map(new TestMapper()).first();
-                    return test;
+                    return q.map(new TestMapper()).first();
                 }
             });
-            return test;
         }
     }
 
-    private final static class TestModel {
+    private static final class TestModel {
 
         private final Boolean isStarted;
         private final String accountExternalKey;
@@ -221,7 +224,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
     }
 
-    private static class TestMapper implements ResultSetMapper<TestModel> {
+    private static final class TestMapper implements ResultSetMapper<TestModel> {
 
         @Override
         public TestModel map(final int index, final ResultSet r, final StatementContext ctx) throws SQLException {

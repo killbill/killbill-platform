@@ -19,7 +19,10 @@
 package org.killbill.billing.lifecycle.glue;
 
 import org.killbill.billing.lifecycle.api.BusService;
+import org.killbill.billing.lifecycle.api.ExternalBusService;
 import org.killbill.billing.lifecycle.bus.DefaultBusService;
+import org.killbill.billing.lifecycle.bus.DefaultExternalBusService;
+import org.killbill.billing.lifecycle.bus.ExternalPersistentBusConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.bus.InMemoryPersistentBus;
 import org.killbill.bus.api.PersistentBus;
@@ -29,18 +32,20 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
+import com.google.inject.name.Names;
 
 public class BusModule extends AbstractModule {
 
+    public static final String EXTERNAL_BUS_NAMED = "externalBus";
+
     private final BusType type;
+    private final boolean isExternal;
     private final KillbillConfigSource configSource;
 
-    public BusModule(final KillbillConfigSource configSource) {
-        this(BusType.PERSISTENT, configSource);
-    }
-
-    public BusModule(final BusType type, final KillbillConfigSource configSource) {
+    public BusModule(final BusType type, final boolean isExternal, final KillbillConfigSource configSource) {
         this.type = type;
+        this.isExternal = isExternal;
         this.configSource = configSource;
     }
 
@@ -51,7 +56,11 @@ public class BusModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(BusService.class).to(DefaultBusService.class);
+        if (isExternal) {
+            bind(ExternalBusService.class).to(DefaultExternalBusService.class).asEagerSingleton();
+        } else {
+            bind(BusService.class).to(DefaultBusService.class).asEagerSingleton();
+        }
         switch (type) {
             case MEMORY:
                 configureInMemoryEventBus();
@@ -65,18 +74,29 @@ public class BusModule extends AbstractModule {
     }
 
     protected void configurePersistentEventBus() {
-        final PersistentBusConfig busConfig = new ConfigurationObjectFactory(new ConfigSource() {
-            @Override
-            public String getString(final String propertyName) {
-                return configSource.getString(propertyName);
-            }
-        }).buildWithReplacements(PersistentBusConfig.class,
-                                 ImmutableMap.<String, String>of("instanceName", "main"));
-        bind(PersistentBusProvider.class).toInstance(new PersistentBusProvider(busConfig));
-        bind(PersistentBus.class).toProvider(PersistentBusProvider.class).asEagerSingleton();
+        final SkifePersistentBusConfigSource skifePersistentBusConfigSource = new SkifePersistentBusConfigSource();
+        final PersistentBusConfig busConfig = new ConfigurationObjectFactory(skifePersistentBusConfigSource).buildWithReplacements(PersistentBusConfig.class,
+                                                                                                                                   ImmutableMap.<String, String>of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
+
+        final PersistentBusProvider busProvider = new PersistentBusProvider(busConfig);
+        if (isExternal) {
+            bind(PersistentBusProvider.class).annotatedWith(Names.named(BusModule.EXTERNAL_BUS_NAMED)).toInstance(busProvider);
+            bind(PersistentBus.class).annotatedWith(Names.named(BusModule.EXTERNAL_BUS_NAMED)).toProvider(Key.get(PersistentBusProvider.class, Names.named(BusModule.EXTERNAL_BUS_NAMED))).asEagerSingleton();
+        } else {
+            bind(PersistentBusProvider.class).toInstance(busProvider);
+            bind(PersistentBus.class).toProvider(PersistentBusProvider.class).asEagerSingleton();
+        }
     }
 
     private void configureInMemoryEventBus() {
         bind(PersistentBus.class).to(InMemoryPersistentBus.class).asEagerSingleton();
+    }
+
+    private final class SkifePersistentBusConfigSource implements ConfigSource {
+
+        @Override
+        public String getString(final String propertyName) {
+            return configSource.getString(propertyName);
+        }
     }
 }

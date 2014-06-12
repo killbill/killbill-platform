@@ -35,7 +35,6 @@ public class TestDao {
     }
 
     public void createTable() {
-
         dbi.inTransaction(new TransactionCallback<Object>() {
             @Override
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
@@ -65,7 +64,7 @@ public class TestDao {
         });
     }
 
-    public void insertAccountExternalKey(final String externalKey) {
+    public void insertExternalKey(final String externalKey) {
         dbi.inTransaction(new TransactionCallback<Object>() {
             @Override
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {

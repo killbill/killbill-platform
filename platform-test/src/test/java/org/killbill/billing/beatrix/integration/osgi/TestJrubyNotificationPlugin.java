@@ -18,40 +18,28 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
+import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-@Test(enabled = false)
 public class TestJrubyNotificationPlugin extends TestOSGIBase {
 
-    private final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-notification-test";
-    private final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
+    private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-notification-test";
+    private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
+        super.beforeClass();
 
-        // OSGIDataSourceConfig
-//        super.beforeClass();
-
-        // This is extracted from surefire system configuration-- needs to be added explicitly in IntelliJ for correct running
+        // This is extracted from surefire system configuration -- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
 
-//        SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
-//        setupTest.setupJrubyBundle();
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        setupTest.setupJrubyBundle();
     }
 
     @Test(groups = "slow")
     public void testOnEventForAccountCreation() throws Exception {
-
-        // Once we create the account we give the hand to the jruby notification plugin
-        // which will handle the ExtBusEvent and start updating the account, create tag definition and finally create a tag.
-        // We wait for all that to occur and declare victory if we see the TagDefinition/Tag creation.
-        //busHandler.pushExpectedEvents(NextEvent.TAG_DEFINITION, NextEvent.TAG);
-//        final Account account = createAccountWithNonOsgiPaymentMethod(getAccountData(4));
-//        assertListenerStatus();
-//
-//        final List<Tag> tags = tagUserApi.getTagsForAccount(account.getId(), false, callContext);
-//        Assert.assertEquals(tags.size(), 1);
-        //final Tag tag = tags.get(0);
+        // TODO change the ruby plugin not to interact with tags - use events instead?
     }
 }

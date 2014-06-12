@@ -23,12 +23,12 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
+import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiWithTestControl;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -48,20 +48,19 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
+        super.beforeClass();
 
-//        super.beforeClass();
-
-        // This is extracted from surefire system configuration-- needs to be added explicitly in IntelliJ for correct running
+        // This is extracted from surefire system configuration -- needs to be added explicitly in IntelliJ for correct running
         final String killbillVersion = System.getProperty("killbill.version");
-//        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
-//        setupTest.setupJavaBundle();
 
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        setupTest.setupJavaBundle();
     }
 
     @BeforeMethod(groups = "slow")
     public void beforeMethod() throws Exception {
-//        super.beforeMethod();
-        getTestPluginPaymentApi().resetToNormalbehavior();
+        super.beforeMethod();
+        getTestPluginPaymentApi().resetToNormalBehavior();
     }
 
     @Test(groups = "slow", enabled = false)
@@ -72,7 +71,6 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testBasicProcessPaymentWithPaymentPluginApiException() throws Exception {
-
         boolean gotException = false;
         try {
             final PaymentPluginApiWithTestControl paymentPluginApi = getTestPluginPaymentApi();
@@ -89,7 +87,6 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
     @Test(groups = "slow")
     public void testBasicProcessPaymentWithRuntimeException() throws Exception {
-
         boolean gotException = false;
         try {
             final PaymentPluginApiWithTestControl paymentPluginApi = getTestPluginPaymentApi();
@@ -122,12 +119,11 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
     }
 
     private void setupIntegration(final PaymentPluginApiException expectedException, final RuntimeException expectedRuntimeException) throws Exception {
-
         final PaymentPluginApiWithTestControl paymentPluginApi = getTestPluginPaymentApi();
-
-//        final AccountData accountData = getAccountData(1);
-//        final Account account = createAccountWithOsgiPaymentMethod(accountData);
 /*
+        final AccountData accountData = getAccountData(1);
+        final Account account = createAccountWithOsgiPaymentMethod(accountData);
+
         // We take april as it has 30 days (easier to play with BCD)
         // Set clock to the initial start date - we implicitly assume here that the account timezone is UTC
         clock.setDay(new LocalDate(2012, 4, 1));
@@ -163,8 +159,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
             paymentChecker.checkPayment(account.getId(), 1, callContext, new ExpectedPaymentCheck(new LocalDate(2012, 4, 1), new BigDecimal("399.95"), PaymentStatus.PLUGIN_FAILURE, invoice.getId(), Currency.USD));
         } else if (expectedRuntimeException != null) {
             paymentChecker.checkPayment(account.getId(), 1, callContext, new ExpectedPaymentCheck(new LocalDate(2012, 4, 1), new BigDecimal("399.95"), PaymentStatus.PLUGIN_FAILURE, invoice.getId(), Currency.USD));
-        }
-        */
+        }*/
     }
 
     private PaymentPluginApiWithTestControl getTestPluginPaymentApi() {

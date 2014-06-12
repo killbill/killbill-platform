@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.killbill.billing.beatrix.osgi;
+package org.killbill.billing.beatrix.integration.osgi.util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +32,7 @@ import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginConfig.PluginType;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
@@ -41,14 +42,14 @@ import org.testng.Assert;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Resources;
 
+// Install a JRuby or Java plugin programmatically
 public class SetupBundleWithAssertion {
 
-    private final String JRUBY_BUNDLE_RESOURCE = "killbill-osgi-bundles-jruby";
+    private static final String JRUBY_BUNDLE_RESOURCE = "killbill-osgi-bundles-jruby";
 
     private final String bundleName;
     private final OSGIConfig config;
     private final String killbillVersion;
-
     private final File rootInstallDir;
 
     public SetupBundleWithAssertion(final String bundleName, final OSGIConfig config, final String killbillVersion) {
@@ -59,9 +60,7 @@ public class SetupBundleWithAssertion {
     }
 
     public void setupJrubyBundle() {
-
         try {
-
             installJrubyJar();
 
             final URL resourceUrl = Resources.getResource(bundleName);
@@ -73,11 +72,10 @@ public class SetupBundleWithAssertion {
 
             final File destination = new File(tmp.toString());
             if (!destination.exists()) {
-                destination.mkdir();
+                Assert.assertTrue(destination.mkdir(), "Unable to create directory " + destination.getAbsolutePath());
             }
 
             unTar(unzippedRubyPlugin, destination);
-
         } catch (final IOException e) {
             Assert.fail(e.getMessage());
         } catch (final ArchiveException e) {
@@ -86,7 +84,6 @@ public class SetupBundleWithAssertion {
     }
 
     public void setupJavaBundle() {
-
         try {
             // Retrieve PluginConfig info from classpath
             // test bundle should have been exported under Beatrix resource by the maven maven-dependency-plugin
@@ -113,12 +110,11 @@ public class SetupBundleWithAssertion {
         }
     }
 
-    private void createConfigFile(final PluginJavaConfig pluginConfig) throws IOException {
-
+    private void createConfigFile(final PluginConfig pluginConfig) throws IOException {
         PrintStream printStream = null;
         try {
             final File configFile = new File(pluginConfig.getPluginVersionRoot(), config.getOSGIKillbillPropertyName());
-            configFile.createNewFile();
+            Assert.assertTrue(configFile.createNewFile(), "Unable to create file " + configFile.getAbsolutePath());
             printStream = new PrintStream(new FileOutputStream(configFile));
             printStream.print("pluginType=" + PluginType.NOTIFICATION);
         } finally {
@@ -128,9 +124,9 @@ public class SetupBundleWithAssertion {
         }
     }
 
-    private void setupDirectoryStructure(final PluginJavaConfig pluginConfig) {
+    private void setupDirectoryStructure(final PluginConfig pluginConfig) {
         cleanBundleInstallDir();
-        pluginConfig.getPluginVersionRoot().mkdirs();
+        Assert.assertTrue(pluginConfig.getPluginVersionRoot().mkdirs(), "Unable to create directory " + pluginConfig.getPluginVersionRoot().getAbsolutePath());
     }
 
     private static void deleteDirectory(final File path, final boolean deleteParent) {
@@ -145,24 +141,23 @@ public class SetupBundleWithAssertion {
                     if (f.isDirectory()) {
                         deleteDirectory(f, true);
                     }
-                    f.delete();
+                    Assert.assertTrue(f.delete(), "Unable to delete file " + f.getAbsolutePath());
                 }
             }
             if (deleteParent) {
-                path.delete();
+                Assert.assertTrue(path.delete(), "Unable to delete file " + path.delete());
             }
         }
     }
 
     private void installJrubyJar() throws IOException {
-
         final String resourceName = JRUBY_BUNDLE_RESOURCE + ".jar";
         final URL resourceUrl = Resources.getResource(resourceName);
         final File rubyJarInput = new File(resourceUrl.getFile());
 
         final File platform = new File(rootInstallDir, "platform");
         if (!platform.exists()) {
-            platform.mkdir();
+            Assert.assertTrue(platform.mkdir(), "Unable to create directory " + platform.getAbsolutePath());
         }
 
         final File rubyJarDestination = new File(platform, "jruby.jar");
@@ -170,7 +165,6 @@ public class SetupBundleWithAssertion {
     }
 
     private PluginJavaConfig extractJavaBundleTestResource() {
-
         final String resourceName = bundleName + "-jar-with-dependencies.jar";
         final URL resourceUrl = Resources.getResource(resourceName);
         if (resourceUrl != null) {
@@ -221,8 +215,7 @@ public class SetupBundleWithAssertion {
                    .append(bundleName)
                    .append("/")
                    .append(killbillVersion);
-                final File result = new File(tmp.toString());
-                return result;
+                return new File(tmp.toString());
             }
 
             @Override
@@ -233,10 +226,9 @@ public class SetupBundleWithAssertion {
     }
 
     private static void unTar(final File inputFile, final File outputDir) throws IOException, ArchiveException {
-
         InputStream is = null;
         TarArchiveInputStream archiveInputStream = null;
-        TarArchiveEntry entry = null;
+        TarArchiveEntry entry;
 
         try {
             is = new FileInputStream(inputFile);
@@ -266,7 +258,6 @@ public class SetupBundleWithAssertion {
     }
 
     private static File unGzip(final File inputFile, final File outputDir) throws IOException {
-
         GZIPInputStream in = null;
         FileOutputStream out = null;
 
