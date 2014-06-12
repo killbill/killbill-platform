@@ -67,6 +67,10 @@
             <artifactId>jackson-datatype-joda</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <scope>compile</scope>
@@ -88,12 +92,20 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -163,6 +175,18 @@
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-currency</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-notification</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-payment</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.commons</groupId>

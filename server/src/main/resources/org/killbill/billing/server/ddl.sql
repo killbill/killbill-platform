@@ -96,7 +96,7 @@ CREATE TABLE bus_ext_events (
     search_key2 int(11) unsigned default null,
     PRIMARY KEY(record_id)
 ) /*! CHARACTER SET utf8 COLLATE utf8_bin */;
-CREATE INDEX  `idx_bus_where` ON bus_ext_events (`processing_state`,`processing_owner`,`processing_available_date`);
+CREATE INDEX  `idx_ext_bus_where` ON bus_ext_events (`processing_state`,`processing_owner`,`processing_available_date`);
 CREATE INDEX bus_ext_events_tenant_search_key ON bus_ext_events(search_key2, search_key1);
 
 DROP TABLE IF EXISTS bus_ext_events_history;
