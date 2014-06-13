@@ -30,8 +30,8 @@ import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.payment.api.PluginProperty;
-import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
+import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.Query;
@@ -88,13 +88,15 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
         // Make a payment and expect the test bundle to correctly write in its table the input values
         final UUID paymentId = UUID.randomUUID();
+        final UUID transactionId = UUID.randomUUID();
         final UUID paymentMethodId = UUID.randomUUID();
         final BigDecimal paymentAmount = new BigDecimal("14.32");
         final Currency currency = Currency.USD;
-        final PaymentInfoPlugin paymentInfoPlugin = paymentPluginApi.processPayment(event.getAccountId(), paymentId, paymentMethodId, paymentAmount, currency, ImmutableList.<PluginProperty>of(), callContext);
-        Assert.assertEquals(paymentInfoPlugin.getKbPaymentId(), paymentId);
-        Assert.assertEquals(paymentInfoPlugin.getAmount().compareTo(paymentAmount), 0);
-        Assert.assertEquals(paymentInfoPlugin.getCurrency(), currency);
+        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.processPayment(event.getAccountId(), paymentId, transactionId, paymentMethodId, paymentAmount, currency, ImmutableList.<PluginProperty>of(), callContext);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getKbPaymentId(), paymentId);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getKbTransactionPaymentId(), transactionId);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getAmount().compareTo(paymentAmount), 0);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getCurrency(), currency);
         assertTor.assertPluginCreatedPayment(paymentId, paymentMethodId, paymentAmount);
     }
 

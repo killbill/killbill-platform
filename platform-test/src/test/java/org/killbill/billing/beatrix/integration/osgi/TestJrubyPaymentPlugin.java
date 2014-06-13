@@ -28,10 +28,10 @@ import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAsserti
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
 import org.killbill.billing.payment.api.PluginProperty;
-import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentMethodInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginStatus;
+import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -61,7 +61,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
         // TODO change plugin not to retrieve the account
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        final PaymentInfoPlugin res = api.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin res = api.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
 
         Assert.assertTrue(res.getAmount().compareTo(BigDecimal.TEN) == 0);
@@ -82,7 +82,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        final PaymentInfoPlugin res = api.getPaymentInfo(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin res = api.getPaymentInfo(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext).get(0);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
 
         Assert.assertTrue(res.getAmount().compareTo(BigDecimal.ZERO) == 0);
@@ -103,7 +103,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        final PaymentInfoPlugin res = api.processRefund(UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin res = api.processRefund(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
 
         Assert.assertTrue(res.getAmount().compareTo(BigDecimal.TEN) == 0);

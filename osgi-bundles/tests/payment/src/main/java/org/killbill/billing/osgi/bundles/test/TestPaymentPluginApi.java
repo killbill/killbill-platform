@@ -29,12 +29,13 @@ import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.osgi.api.PaymentPluginApiWithTestControl;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
 import org.killbill.billing.payment.api.PluginProperty;
+import org.killbill.billing.payment.api.TransactionType;
 import org.killbill.billing.payment.plugin.api.GatewayNotification;
 import org.killbill.billing.payment.plugin.api.HostedPaymentPageFormDescriptor;
-import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentMethodInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.billing.payment.plugin.api.PaymentPluginStatus;
+import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
 import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.entity.Pagination;
@@ -51,27 +52,42 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
     }
 
     @Override
-    public PaymentInfoPlugin authorizePayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context)
+    public PaymentTransactionInfoPlugin authorizePayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context)
             throws PaymentPluginApiException {
-        return getPaymentInfoPluginResult(kbPaymentId, amount, currency);
+        return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.AUTHORIZE, amount, currency);
     }
 
     @Override
-    public PaymentInfoPlugin capturePayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context)
+    public PaymentTransactionInfoPlugin capturePayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context)
             throws PaymentPluginApiException {
-        return getPaymentInfoPluginResult(kbPaymentId, amount, currency);
+        return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.CAPTURE, amount, currency);
     }
 
     @Override
-    public PaymentInfoPlugin processPayment(final UUID accountId, final UUID kbPaymentId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
-        return getPaymentInfoPluginResult(kbPaymentId, amount, currency);
+    public PaymentTransactionInfoPlugin processPayment(final UUID accountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
+        return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.PURCHASE, amount, currency);
     }
 
-    private PaymentInfoPlugin getPaymentInfoPluginResult(final UUID kbPaymentId, final BigDecimal amount, final Currency currency) throws PaymentPluginApiException {
-        return withRuntimeCheckForExceptions(new PaymentInfoPlugin() {
+    @Override
+    public PaymentTransactionInfoPlugin processRefund(final UUID accountId, final UUID kbPaymentId, final UUID kbTransactionId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
+        return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.REFUND, amount, currency);
+    }
+
+    private PaymentTransactionInfoPlugin getPaymentTransactionInfoPluginResult(final UUID kbPaymentId, final UUID kbTransactionId, final TransactionType transactionType, final BigDecimal amount, final Currency currency) throws PaymentPluginApiException {
+        return withRuntimeCheckForExceptions(new PaymentTransactionInfoPlugin() {
             @Override
             public UUID getKbPaymentId() {
                 return kbPaymentId;
+            }
+
+            @Override
+            public UUID getKbTransactionPaymentId() {
+                return kbTransactionId;
+            }
+
+            @Override
+            public TransactionType getTransactionType() {
+                return transactionType;
             }
 
             @Override
@@ -127,28 +143,27 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
     }
 
     @Override
-    public PaymentInfoPlugin voidPayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbPaymentMethodId, final Iterable<PluginProperty> properties, final CallContext context)
+    public PaymentTransactionInfoPlugin voidPayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final Iterable<PluginProperty> properties, final CallContext context)
             throws PaymentPluginApiException {
-        return getPaymentInfoPluginResult(kbPaymentId, BigDecimal.ZERO, null);
+        return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.VOID, BigDecimal.ZERO, null);
 
     }
 
     @Override
-    public PaymentInfoPlugin creditPayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context)
+    public PaymentTransactionInfoPlugin creditPayment(final UUID kbAccountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context)
             throws PaymentPluginApiException {
-        return getPaymentInfoPluginResult(kbPaymentId, amount, currency);
+        return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.CREDIT, amount, currency);
     }
 
     @Override
-    public PaymentInfoPlugin getPaymentInfo(final UUID accountId, final UUID kbPaymentId, final Iterable<PluginProperty> properties, final TenantContext context) throws PaymentPluginApiException {
-
+    public List<PaymentTransactionInfoPlugin> getPaymentInfo(final UUID accountId, final UUID kbPaymentId, final Iterable<PluginProperty> properties, final TenantContext context) throws PaymentPluginApiException {
         final BigDecimal someAmount = new BigDecimal("12.45");
-        return getPaymentInfoPluginResult(kbPaymentId, someAmount, null);
+        return ImmutableList.<PaymentTransactionInfoPlugin>of(getPaymentTransactionInfoPluginResult(kbPaymentId, UUID.randomUUID(), TransactionType.PURCHASE, someAmount, null));
     }
 
     @Override
-    public Pagination<PaymentInfoPlugin> searchPayments(final String searchKey, final Long offset, final Long limit, final Iterable<PluginProperty> properties, final TenantContext tenantContext) throws PaymentPluginApiException {
-        return new Pagination<PaymentInfoPlugin>() {
+    public Pagination<PaymentTransactionInfoPlugin> searchPayments(final String searchKey, final Long offset, final Long limit, final Iterable<PluginProperty> properties, final TenantContext tenantContext) throws PaymentPluginApiException {
+        return new Pagination<PaymentTransactionInfoPlugin>() {
             @Override
             public Long getCurrentOffset() {
                 return 0L;
@@ -170,102 +185,7 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
             }
 
             @Override
-            public Iterator<PaymentInfoPlugin> iterator() {
-                return null;
-            }
-        };
-    }
-
-    @Override
-    public PaymentInfoPlugin processRefund(final UUID accountId, final UUID kbPaymentId, final BigDecimal refundAmount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
-        return withRuntimeCheckForExceptions(new PaymentInfoPlugin() {
-            @Override
-            public UUID getKbPaymentId() {
-                return kbPaymentId;
-            }
-
-            @Override
-            public BigDecimal getAmount() {
-                return null;
-            }
-
-            @Override
-            public Currency getCurrency() {
-                return null;
-            }
-
-            @Override
-            public DateTime getCreatedDate() {
-                return null;
-            }
-
-            @Override
-            public DateTime getEffectiveDate() {
-                return null;
-            }
-
-            @Override
-            public PaymentPluginStatus getStatus() {
-                return null;
-            }
-
-            @Override
-            public String getGatewayError() {
-                return null;
-            }
-
-            @Override
-            public String getGatewayErrorCode() {
-                return null;
-            }
-
-            @Override
-            public String getFirstPaymentReferenceId() {
-                return null;
-            }
-
-            @Override
-            public String getSecondPaymentReferenceId() {
-                return null;
-            }
-
-            @Override
-            public List<PluginProperty> getProperties() {
-                return ImmutableList.<PluginProperty>of();
-            }
-        });
-    }
-
-    @Override
-    public List<PaymentInfoPlugin> getRefundInfo(final UUID kbAccountId, final UUID kbPaymentId, final Iterable<PluginProperty> properties, final TenantContext context) {
-        return Collections.<PaymentInfoPlugin>emptyList();
-    }
-
-    @Override
-    public Pagination<PaymentInfoPlugin> searchRefunds(final String searchKey, final Long offset, final Long limit, final Iterable<PluginProperty> properties, final TenantContext tenantContext) throws PaymentPluginApiException {
-        return new Pagination<PaymentInfoPlugin>() {
-            @Override
-            public Long getCurrentOffset() {
-                return 0L;
-            }
-
-            @Override
-            public Long getNextOffset() {
-                return null;
-            }
-
-            @Override
-            public Long getMaxNbRecords() {
-                return 0L;
-            }
-
-            @Override
-            public Long getTotalNbRecords() {
-                return 0L;
-            }
-
-            @Override
-            public Iterator<PaymentInfoPlugin> iterator() {
+            public Iterator<PaymentTransactionInfoPlugin> iterator() {
                 return null;
             }
         };

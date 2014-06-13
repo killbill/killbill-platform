@@ -25,9 +25,9 @@ import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAsserti
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.osgi.api.PaymentPluginApiWithTestControl;
 import org.killbill.billing.payment.api.PluginProperty;
-import org.killbill.billing.payment.plugin.api.PaymentInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
+import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -62,10 +62,10 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
         final UUID paymentId = UUID.randomUUID();
         final BigDecimal amount = BigDecimal.TEN;
         final Currency currency = Currency.USD;
-        final PaymentInfoPlugin paymentInfoPlugin = paymentPluginApi.processPayment(UUID.randomUUID(), paymentId, UUID.randomUUID(), amount, currency, ImmutableList.<PluginProperty>of(), callContext);
-        Assert.assertEquals(paymentInfoPlugin.getKbPaymentId(), paymentId);
-        Assert.assertEquals(paymentInfoPlugin.getAmount().compareTo(amount), 0);
-        Assert.assertEquals(paymentInfoPlugin.getCurrency(), currency);
+        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.processPayment(UUID.randomUUID(), paymentId, UUID.randomUUID(), UUID.randomUUID(), amount, currency, ImmutableList.<PluginProperty>of(), callContext);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getKbPaymentId(), paymentId);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getAmount().compareTo(amount), 0);
+        Assert.assertEquals(PaymentTransactionInfoPlugin.getCurrency(), currency);
     }
 
     @Test(groups = "slow")
@@ -78,7 +78,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
         paymentPluginApi.setPaymentPluginApiExceptionOnNextCalls(exception);
         try {
-            paymentPluginApi.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+            paymentPluginApi.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
             Assert.fail("Expected to fail with " + exception.toString());
         } catch (final PaymentPluginApiException e) {
             Assert.assertEquals(e.getErrorType(), errorType);
@@ -95,7 +95,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
         paymentPluginApi.setPaymentRuntimeExceptionOnNextCalls(exception);
         try {
-            paymentPluginApi.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+            paymentPluginApi.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
             Assert.fail("Expected to fail with " + exception.toString());
         } catch (final RuntimeException e) {
             Assert.assertEquals(e.getMessage(), message);
