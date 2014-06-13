@@ -33,7 +33,7 @@ public interface UpdateCheckConfig extends KillbillPlatformConfig {
     public boolean shouldSkipUpdateCheck();
 
     @Config(KILL_BILL_NAMESPACE + "server.updateCheck.url")
-    @Default("https://raw.github.com/killbill/killbill/master/server/src/main/resources/update-checker/killbill-server-update-list.properties")
+    @Default("https://raw.github.com/killbill/killbill-platform/master/server/src/main/resources/update-checker/killbill-server-update-list.properties")
     @Description("URL to retrieve the latest version of Kill Bill")
     public URI updateCheckURL();
 

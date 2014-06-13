@@ -20,6 +20,7 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
@@ -29,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
@@ -38,7 +40,17 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private final Properties properties;
 
     public DefaultKillbillConfigSource() {
+        this(ImmutableMap.<String, String>of());
+    }
+
+    public DefaultKillbillConfigSource(final Map<String, String> extraDefaultProperties) {
         this.properties = loadPropertiesFromFileOrSystemProperties();
+        for (final String key : extraDefaultProperties.keySet()) {
+            final String value = extraDefaultProperties.get(key);
+            if (value != null) {
+                properties.put(key, value);
+            }
+        }
         populateDefaultProperties();
     }
 

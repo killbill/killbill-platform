@@ -68,7 +68,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     public static final ImmutableList<String> METRICS_SERVLETS_PATHS = ImmutableList.<String>of("/1.0/healthcheck", "/1.0/metrics", "/1.0/ping", "/1.0/threads");
 
     protected KillbillServerConfig config;
-    protected DefaultKillbillConfigSource configSource;
+    protected KillbillConfigSource configSource;
     protected Injector injector;
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
@@ -103,8 +103,12 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void initializeConfig() {
-        configSource = new DefaultKillbillConfigSource();
+        configSource = getConfigSource();
         config = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource)).build(KillbillServerConfig.class);
+    }
+
+    protected KillbillConfigSource getConfigSource() {
+        return new DefaultKillbillConfigSource();
     }
 
     protected void initializeGuice(final ServletContextEvent event) {
