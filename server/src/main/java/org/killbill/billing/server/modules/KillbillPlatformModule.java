@@ -67,8 +67,6 @@ public class KillbillPlatformModule extends KillBillModule {
         configureBuses();
         configureNotificationQ();
         configureOSGI();
-
-        installKillbillModules();
     }
 
     protected void configureClock() {
@@ -131,8 +129,5 @@ public class KillbillPlatformModule extends KillBillModule {
 
     protected void configureOSGI() {
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource));
-    }
-
-    protected void installKillbillModules() {
     }
 }
