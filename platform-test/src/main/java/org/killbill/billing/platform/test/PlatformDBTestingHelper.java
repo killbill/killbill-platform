@@ -47,7 +47,7 @@ public class PlatformDBTestingHelper {
         return dbTestingHelper;
     }
 
-    private PlatformDBTestingHelper() {
+    protected PlatformDBTestingHelper() {
         if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.h2"))) {
             log.info("Using h2 as the embedded database");
             instance = new H2EmbeddedDB();
