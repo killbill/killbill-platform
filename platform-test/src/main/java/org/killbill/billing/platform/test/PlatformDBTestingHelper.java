@@ -41,9 +41,12 @@ public class PlatformDBTestingHelper {
 
     protected EmbeddedDB instance;
 
-    private static final PlatformDBTestingHelper dbTestingHelper = new PlatformDBTestingHelper();
+    private static PlatformDBTestingHelper dbTestingHelper = null;
 
-    public static PlatformDBTestingHelper get() {
+    public static synchronized PlatformDBTestingHelper get() {
+        if (dbTestingHelper == null) {
+            dbTestingHelper = new PlatformDBTestingHelper();
+        }
         return dbTestingHelper;
     }
 
