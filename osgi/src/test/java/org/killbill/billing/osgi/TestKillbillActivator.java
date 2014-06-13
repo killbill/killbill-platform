@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class TestKillbillActivator /*extends GuicyKillbillTestSuiteNoDB*/ {
+public class TestKillbillActivator {
 
     @Test(groups = "fast")
     public void testPluginNamePatternGood() {
