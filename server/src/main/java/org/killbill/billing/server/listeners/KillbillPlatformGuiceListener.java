@@ -165,18 +165,48 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void startLifecycle() {
+        startLifecycleStage1();
+
         // Fire all Startup levels up to service start
         killbillLifecycle.fireStartupSequencePriorEventRegistration();
 
+        startLifecycleStage2();
+
         // Let's start!
         killbillLifecycle.fireStartupSequencePostEventRegistration();
+
+        startLifecycleStage3();
+    }
+
+    protected void startLifecycleStage1() {
+    }
+
+    protected void startLifecycleStage2() {
+    }
+
+    protected void startLifecycleStage3() {
     }
 
     protected void stopLifecycle() {
+        stopLifecycleStage1();
+
         killbillLifecycle.fireShutdownSequencePriorEventUnRegistration();
+
+        stopLifecycleStage2();
 
         // Complete shutdown sequence
         killbillLifecycle.fireShutdownSequencePostEventUnRegistration();
+
+        stopLifecycleStage3();
+    }
+
+    protected void stopLifecycleStage1() {
+    }
+
+    protected void stopLifecycleStage2() {
+    }
+
+    protected void stopLifecycleStage3() {
     }
 
     protected void stopEmbeddedDB() {
