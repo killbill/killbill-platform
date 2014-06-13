@@ -31,7 +31,6 @@ import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillModule;
-import org.killbill.billing.platform.glue.MetricsModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
@@ -59,14 +58,10 @@ public abstract class TestPlatformModule extends KillBillModule {
         configureNotificationQ();
 
         configureBus();
+
         if (withOSGI) {
             configureExternalBus();
-        }
 
-        // For the buses
-        install(new MetricsModule(configSource));
-
-        if (withOSGI) {
             configureOSGI();
         }
     }
