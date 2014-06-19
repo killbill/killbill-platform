@@ -62,7 +62,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
         final UUID paymentId = UUID.randomUUID();
         final BigDecimal amount = BigDecimal.TEN;
         final Currency currency = Currency.USD;
-        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.processPayment(UUID.randomUUID(), paymentId, UUID.randomUUID(), UUID.randomUUID(), amount, currency, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.purchasePayment(UUID.randomUUID(), paymentId, UUID.randomUUID(), UUID.randomUUID(), amount, currency, ImmutableList.<PluginProperty>of(), callContext);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getKbPaymentId(), paymentId);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getAmount().compareTo(amount), 0);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getCurrency(), currency);
@@ -78,7 +78,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
         paymentPluginApi.setPaymentPluginApiExceptionOnNextCalls(exception);
         try {
-            paymentPluginApi.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+            paymentPluginApi.purchasePayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
             Assert.fail("Expected to fail with " + exception.toString());
         } catch (final PaymentPluginApiException e) {
             Assert.assertEquals(e.getErrorType(), errorType);
@@ -95,7 +95,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
         paymentPluginApi.setPaymentRuntimeExceptionOnNextCalls(exception);
         try {
-            paymentPluginApi.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+            paymentPluginApi.purchasePayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
             Assert.fail("Expected to fail with " + exception.toString());
         } catch (final RuntimeException e) {
             Assert.assertEquals(e.getMessage(), message);

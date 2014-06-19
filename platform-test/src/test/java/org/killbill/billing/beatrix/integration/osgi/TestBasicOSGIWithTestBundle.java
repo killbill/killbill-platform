@@ -92,7 +92,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         final UUID paymentMethodId = UUID.randomUUID();
         final BigDecimal paymentAmount = new BigDecimal("14.32");
         final Currency currency = Currency.USD;
-        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.processPayment(event.getAccountId(), paymentId, transactionId, paymentMethodId, paymentAmount, currency, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.purchasePayment(event.getAccountId(), paymentId, transactionId, paymentMethodId, paymentAmount, currency, ImmutableList.<PluginProperty>of(), callContext);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getKbPaymentId(), paymentId);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getKbTransactionPaymentId(), transactionId);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getAmount().compareTo(paymentAmount), 0);

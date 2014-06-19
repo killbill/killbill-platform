@@ -27,7 +27,7 @@ import org.killbill.billing.invoice.api.InvoicePaymentApi;
 import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
-import org.killbill.billing.payment.api.PaymentApi;
+import org.killbill.billing.payment.api.DirectPaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
 import org.killbill.billing.tenant.api.TenantUserApi;
 import org.killbill.billing.usage.api.UsageUserApi;
@@ -45,7 +45,7 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     private CatalogUserApi catalogUserApi;
     private InvoicePaymentApi invoicePaymentApi;
     private InvoiceUserApi invoiceUserApi;
-    private PaymentApi paymentApi;
+    private DirectPaymentApi paymentApi;
     private TenantUserApi tenantUserApi;
     private UsageUserApi usageUserApi;
     private AuditUserApi auditUserApi;
@@ -81,7 +81,7 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     }
 
     @Inject(optional = true)
-    public void setPaymentApi(final PaymentApi paymentApi) {
+    public void setPaymentApi(final DirectPaymentApi paymentApi) {
         this.paymentApi = paymentApi;
     }
 
@@ -171,7 +171,7 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     }
 
     @Override
-    public PaymentApi getPaymentApi() {
+    public DirectPaymentApi getPaymentApi() {
         return paymentApi;
     }
 

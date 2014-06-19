@@ -61,7 +61,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
         // TODO change plugin not to retrieve the account
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        final PaymentTransactionInfoPlugin res = api.processPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin res = api.purchasePayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
 
         Assert.assertTrue(res.getAmount().compareTo(BigDecimal.TEN) == 0);
@@ -103,7 +103,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
-        final PaymentTransactionInfoPlugin res = api.processRefund(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin res = api.refundPayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
 
         Assert.assertTrue(res.getAmount().compareTo(BigDecimal.TEN) == 0);
@@ -125,18 +125,6 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
 
         final PaymentMethodPlugin paymentMethodPlugin = Mockito.mock(PaymentMethodPlugin.class);
         Mockito.when(paymentMethodPlugin.getExternalPaymentMethodId()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getType()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCCName()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCCType()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCCExpirationMonth()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCCExpirationYear()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCCLast4()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getAddress1()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getAddress2()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCity()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getState()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getZip()).thenReturn(UUID.randomUUID().toString());
-        Mockito.when(paymentMethodPlugin.getCountry()).thenReturn(UUID.randomUUID().toString());
 
         api.addPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), paymentMethodPlugin, true, ImmutableList.<PluginProperty>of(), callContext);
     }

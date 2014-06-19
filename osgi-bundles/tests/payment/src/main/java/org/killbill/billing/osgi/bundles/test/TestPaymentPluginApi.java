@@ -64,12 +64,12 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
     }
 
     @Override
-    public PaymentTransactionInfoPlugin processPayment(final UUID accountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
+    public PaymentTransactionInfoPlugin purchasePayment(final UUID accountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
         return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.PURCHASE, amount, currency);
     }
 
     @Override
-    public PaymentTransactionInfoPlugin processRefund(final UUID accountId, final UUID kbPaymentId, final UUID kbTransactionId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
+    public PaymentTransactionInfoPlugin refundPayment(final UUID accountId, final UUID kbPaymentId, final UUID kbTransactionId, final UUID kbPaymentMethodId, final BigDecimal amount, final Currency currency, final Iterable<PluginProperty> properties, final CallContext context) throws PaymentPluginApiException {
         return getPaymentTransactionInfoPluginResult(kbPaymentId, kbTransactionId, TransactionType.REFUND, amount, currency);
     }
 
