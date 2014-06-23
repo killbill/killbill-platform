@@ -59,7 +59,6 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
     public void testProcessPayment() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
-        // TODO change plugin not to retrieve the account
         final DateTime beforeCall = new DateTime().toDateTime(DateTimeZone.UTC).minusSeconds(1);
         final PaymentTransactionInfoPlugin res = api.purchasePayment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), BigDecimal.TEN, Currency.USD, ImmutableList.<PluginProperty>of(), callContext);
         final DateTime afterCall = new DateTime().toDateTime(DateTimeZone.UTC).plusSeconds(1);
