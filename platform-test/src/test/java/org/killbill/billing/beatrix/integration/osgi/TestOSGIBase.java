@@ -22,7 +22,6 @@ import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 
-import org.killbill.billing.beatrix.integration.osgi.glue.TestApiListener;
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.lifecycle.api.BusService;
@@ -79,7 +78,6 @@ public class TestOSGIBase {
 
     protected final TestKillbillConfigSource configSource;
     protected CallContext callContext;
-    protected TestApiListener busHandler;
 
     public TestOSGIBase() {
         try {
@@ -92,7 +90,6 @@ public class TestOSGIBase {
         }
 
         callContext = Mockito.mock(CallContext.class);
-        busHandler = new TestApiListener();
     }
 
     @BeforeSuite(groups = "slow")
@@ -114,24 +111,15 @@ public class TestOSGIBase {
         }
 
         clock.resetDeltaFromReality();
-        busHandler.reset();
 
         // Start services
         lifecycle.fireStartupSequencePriorEventRegistration();
-        busService.getBus().register(busHandler);
         lifecycle.fireStartupSequencePostEventRegistration();
-
-        // Make sure we start with a clean state
-        busHandler.assertListenerStatus();
     }
 
     @AfterMethod(groups = "slow")
     public void afterMethod() throws Exception {
-        // Make sure we finish in a clean state
-        busHandler.assertListenerStatus();
-
         lifecycle.fireShutdownSequencePriorEventUnRegistration();
-        busService.getBus().unregister(busHandler);
         lifecycle.fireShutdownSequencePostEventUnRegistration();
     }
 

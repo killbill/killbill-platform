@@ -45,7 +45,6 @@ public class TestIntegrationModule extends KillBillModule {
         install(new TestPlatformModuleWithEmbeddedDB(configSource, true, (TestKillbillConfigSource) configSource));
 
         bind(Clock.class).to(ClockMock.class).asEagerSingleton();
-        bind(TestApiListener.class).asEagerSingleton();
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentPluginApi>(PaymentPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CurrencyPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CurrencyPluginApi>(CurrencyPluginApi.class));
     }

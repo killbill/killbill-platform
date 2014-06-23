@@ -18,14 +18,35 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+
+import org.killbill.billing.ObjectType;
+import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
+import org.killbill.billing.notification.plugin.api.ExtBusEvent;
+import org.killbill.billing.notification.plugin.api.ExtBusEventType;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import com.google.common.base.Charsets;
+import com.jayway.awaitility.Awaitility;
 
 public class TestJrubyNotificationPlugin extends TestOSGIBase {
 
     private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-notification-test";
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
+    private static final Path MAGIC_FILE_PATH = Paths.get(FileSystems.getDefault().getSeparator() + "var", "tmp", "killbill-notification-test.txt");
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
@@ -36,8 +57,63 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
         setupTest.setupJrubyBundle();
     }
 
+    @BeforeMethod(groups = "slow")
+    @Override
+    public void beforeMethod() throws Exception {
+        super.beforeMethod();
+
+        try {
+            cleanupMagicFile();
+        } catch (final NoSuchFileException ignored) {
+        }
+    }
+
+    @AfterMethod(groups = "slow")
+    @Override
+    public void afterMethod() throws Exception {
+        super.afterMethod();
+
+        Assert.assertFalse(Files.exists(MAGIC_FILE_PATH));
+    }
+
     @Test(groups = "slow")
     public void testOnEventForAccountCreation() throws Exception {
-        // TODO change the ruby plugin not to interact with tags - use events instead?
+        final UUID objectId = UUID.randomUUID();
+        final UUID accountId = UUID.randomUUID();
+        final UUID tenantId = UUID.randomUUID();
+
+        // Post ACCOUNT_CREATION event
+        final ExternalBusTestEvent firstEvent = new ExternalBusTestEvent(objectId, ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CREATION, accountId, tenantId, 0L, 1L, UUID.randomUUID());
+        externalBus.post(firstEvent);
+
+        // The plugin should have created a TAG_CREATION event
+        checkThePluginGotTheEvent(firstEvent, ExtBusEventType.TAG_CREATION);
+
+        // Post ACCOUNT_CHANGE event
+        final ExternalBusTestEvent secondEvent = new ExternalBusTestEvent(objectId, ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CHANGE, accountId, tenantId, 0L, 1L, UUID.randomUUID());
+        externalBus.post(secondEvent);
+
+        // The plugin should have created a TAG_DELETION event
+        checkThePluginGotTheEvent(secondEvent, ExtBusEventType.TAG_DELETION);
+    }
+
+    private void checkThePluginGotTheEvent(final ExtBusEvent extBusEvent, final ExtBusEventType expectedEventType) throws Exception {
+        Awaitility.await()
+                  .until(new Callable<Boolean>() {
+                      @Override
+                      public Boolean call() throws Exception {
+                          return Files.exists(MAGIC_FILE_PATH);
+                      }
+                  });
+
+        final String actualContent = com.google.common.io.Files.toString(new File(MAGIC_FILE_PATH.toUri()), Charsets.UTF_8);
+        final String expectedContent = String.format("%s-%s-%s-%s-%s\n", expectedEventType, ObjectType.ACCOUNT, extBusEvent.getObjectId(), extBusEvent.getAccountId(), extBusEvent.getTenantId());
+        Assert.assertEquals(actualContent, expectedContent);
+
+        cleanupMagicFile();
+    }
+
+    private void cleanupMagicFile() throws IOException {
+        Files.delete(MAGIC_FILE_PATH);
     }
 }
