@@ -49,6 +49,12 @@
         <system>Github</system>
         <url>http://github.com/killbill/killbill-platform</url>
     </issueManagement>
+    <distributionManagement>
+        <repository>
+            <id>bintray</id>
+            <url>https://api.bintray.com/maven/killbill/maven/${project.artifactId}</url>
+        </repository>
+    </distributionManagement>
     <dependencyManagement>
         <dependencies>
             <dependency>
