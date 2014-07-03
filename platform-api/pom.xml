@@ -21,11 +21,11 @@
     <parent>
         <artifactId>killbill-platform</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.0.1</version>
+        <version>0.0.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-api</artifactId>
     <packaging>jar</packaging>
     <name>killbill-platform-api</name>
-    <dependencies></dependencies>
+    <dependencies />
 </project>
