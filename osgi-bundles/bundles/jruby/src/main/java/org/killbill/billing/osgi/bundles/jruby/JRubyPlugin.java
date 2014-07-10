@@ -199,6 +199,8 @@ public abstract class JRubyPlugin {
             final StringBuilder builder = new StringBuilder();
             builder.append("ENV[\"GEM_HOME\"] = \"").append(pluginLibdir).append("\"").append("\n");
             builder.append("ENV[\"GEM_PATH\"] = ENV[\"GEM_HOME\"]\n");
+            // We need to set it really early, as the environment is set statically, as soon as Sinatra is loaded
+            builder.append("ENV[\"RACK_ENV\"] = \"production\"\n");
             // Always require the Killbill gem
             builder.append("gem 'killbill'\n");
             builder.append("require 'killbill'\n");
