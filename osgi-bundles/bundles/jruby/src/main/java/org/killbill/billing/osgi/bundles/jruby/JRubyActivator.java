@@ -108,6 +108,9 @@ public class JRubyActivator extends KillbillActivatorBase {
         // Default to the plugin root dir if no jruby plugins specific configuration directory was specified
         killbillServices.put("conf_dir", Objects.firstNonNull(JRUBY_PLUGINS_CONF_DIR, rubyConfig.getPluginVersionRoot().getAbsolutePath()));
 
+        // Start the plugin synchronously
+        doStartPlugin(pluginMain, context, killbillServices);
+
         // Setup the restart mechanism. This is useful for hotswapping plugin code
         // The principle is similar to the one in Phusion Passenger:
         // http://www.modrails.com/documentation/Users%20guide%20Apache.html#_redeploying_restarting_the_ruby_on_rails_application
@@ -122,8 +125,6 @@ public class JRubyActivator extends KillbillActivatorBase {
             logService.log(LogService.LOG_WARNING, tmpDirPath + " is not a directory, the restart mechanism is disabled");
             return;
         }
-        // Start the plugin synchronously and schedule the restart logic
-        doStartPlugin(pluginMain, context, killbillServices);
 
         restartFuture = Executors.newSingleThreadScheduledExecutor("jruby-restarter-" + pluginMain)
                                  .scheduleWithFixedDelay(new Runnable() {
