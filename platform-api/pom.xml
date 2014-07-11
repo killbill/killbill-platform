@@ -27,5 +27,5 @@
     <artifactId>killbill-platform-api</artifactId>
     <packaging>jar</packaging>
     <name>killbill-platform-api</name>
-    <dependencies />
+    <dependencies></dependencies>
 </project>

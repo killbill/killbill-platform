@@ -33,7 +33,18 @@
         <module name="killbill-osgi-bundles-test-payment" />
         <module name="killbill-osgi-bundles-webconsolebranding" />
         <module name="killbill-platform-api" />
+        <module name="killbill-platform-base" />
+        <module name="killbill-platform-lifecycle" />
+        <module name="killbill-platform-osgi" />
         <module name="killbill-platform-osgi-api" />
+        <module name="killbill-platform-osgi-bundles-jruby" />
+        <module name="killbill-platform-osgi-bundles-lib-killbill" />
+        <module name="killbill-platform-osgi-bundles-lib-slf4j-osgi" />
+        <module name="killbill-platform-osgi-bundles-logger" />
+        <module name="killbill-platform-osgi-bundles-test-beatrix" />
+        <module name="killbill-platform-osgi-bundles-test-payment" />
+        <module name="killbill-platform-osgi-bundles-webconsolebranding" />
+        <module name="killbill-platform-server" />
         <module name="killbill-platform-test" />
         <module name="killbill-server" />
       </profile>
@@ -56,7 +67,23 @@
       <module name="killbill-osgi-test-bundles" target="1.6" />
       <module name="killbill-platform" target="1.6" />
       <module name="killbill-platform-api" target="1.6" />
+      <module name="killbill-platform-base" target="1.6" />
+      <module name="killbill-platform-lifecycle" target="1.6" />
+      <module name="killbill-platform-osgi" target="1.6" />
+      <module name="killbill-platform-osgi-all-bundles" target="1.6" />
       <module name="killbill-platform-osgi-api" target="1.6" />
+      <module name="killbill-platform-osgi-bundles" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-defaultbundles" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-jruby" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-lib-killbill" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-lib-slf4j-osgi" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-logger" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-test-beatrix" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-test-payment" target="1.6" />
+      <module name="killbill-platform-osgi-bundles-webconsolebranding" target="1.6" />
+      <module name="killbill-platform-osgi-lib-bundles" target="1.6" />
+      <module name="killbill-platform-osgi-test-bundles" target="1.6" />
+      <module name="killbill-platform-server" target="1.6" />
       <module name="killbill-platform-test" target="1.6" />
       <module name="killbill-server" target="1.6" />
     </bytecodeTargetLevel>
