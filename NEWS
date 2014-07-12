@@ -1,3 +1,6 @@
+0.0.5
+  Update ruby test tar.gz after payment API change
+
 0.0.4
   Remove integration with https://bintray.com/
   Update killbill-oss-parent to 0.7.14
