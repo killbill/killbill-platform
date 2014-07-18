@@ -19,12 +19,14 @@
 package org.killbill.billing.lifecycle.glue;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.killbill.bus.DefaultPersistentBus;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.bus.api.PersistentBusConfig;
 import org.killbill.clock.Clock;
+import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.jdbi.v2.IDBI;
 
 import com.codahale.metrics.MetricRegistry;
@@ -42,7 +44,7 @@ public class PersistentBusProvider implements Provider<PersistentBus> {
     }
 
     @Inject
-    public void initialize(final IDBI dbi, final Clock clock, final MetricRegistry metricRegistry) {
+    public void initialize(@Named(DefaultQueueLifecycle.QUEUE_NAME) final IDBI dbi, final Clock clock, final MetricRegistry metricRegistry) {
         this.dbi = dbi;
         this.clock = clock;
         this.metricRegistry = metricRegistry;

@@ -73,7 +73,7 @@ public class PlatformDBTestingHelper {
     }
 
     public synchronized IDBI getDBI() throws IOException {
-        return new DBIProvider(instance.getDataSource()).get();
+        return new DBIProvider(null, instance.getDataSource()).get();
     }
 
     public synchronized void start() throws IOException {

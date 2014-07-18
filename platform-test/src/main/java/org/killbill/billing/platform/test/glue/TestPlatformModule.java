@@ -34,7 +34,10 @@ import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.jdbi.v2.IDBI;
+
+import com.google.inject.name.Names;
 
 public abstract class TestPlatformModule extends KillBillModule {
 
@@ -74,6 +77,7 @@ public abstract class TestPlatformModule extends KillBillModule {
         try {
             bind(DataSource.class).toInstance(instance.getDataSource());
             bind(IDBI.class).toInstance(platformDBTestingHelper.getDBI());
+            bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(platformDBTestingHelper.getDBI());
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }

@@ -36,10 +36,13 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.killbill.commons.jdbi.guice.DataSourceProvider;
+import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
+
+import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillModule {
 
@@ -49,6 +52,7 @@ public class KillbillPlatformModule extends KillBillModule {
 
     protected DaoConfig daoConfig;
     protected DBI dbi;
+    protected DBI queueDbi;
     protected EmbeddedDB embeddedDB;
 
     public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
@@ -90,15 +94,23 @@ public class KillbillPlatformModule extends KillBillModule {
         final DataSource dataSource = new DataSourceProvider(daoConfig).get();
         bind(DataSource.class).toInstance(dataSource);
 
-        final DBIProvider dbiProvider = new DBIProvider(dataSource);
-//        final BasicSqlNameStrategy basicSqlNameStrategy = new BasicSqlNameStrategy();
-//        // TODO
-//        final TimingCollector timingCollector = new InstrumentedTimingCollector(null, basicSqlNameStrategy);
-//        dbiProvider.setTimingCollector(timingCollector);
+        final DBIProvider dbiProvider = new DBIProvider(daoConfig, dataSource);
+        //        final BasicSqlNameStrategy basicSqlNameStrategy = new BasicSqlNameStrategy();
+        //        final TimingCollector timingCollector = new InstrumentedTimingCollector(null, basicSqlNameStrategy);
+        //        dbiProvider.setTimingCollector(timingCollector);
 
         dbi = (DBI) dbiProvider.get();
         bind(DBI.class).toInstance(dbi);
         bind(IDBI.class).to(DBI.class).asEagerSingleton();
+
+        final DBIProvider queueDbiProvider = new DBIProvider(null, dataSource);
+        //        final BasicSqlNameStrategy basicSqlNameStrategy = new BasicSqlNameStrategy();
+        //        final TimingCollector timingCollector = new InstrumentedTimingCollector(null, basicSqlNameStrategy);
+        //        queueDbiProvider.setTimingCollector(timingCollector);
+
+        queueDbi = (DBI) queueDbiProvider.get();
+        bind(DBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(queueDbi);
+        bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(queueDbi);
     }
 
     protected void configureConfig() {
