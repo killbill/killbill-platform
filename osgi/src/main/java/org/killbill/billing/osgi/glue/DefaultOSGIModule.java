@@ -63,16 +63,21 @@ public class DefaultOSGIModule extends KillBillModule {
         final OSGIConfig config = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIConfig.class);
         bind(OSGIConfig.class).toInstance(config);
         bind(OSGIConfigProperties.class).toInstance(osgiConfigProperties);
-
-        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
-        bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
-        bind(DaoConfig.class).toInstance(osgiDataSourceConfig);
     }
 
     protected void installOSGIServlet() {
         bind(new TypeLiteral<OSGIServiceRegistration<Servlet>>() {
         }).to(DefaultServletRouter.class).asEagerSingleton();
         bind(HttpServlet.class).annotatedWith(Names.named(OSGI_NAMED)).to(OSGIServlet.class).asEagerSingleton();
+    }
+
+    protected void installDataSource() {
+        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
+        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(osgiDataSourceConfig);
+
+        final DataSource dataSource = new DataSourceProvider(osgiDataSourceConfig).get();
+        bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(dataSource);
     }
 
     protected void installHttpService() {
@@ -84,6 +89,7 @@ public class DefaultOSGIModule extends KillBillModule {
         installConfig();
         installOSGIServlet();
         installHttpService();
+        installDataSource();
 
         bind(OSGIService.class).to(DefaultOSGIService.class).asEagerSingleton();
 
@@ -93,6 +99,5 @@ public class DefaultOSGIModule extends KillBillModule {
         bind(PluginConfigServiceApi.class).to(DefaultPluginConfigServiceApi.class).asEagerSingleton();
         bind(OSGIKillbill.class).to(DefaultOSGIKillbill.class).asEagerSingleton();
         bind(KillbillEventObservable.class).asEagerSingleton();
-        bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toProvider(DataSourceProvider.class).asEagerSingleton();
     }
 }
