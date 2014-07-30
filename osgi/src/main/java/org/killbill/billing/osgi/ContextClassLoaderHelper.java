@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.killbill.billing.platform.profiling.Profiling;
+import org.killbill.billing.platform.profiling.Profiling.WithProfilingCallback;
+
 public class ContextClassLoaderHelper {
 
 
@@ -59,7 +62,13 @@ public class ContextClassLoaderHelper {
                 final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
-                    return method.invoke(service, args);
+                    final Profiling<Object> prof = new Profiling<Object>();
+                    return prof.executeWithProfiling("PLUGIN:" + service.getClass().getSimpleName() + ":" + method.getName(), new WithProfilingCallback() {
+                        @Override
+                        public Object execute() throws Throwable {
+                            return method.invoke(service, args);
+                        }
+                    });
                 } catch (final InvocationTargetException e) {
                     if (e.getCause() != null) {
                         throw e.getCause();
