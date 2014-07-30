@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.killbill.billing.platform.profiling.Profiling;
-import org.killbill.billing.platform.profiling.Profiling.WithProfilingCallback;
+import org.killbill.commons.profiling.Profiling;
+import org.killbill.commons.profiling.Profiling.WithProfilingCallback;
 
 public class ContextClassLoaderHelper {
 
