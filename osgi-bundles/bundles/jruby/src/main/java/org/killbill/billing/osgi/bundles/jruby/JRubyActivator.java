@@ -160,7 +160,9 @@ public class JRubyActivator extends KillbillActivatorBase {
         withContextClassLoader(new PluginCall() {
             @Override
             public void doCall() {
-                restartFuture.cancel(true);
+                if (restartFuture != null) {
+                    restartFuture.cancel(true);
+                }
                 doStopPlugin(context);
                 killbillAPI.close();
                 logService.close();
