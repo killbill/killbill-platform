@@ -36,7 +36,7 @@ public class JRubyNotificationPlugin extends JRubyPlugin implements OSGIKillbill
     @Override
     public void handleKillbillEvent(final ExtBusEvent killbillEvent) {
         try {
-            callWithRuntimeAndChecking(new PluginCallback(VALIDATION_PLUGIN_TYPE.NOTIFICATION) {
+            callWithRuntimeAndChecking(new PluginCallback() {
                 @Override
                 public Void doCall(final Ruby runtime) throws PaymentPluginApiException {
                     ((NotificationPluginApi) pluginInstance).onEvent(killbillEvent);

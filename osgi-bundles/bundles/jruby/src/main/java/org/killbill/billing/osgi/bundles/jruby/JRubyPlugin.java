@@ -175,43 +175,8 @@ public abstract class JRubyPlugin {
         System.out.println("JRUBY :: CHECK VALID :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
     }
 
-    private void checkValidNotificationPlugin() throws IllegalArgumentException {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID NOTIFICATION :: START :: " + startTime);
-        try {
-            container.runScriptlet(checkInstanceOfPlugin(KILLBILL_PLUGIN_NOTIFICATION));
-        } catch (final EvalFailedException e) {
-            throw new IllegalArgumentException(e);
-        }
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID NOTIFICATION :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
-    }
-
-    private void checkValidPaymentPlugin() throws IllegalArgumentException {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID PAYMENT :: START :: " + startTime);
-        try {
-            container.runScriptlet(checkInstanceOfPlugin(KILLBILL_PLUGIN_PAYMENT));
-        } catch (final EvalFailedException e) {
-            throw new IllegalArgumentException(e);
-        }
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID PAYMENT :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
-    }
-
-    private void checkValidCurrencyPlugin() throws IllegalArgumentException {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID PAYMENT :: START :: " + startTime);
-        try {
-            container.runScriptlet(checkInstanceOfPlugin(KILLBILL_PLUGIN_CURRENCY));
-        } catch (final EvalFailedException e) {
-            throw new IllegalArgumentException(e);
-        }
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID CURRENCY :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
-    }
-
     private String checkInstanceOfPlugin(final String baseClass) {
+        // Note: this call can be quite expensive, between 50ms and 100+ms for common plugins
         final StringBuilder builder = new StringBuilder(getRequireLine());
         builder.append("raise ArgumentError.new('Invalid plugin: ")
                .append(pluginMainClass)
@@ -283,26 +248,9 @@ public abstract class JRubyPlugin {
         return scriptingContainer;
     }
 
-    public enum VALIDATION_PLUGIN_TYPE {
-        NOTIFICATION,
-        PAYMENT,
-        CURRENCY,
-        NONE
-    }
-
     protected abstract class PluginCallback<T> {
 
-        private final VALIDATION_PLUGIN_TYPE pluginType;
-
-        public PluginCallback(final VALIDATION_PLUGIN_TYPE pluginType) {
-            this.pluginType = pluginType;
-        }
-
         public abstract T doCall(final Ruby runtime) throws PaymentPluginApiException;
-
-        public VALIDATION_PLUGIN_TYPE getPluginType() {
-            return pluginType;
-        }
     }
 
     protected <T> T callWithRuntimeAndChecking(final PluginCallback<T> cb) throws PaymentPluginApiException {
@@ -311,20 +259,6 @@ public abstract class JRubyPlugin {
         synchronized (pluginMonitor) {
             try {
                 checkPluginIsRunning();
-
-                switch (cb.getPluginType()) {
-                    case NOTIFICATION:
-                        checkValidNotificationPlugin();
-                        break;
-                    case PAYMENT:
-                        checkValidPaymentPlugin();
-                        break;
-                    case CURRENCY:
-                        checkValidCurrencyPlugin();
-                        break;
-                    default:
-                        break;
-                }
 
                 final Ruby runtime = getRuntime();
                 final long startTimeCall = System.nanoTime();

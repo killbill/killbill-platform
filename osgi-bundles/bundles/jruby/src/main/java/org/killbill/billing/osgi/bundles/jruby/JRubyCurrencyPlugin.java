@@ -64,7 +64,7 @@ public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginAp
     @Override
     public Set<Currency> getBaseCurrencies() {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<Set<Currency>>(VALIDATION_PLUGIN_TYPE.CURRENCY) {
+            return callWithRuntimeAndChecking(new PluginCallback<Set<Currency>>() {
                 @Override
                 public Set<Currency> doCall(final Ruby runtime) throws PaymentPluginApiException {
                     return ((CurrencyPluginApi) pluginInstance).getBaseCurrencies();
@@ -78,7 +78,7 @@ public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginAp
     @Override
     public DateTime getLatestConversionDate(final Currency currency) {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<DateTime>(VALIDATION_PLUGIN_TYPE.CURRENCY) {
+            return callWithRuntimeAndChecking(new PluginCallback<DateTime>() {
                 @Override
                 public DateTime doCall(final Ruby runtime) throws PaymentPluginApiException {
                     return ((CurrencyPluginApi) pluginInstance).getLatestConversionDate(currency);
@@ -92,7 +92,7 @@ public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginAp
     @Override
     public SortedSet<DateTime> getConversionDates(final Currency currency) {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<SortedSet<DateTime>>(VALIDATION_PLUGIN_TYPE.CURRENCY) {
+            return callWithRuntimeAndChecking(new PluginCallback<SortedSet<DateTime>>() {
                 @Override
                 public SortedSet<DateTime> doCall(final Ruby runtime) throws PaymentPluginApiException {
                     return ((CurrencyPluginApi) pluginInstance).getConversionDates(currency);
@@ -106,7 +106,7 @@ public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginAp
     @Override
     public Set<Rate> getCurrentRates(final Currency currency) {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>>(VALIDATION_PLUGIN_TYPE.CURRENCY) {
+            return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>>() {
                 @Override
                 public Set<Rate> doCall(final Ruby runtime) throws PaymentPluginApiException {
                     return ((CurrencyPluginApi) pluginInstance).getCurrentRates(currency);
@@ -120,7 +120,7 @@ public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginAp
     @Override
     public Set<Rate> getRates(final Currency currency, final DateTime time) {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>>(VALIDATION_PLUGIN_TYPE.CURRENCY) {
+            return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>>() {
                 @Override
                 public Set<Rate> doCall(final Ruby runtime) throws PaymentPluginApiException {
                     return ((CurrencyPluginApi) pluginInstance).getRates(currency, time);
