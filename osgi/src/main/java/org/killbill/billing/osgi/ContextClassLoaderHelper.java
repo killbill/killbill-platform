@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.killbill.commons.profiling.Profiling;
 import org.killbill.commons.profiling.Profiling.WithProfilingCallback;
+import org.killbill.commons.profiling.ProfilingFeature.ProfilingFeatureType;
 
 public class ContextClassLoaderHelper {
 
@@ -63,7 +64,7 @@ public class ContextClassLoaderHelper {
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                     final Profiling<Object> prof = new Profiling<Object>();
-                    return prof.executeWithProfiling("PLUGIN:" + service.getClass().getSimpleName() + ":" + method.getName(), new WithProfilingCallback() {
+                    return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, service.getClass().getSimpleName() + ":" + method.getName(), new WithProfilingCallback() {
                         @Override
                         public Object execute() throws Throwable {
                             return method.invoke(service, args);
