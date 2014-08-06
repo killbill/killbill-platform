@@ -104,12 +104,6 @@ public abstract class JRubyPlugin {
         pluginInstance.callMethod(START_PLUGIN_RUBY_METHOD_NAME);
         checkPluginIsRunning();
         registerHttpServlet();
-
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: DUMMY RUBY CALL :: START :: " + startTime);
-        container.runScriptlet("raise ValueError unless 1 + 1 == 2");
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: DUMMY RUBY CALL :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
     }
 
     public synchronized void stopPlugin(final BundleContext context) {
@@ -144,35 +138,23 @@ public abstract class JRubyPlugin {
     }
 
     private void checkPluginIsRunning() {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK RUNNING :: START :: " + startTime);
         if (pluginInstance == null || !(Boolean) pluginInstance.callMethod("is_active").toJava(Boolean.class)) {
             throw new IllegalStateException(String.format("Plugin %s didn't start properly", pluginMainClass));
         }
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK RUNNING :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
     }
 
     private void checkPluginIsStopped() {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK STOPPED :: START :: " + startTime);
         if (pluginInstance == null || (Boolean) pluginInstance.callMethod("is_active").toJava(Boolean.class)) {
             throw new IllegalStateException(String.format("Plugin %s didn't stop properly", pluginMainClass));
         }
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK STOPPED :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
     }
 
     private void checkValidPlugin() {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID :: START :: " + startTime);
         try {
             container.runScriptlet(checkInstanceOfPlugin(KILLBILL_PLUGIN_BASE));
         } catch (final EvalFailedException e) {
             throw new IllegalArgumentException(e);
         }
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: CHECK VALID :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
     }
 
     private String checkInstanceOfPlugin(final String baseClass) {
@@ -229,12 +211,7 @@ public abstract class JRubyPlugin {
     }
 
     private Ruby getRuntime() {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: GET RUNTIME :: START :: " + startTime);
-        final Ruby runtime = pluginInstance.getMetaClass().getRuntime();
-        final long endTime = System.nanoTime();
-        System.out.println("JRUBY :: GET RUNTIME :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
-        return runtime;
+        return pluginInstance.getMetaClass().getRuntime();
     }
 
     private ScriptingContainer setupScriptingContainer() {
@@ -254,26 +231,15 @@ public abstract class JRubyPlugin {
     }
 
     protected <T> T callWithRuntimeAndChecking(final PluginCallback<T> cb) throws PaymentPluginApiException {
-        final long startTime = System.nanoTime();
-        System.out.println("JRUBY :: CALL RUBY :: START :: " + startTime);
         synchronized (pluginMonitor) {
             try {
                 checkPluginIsRunning();
 
                 final Ruby runtime = getRuntime();
-                final long startTimeCall = System.nanoTime();
-                System.out.println("JRUBY :: ACTUAL RUBY CALL :: START :: " + startTimeCall);
-                final T t = cb.doCall(runtime);
-                final long endTimeCall = System.nanoTime();
-                System.out.println("JRUBY :: ACTUAL RUBY CALL :: END :: " + endTimeCall + " (" + (endTimeCall - startTimeCall) / 1000000 + " ms)");
-
-                return t;
+                return cb.doCall(runtime);
             } catch (final RuntimeException e) {
                 log.warn("RuntimeException in jruby plugin ", e);
                 throw e;
-            } finally {
-                final long endTime = System.nanoTime();
-                System.out.println("JRUBY :: CALL RUBY :: END :: " + endTime + " (" + (endTime - startTime) / 1000000 + " ms)");
             }
         }
     }
