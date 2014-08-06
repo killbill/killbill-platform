@@ -174,6 +174,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.crypto," +
              "javax.crypto.spec," +
              "javax.management," +
+             "javax.naming," +
              "javax.servlet;version=3.0," +
              "javax.servlet.http;version=3.0," +
 

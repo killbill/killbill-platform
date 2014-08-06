@@ -32,6 +32,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
+import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.queue.DefaultQueueLifecycle;
@@ -67,6 +68,8 @@ public abstract class TestPlatformModule extends KillBillModule {
 
             configureOSGI();
         }
+
+        configureJNDI();
     }
 
     protected void configureEmbeddedDB() {
@@ -105,5 +108,9 @@ public abstract class TestPlatformModule extends KillBillModule {
 
     protected void configureOSGI() {
         install(new DefaultOSGIModule(configSource, osgiConfigProperties));
+    }
+
+    protected void configureJNDI() {
+        bind(JNDIManager.class).asEagerSingleton();
     }
 }

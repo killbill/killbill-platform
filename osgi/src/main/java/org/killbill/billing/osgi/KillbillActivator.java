@@ -39,6 +39,7 @@ import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
+import org.killbill.billing.platform.jndi.JNDIManager;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
@@ -52,10 +53,11 @@ import com.google.inject.Inject;
 
 public class KillbillActivator implements BundleActivator, ServiceListener {
 
-    final static int PLUGIN_NAME_MAX_LENGTH = 40;
-    final static Pattern PLUGIN_NAME_PATTERN = Pattern.compile("\\p{Lower}(?:\\p{Lower}|\\d|-|_)*");
+    static final int PLUGIN_NAME_MAX_LENGTH = 40;
+    static final Pattern PLUGIN_NAME_PATTERN = Pattern.compile("\\p{Lower}(?:\\p{Lower}|\\d|-|_)*");
 
-    private final static Logger logger = LoggerFactory.getLogger(KillbillActivator.class);
+    private static final Logger logger = LoggerFactory.getLogger(KillbillActivator.class);
+    private static final String KILLBILL_OSGI_JDBC_JNDI_NAME = "killbill/osgi/jdbc";
 
     private final OSGIKillbill osgiKillbill;
     private final HttpService defaultHttpService;
@@ -63,6 +65,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final KillbillEventObservable observable;
     private final OSGIKillbillRegistrar registrar;
     private final OSGIConfigProperties configProperties;
+    private final JNDIManager jndiManager;
 
     private final List<OSGIServiceRegistration> allRegistrationHandlers;
 
@@ -73,12 +76,14 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
                              final OSGIKillbill osgiKillbill,
                              final HttpService defaultHttpService,
                              final KillbillEventObservable observable,
-                             final OSGIConfigProperties configProperties) {
+                             final OSGIConfigProperties configProperties,
+                             final JNDIManager jndiManager) {
         this.osgiKillbill = osgiKillbill;
         this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
         this.observable = observable;
         this.configProperties = configProperties;
+        this.jndiManager = jndiManager;
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistration>();
     }
@@ -114,10 +119,14 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
 
         context.addServiceListener(this);
+
+        jndiManager.export(KILLBILL_OSGI_JDBC_JNDI_NAME, dataSource);
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
+        jndiManager.unExport(KILLBILL_OSGI_JDBC_JNDI_NAME);
+
         this.context = null;
         context.removeServiceListener(this);
         observable.unregister();

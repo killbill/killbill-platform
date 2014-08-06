@@ -61,9 +61,8 @@ public class TestKillbillActivator {
         Assert.assertFalse(m.matches());
     }
 
-    @Test(groups = "false")
+    @Test(groups = "fast")
     public void testPluginNameLength() {
-
         final String pluginNameGood = "foofofoSuperFoo";
         Assert.assertTrue(pluginNameGood.length() < KillbillActivator.PLUGIN_NAME_MAX_LENGTH);
 

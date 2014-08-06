@@ -28,6 +28,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
+import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
@@ -71,6 +72,7 @@ public class KillbillPlatformModule extends KillBillModule {
         configureBuses();
         configureNotificationQ();
         configureOSGI();
+        configureJNDI();
     }
 
     protected void configureClock() {
@@ -141,5 +143,9 @@ public class KillbillPlatformModule extends KillBillModule {
 
     protected void configureOSGI() {
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource));
+    }
+
+    protected void configureJNDI() {
+        bind(JNDIManager.class).asEagerSingleton();
     }
 }
