@@ -19,6 +19,7 @@
 package org.killbill.billing.platform.test.config;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +27,8 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
+import org.killbill.billing.platform.test.PlatformDBTestingHelper;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
@@ -68,6 +71,23 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this.jdbcPassword = jdbcPassword;
         this.extraDefaults = extraDefaults;
         // extraDefaults changed, need to reload defaults
+        populateDefaultProperties();
+    }
+
+    public TestKillbillConfigSource(final String file, final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        super(file);
+
+        // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
+        // driver at startup, h2 loads it statically and we need System Properties set at that point
+        populateDefaultProperties();
+
+        final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
+        final EmbeddedDB instance = dbTestingHelper.getInstance();
+        this.jdbcConnectionString = instance.getJdbcConnectionString();
+        this.jdbcUsername = instance.getUsername();
+        this.jdbcPassword = instance.getPassword();
+        this.extraDefaults = ImmutableMap.<String, String>of();
+        // Need to reload default to set the correct jdbc properties
         populateDefaultProperties();
     }
 
