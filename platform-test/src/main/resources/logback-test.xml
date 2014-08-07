@@ -32,6 +32,9 @@
     <logger name="org.killbill.billing.server.updatechecker" level="INFO"/>
     <logger name="org.eclipse" level="INFO"/>
 
+    <!-- Turn off jdbc logging by default -->
+    <logger name="jdbc" level="OFF"/>
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>

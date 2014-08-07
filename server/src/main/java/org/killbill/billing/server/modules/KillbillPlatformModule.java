@@ -29,6 +29,7 @@ import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
+import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
@@ -93,7 +94,8 @@ public class KillbillPlatformModule extends KillBillModule {
         daoConfig = new ConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
         bind(DaoConfig.class).toInstance(daoConfig);
 
-        final DataSource dataSource = new DataSourceProvider(daoConfig).get();
+        final DataSource realDataSource = new DataSourceProvider(daoConfig).get();
+        final DataSource dataSource = new ReferenceableDataSourceSpy<DataSource>(realDataSource);
         bind(DataSource.class).toInstance(dataSource);
 
         final DBIProvider dbiProvider = new DBIProvider(daoConfig, dataSource);

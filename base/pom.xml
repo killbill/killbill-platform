@@ -42,6 +42,10 @@
             <artifactId>guice</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.bgee.log4jdbc-log4j2</groupId>
+            <artifactId>log4jdbc-log4j2-jdbc4</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-api</artifactId>
         </dependency>

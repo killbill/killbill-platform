@@ -21,6 +21,9 @@ package org.killbill.billing.platform.test;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.sql.DataSource;
+
+import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLEmbeddedDB;
@@ -73,7 +76,13 @@ public class PlatformDBTestingHelper {
     }
 
     public synchronized IDBI getDBI() throws IOException {
-        return new DBIProvider(null, instance.getDataSource()).get();
+        final DataSource dataSource = getDataSource();
+        return new DBIProvider(null, dataSource).get();
+    }
+
+    public DataSource getDataSource() throws IOException {
+        final DataSource realDataSource = instance.getDataSource();
+        return new ReferenceableDataSourceSpy<DataSource>(realDataSource);
     }
 
     public synchronized void start() throws IOException {

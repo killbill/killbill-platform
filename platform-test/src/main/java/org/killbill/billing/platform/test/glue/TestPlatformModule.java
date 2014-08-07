@@ -33,6 +33,7 @@ import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
+import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.queue.DefaultQueueLifecycle;
@@ -74,11 +75,15 @@ public abstract class TestPlatformModule extends KillBillModule {
 
     protected void configureEmbeddedDB() {
         final PlatformDBTestingHelper platformDBTestingHelper = PlatformDBTestingHelper.get();
+        configureEmbeddedDB(platformDBTestingHelper);
+    }
+
+    protected void configureEmbeddedDB(final PlatformDBTestingHelper platformDBTestingHelper) {
         final EmbeddedDB instance = platformDBTestingHelper.getInstance();
         bind(EmbeddedDB.class).toInstance(instance);
 
         try {
-            bind(DataSource.class).toInstance(instance.getDataSource());
+            bind(DataSource.class).toInstance(platformDBTestingHelper.getDataSource());
             bind(IDBI.class).toInstance(platformDBTestingHelper.getDBI());
             bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(platformDBTestingHelper.getDBI());
         } catch (final IOException e) {
