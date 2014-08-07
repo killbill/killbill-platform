@@ -23,6 +23,8 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.xmlloader.UriAccessor;
@@ -39,25 +41,33 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private final Properties properties;
 
-    public DefaultKillbillConfigSource() {
-        this(ImmutableMap.<String, String>of());
+    public DefaultKillbillConfigSource() throws IOException, URISyntaxException {
+        this((String) null);
     }
 
-    public DefaultKillbillConfigSource(final Map<String, String> extraDefaultProperties) {
-        this.properties = loadPropertiesFromFileOrSystemProperties();
+    public DefaultKillbillConfigSource(final Map<String, String> extraDefaultProperties) throws IOException, URISyntaxException {
+        this(null, extraDefaultProperties);
+    }
+
+    public DefaultKillbillConfigSource(@Nullable final String file) throws URISyntaxException, IOException {
+        this(file, ImmutableMap.<String, String>of());
+    }
+
+    public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
+        if (file == null) {
+            this.properties = loadPropertiesFromFileOrSystemProperties();
+        } else {
+            this.properties = new Properties();
+            this.properties.load(UriAccessor.accessUri(this.getClass().getResource(file).toURI()));
+        }
+
         for (final String key : extraDefaultProperties.keySet()) {
             final String value = extraDefaultProperties.get(key);
             if (value != null) {
                 properties.put(key, value);
             }
         }
-        populateDefaultProperties();
-    }
 
-    @VisibleForTesting
-    public DefaultKillbillConfigSource(final String file) throws URISyntaxException, IOException {
-        this.properties = new Properties();
-        this.properties.load(UriAccessor.accessUri(this.getClass().getResource(file).toURI()));
         populateDefaultProperties();
     }
 

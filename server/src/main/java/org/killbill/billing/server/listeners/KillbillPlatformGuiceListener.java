@@ -20,6 +20,7 @@ package org.killbill.billing.server.listeners;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URISyntaxException;
 
 import javax.management.MBeanServer;
 import javax.servlet.ServletContext;
@@ -76,7 +77,11 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     @Override
     public void contextInitialized(final ServletContextEvent event) {
-        initializeConfig();
+        try {
+            initializeConfig();
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
 
         // Will call super.contextInitialized(event)
         initializeGuice(event);
@@ -102,12 +107,12 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         stopEmbeddedDB();
     }
 
-    protected void initializeConfig() {
+    protected void initializeConfig() throws IOException, URISyntaxException {
         configSource = getConfigSource();
         config = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource)).build(KillbillServerConfig.class);
     }
 
-    protected KillbillConfigSource getConfigSource() {
+    protected KillbillConfigSource getConfigSource() throws IOException, URISyntaxException {
         return new DefaultKillbillConfigSource();
     }
 

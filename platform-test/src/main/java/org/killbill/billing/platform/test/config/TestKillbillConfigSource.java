@@ -40,41 +40,15 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     private final String jdbcPassword;
     private final Map<String, String> extraDefaults;
 
-    public TestKillbillConfigSource() {
-        this(null, null, null);
+    public TestKillbillConfigSource(final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+        this(null, dbTestingHelperKlass);
     }
 
-    public TestKillbillConfigSource(@Nullable final String jdbcConnectionString,
-                                    @Nullable final String jdbcUsername, @Nullable final String jdbcPassword) {
-        super();
-        this.jdbcConnectionString = jdbcConnectionString;
-        this.jdbcUsername = jdbcUsername;
-        this.jdbcPassword = jdbcPassword;
-        this.extraDefaults = ImmutableMap.<String, String>of();
+    public TestKillbillConfigSource(@Nullable final String file, final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        this(file, dbTestingHelperKlass, ImmutableMap.<String, String>of());
     }
 
-    public TestKillbillConfigSource(final String file) throws URISyntaxException, IOException {
-        this(file, null, null, null, ImmutableMap.<String, String>of());
-    }
-
-    public TestKillbillConfigSource(final String file, @Nullable final String jdbcConnectionString,
-                                    @Nullable final String jdbcUsername, @Nullable final String jdbcPassword) throws URISyntaxException, IOException {
-        this(file, jdbcConnectionString, jdbcUsername, jdbcPassword, ImmutableMap.<String, String>of());
-    }
-
-    public TestKillbillConfigSource(final String file, @Nullable final String jdbcConnectionString,
-                                    @Nullable final String jdbcUsername, @Nullable final String jdbcPassword,
-                                    final Map<String, String> extraDefaults) throws URISyntaxException, IOException {
-        super(file);
-        this.jdbcConnectionString = jdbcConnectionString;
-        this.jdbcUsername = jdbcUsername;
-        this.jdbcPassword = jdbcPassword;
-        this.extraDefaults = extraDefaults;
-        // extraDefaults changed, need to reload defaults
-        populateDefaultProperties();
-    }
-
-    public TestKillbillConfigSource(final String file, final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public TestKillbillConfigSource(@Nullable final String file, final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file);
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
@@ -86,8 +60,8 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this.jdbcConnectionString = instance.getJdbcConnectionString();
         this.jdbcUsername = instance.getUsername();
         this.jdbcPassword = instance.getPassword();
-        this.extraDefaults = ImmutableMap.<String, String>of();
-        // Need to reload default to set the correct jdbc properties
+        this.extraDefaults = extraDefaults;
+        // extraDefaults changed, need to reload defaults
         populateDefaultProperties();
     }
 
