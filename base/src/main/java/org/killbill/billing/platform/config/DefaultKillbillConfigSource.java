@@ -140,8 +140,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         properties.put("ANTLR_USE_DIRECT_CLASS_LOADING", "true");
         // See https://code.google.com/p/log4jdbc-log4j2/
         properties.put("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
-        // Turn off jdbc logging by default (see also logback.xml / logback-test.xml)
-        properties.put("org.slf4j.simpleLogger.log.jdbc", "OFF");
+        // Disable log4jdbc-log4j2 by default.
+        // For slf4j-simple, this doesn't quite disable it (we cannot turn off the logger completely),
+        // but it should be off for logback (see logback.xml / logback-test.xml)
+        properties.put("org.slf4j.simpleLogger.log.jdbc", "ERROR");
         return properties;
     }
 }
