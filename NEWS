@@ -1,5 +1,6 @@
 0.0.8
     Integrate log4jdbc-log4j2
+    Update killbill-oss-parent to 0.7.20
 
 0.0.7
     Add support for profiling data
