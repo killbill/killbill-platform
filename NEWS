@@ -1,21 +1,28 @@
+0.0.8
+    Integrate log4jdbc-log4j2
+    Update killbill-oss-parent to 0.7.20
+
 0.0.7
     Add support for profiling data
+    Fix for https://github.com/killbill/killbill/issues/216
+    jruby: performance optimizations
+    osgi: export OSGI datasource to JNDI (killbill/osgi/jdbc)
 
 0.0.6
     Minor change in the queue framework to inject a separate IDBI instance
 
 0.0.5
-  Update ruby test tar.gz after payment API change
+    Update ruby test tar.gz after payment API change
 
 0.0.4
-  Remove integration with https://bintray.com/
-  Update killbill-oss-parent to 0.7.14
+    Remove integration with https://bintray.com/
+    Update killbill-oss-parent to 0.7.14
 
 0.0.3
-  Integration with https://bintray.com/
+    Integration with https://bintray.com/
 
 0.0.2
-  Update killbill-oss-parent to 0.7.13
+    Update killbill-oss-parent to 0.7.13
 
 0.0.1
-  Initial extraction from killbill
+    Initial extraction from killbill
