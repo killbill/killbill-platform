@@ -38,11 +38,15 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.killbill.commons.jdbi.guice.DataSourceProvider;
+import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi;
+import org.killbill.commons.jdbi.transaction.NotificationTransactionHandler;
+import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
+import org.skife.jdbi.v2.tweak.TransactionHandler;
 
 import com.google.inject.name.Names;
 
@@ -98,20 +102,18 @@ public class KillbillPlatformModule extends KillBillModule {
         final DataSource dataSource = new ReferenceableDataSourceSpy<DataSource>(realDataSource);
         bind(DataSource.class).toInstance(dataSource);
 
-        final DBIProvider dbiProvider = new DBIProvider(daoConfig, dataSource);
-        //        final BasicSqlNameStrategy basicSqlNameStrategy = new BasicSqlNameStrategy();
-        //        final TimingCollector timingCollector = new InstrumentedTimingCollector(null, basicSqlNameStrategy);
-        //        dbiProvider.setTimingCollector(timingCollector);
+        final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();
+        bind(DatabaseTransactionNotificationApi.class).toInstance(databaseTransactionNotificationApi);
 
+        final TransactionHandler notificationTransactionHandler = new NotificationTransactionHandler(databaseTransactionNotificationApi);
+        final RestartTransactionRunner ourSuperTunedTransactionHandler = new RestartTransactionRunner(notificationTransactionHandler);
+
+        final DBIProvider dbiProvider = new DBIProvider(daoConfig, dataSource, ourSuperTunedTransactionHandler);
         dbi = (DBI) dbiProvider.get();
         bind(DBI.class).toInstance(dbi);
         bind(IDBI.class).to(DBI.class).asEagerSingleton();
 
-        final DBIProvider queueDbiProvider = new DBIProvider(null, dataSource);
-        //        final BasicSqlNameStrategy basicSqlNameStrategy = new BasicSqlNameStrategy();
-        //        final TimingCollector timingCollector = new InstrumentedTimingCollector(null, basicSqlNameStrategy);
-        //        queueDbiProvider.setTimingCollector(timingCollector);
-
+        final DBIProvider queueDbiProvider = new DBIProvider(null, dataSource, ourSuperTunedTransactionHandler);
         queueDbi = (DBI) queueDbiProvider.get();
         bind(DBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(queueDbi);
         bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(queueDbi);

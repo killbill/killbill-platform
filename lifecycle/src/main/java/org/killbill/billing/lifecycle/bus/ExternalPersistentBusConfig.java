@@ -54,6 +54,11 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
+    public boolean isInMemory() {
+        return externalPersistentBusConfig.isInMemory();
+    }
+
+    @Override
     public boolean isSticky() {
         return externalPersistentBusConfig.isSticky();
     }

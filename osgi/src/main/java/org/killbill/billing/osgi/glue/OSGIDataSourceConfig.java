@@ -92,12 +92,6 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     LogLevel getLogLevel();
 
     @Override
-    @Description("The TransactionHandler to use for all Handle instances")
-    @Config(DATA_SOURCE_PROP_PREFIX + "transactionHandler")
-    @Default("org.killbill.commons.jdbi.transaction.RestartTransactionRunner")
-    String getTransactionHandlerClass();
-
-    @Override
     @Description("Connection pooling type")
     @Config(DATA_SOURCE_PROP_PREFIX + "poolingType")
     @Default("C3P0")

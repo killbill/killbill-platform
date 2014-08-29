@@ -76,8 +76,9 @@ public class PlatformDBTestingHelper {
     }
 
     public synchronized IDBI getDBI() throws IOException {
+
         final DataSource dataSource = getDataSource();
-        return new DBIProvider(null, dataSource).get();
+        return new DBIProvider(null, dataSource, null).get();
     }
 
     public DataSource getDataSource() throws IOException {

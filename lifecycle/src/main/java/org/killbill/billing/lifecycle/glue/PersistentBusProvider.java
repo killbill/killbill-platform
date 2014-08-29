@@ -23,35 +23,49 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.killbill.bus.DefaultPersistentBus;
+import org.killbill.bus.InMemoryPersistentBus;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.bus.api.PersistentBusConfig;
 import org.killbill.clock.Clock;
+import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.jdbi.v2.IDBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 
 public class PersistentBusProvider implements Provider<PersistentBus> {
+
+    private final static Logger logger = LoggerFactory.getLogger(PersistentBusProvider.class);
 
     private final PersistentBusConfig busConfig;
 
     private IDBI dbi;
     private Clock clock;
     private MetricRegistry metricRegistry;
+    private DatabaseTransactionNotificationApi databaseTransactionNotificationApi;
 
     public PersistentBusProvider(final PersistentBusConfig busConfig) {
         this.busConfig = busConfig;
     }
 
     @Inject
-    public void initialize(@Named(DefaultQueueLifecycle.QUEUE_NAME) final IDBI dbi, final Clock clock, final MetricRegistry metricRegistry) {
+    public void initialize(@Named(DefaultQueueLifecycle.QUEUE_NAME) final IDBI dbi, final DatabaseTransactionNotificationApi observable, final Clock clock, final MetricRegistry metricRegistry) {
         this.dbi = dbi;
         this.clock = clock;
         this.metricRegistry = metricRegistry;
+        this.databaseTransactionNotificationApi = observable;
     }
 
     @Override
     public PersistentBus get() {
-        return new DefaultPersistentBus(dbi, clock, busConfig, metricRegistry);
+        if (busConfig.isInMemory()) {
+            logger.info("Creating InMemory bus for " + busConfig.getTableName());
+            return new InMemoryPersistentBus();
+        } else {
+            logger.info("Creating Persistent bus for " + busConfig.getTableName());
+            return new DefaultPersistentBus(dbi, clock, busConfig, metricRegistry, databaseTransactionNotificationApi);
+        }
     }
 }
