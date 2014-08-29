@@ -57,7 +57,9 @@ public class KillbillEventObservable extends Observable {
     public void handleKillbillEvent(final ExtBusEvent event) {
 
         logger.debug("Received external event " + event.toString());
-        setChanged();
-        notifyObservers(event);
+        synchronized(this) {
+            setChanged();
+            notifyObservers(event);
+        }
     }
 }
