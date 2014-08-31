@@ -1,3 +1,7 @@
+0.0.9
+    Update killbill-oss-parent to 0.7.21 (queue performance improvements)
+    Deprecate org.killbill.billing.osgi.dao.transactionHandler property
+
 0.0.8
     Integrate log4jdbc-log4j2
     Update killbill-oss-parent to 0.7.20
