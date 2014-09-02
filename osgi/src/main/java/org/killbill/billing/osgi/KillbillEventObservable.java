@@ -18,7 +18,10 @@
 
 package org.killbill.billing.osgi;
 
+import java.lang.reflect.Field;
 import java.util.Observable;
+import java.util.Observer;
+import java.util.Vector;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -29,6 +32,7 @@ import org.killbill.bus.api.PersistentBus.EventBusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 public class KillbillEventObservable extends Observable {
@@ -53,13 +57,40 @@ public class KillbillEventObservable extends Observable {
         }
     }
 
+    //
+    // Override notifyObservers from Observable to prevent from having to
+    // call setChanged and then notifyObservers, which are not atomic
+    // and can lead to losing events.
+    //
+    @Override
+    public void notifyObservers(Object arg) {
+        final Vector obsCopy = getDeclaredField("obs");
+        final Object[] arrLocal = obsCopy.toArray();
+        for (int i = arrLocal.length - 1; i >= 0; i--) {
+            ((Observer) arrLocal[i]).update(this, arg);
+        }
+    }
+
+    @AllowConcurrentEvents
     @Subscribe
     public void handleKillbillEvent(final ExtBusEvent event) {
-
         logger.debug("Received external event " + event.toString());
-        synchronized(this) {
-            setChanged();
-            notifyObservers(event);
+        setChanged();
+        notifyObservers(event);
+    }
+
+    //
+    // Ugly hack to access private field 'obs'
+    //
+    private <T> T getDeclaredField(final String fieldName) {
+        try {
+            final Field f = Observable.class.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            return (T) f.get(this);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException("Failed to retrieve private field from Observable class " + fieldName, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Failed to retrieve private field from Observable class " + fieldName, e);
         }
     }
 }
