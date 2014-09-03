@@ -33,6 +33,7 @@ import org.jruby.embed.ScriptingContainer;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
+import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
 // Bridge between the OSGI bundle and the ruby plugin
 public abstract class JRubyPlugin {
 
-    private static final Logger log = LoggerFactory.getLogger(JRubyPlugin.class);
+    protected static final Logger log = LoggerFactory.getLogger(JRubyPlugin.class);
 
     // Killbill gem base classes
     private static final String KILLBILL_PLUGIN_BASE = "Killbill::Plugin::PluginBase";
@@ -67,6 +68,7 @@ public abstract class JRubyPlugin {
     protected final String rubyRequire;
     protected final String pluginMainClass;
     protected final String pluginLibdir;
+    protected final OSGIConfigPropertiesService configProperties;
 
     protected ScriptingContainer container;
     protected RubyObject pluginInstance;
@@ -74,16 +76,18 @@ public abstract class JRubyPlugin {
     private ServiceRegistration httpServletServiceRegistration = null;
     private String cachedRequireLine = null;
 
-    public JRubyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger) {
+    public JRubyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
         this.logger = logger;
         this.bundleContext = bundleContext;
         this.pluginGemName = config.getPluginName();
         this.rubyRequire = config.getRubyRequire();
         this.pluginMainClass = config.getRubyMainClass();
         this.pluginLibdir = config.getRubyLoadDir();
+        this.configProperties = configProperties;
     }
 
     public void instantiatePlugin(final Map<String, Object> killbillApis, final String pluginMain) {
+
         container = setupScriptingContainer();
 
         checkValidPlugin();
@@ -215,13 +219,13 @@ public abstract class JRubyPlugin {
     }
 
     private ScriptingContainer setupScriptingContainer() {
-        // SINGLETHREAD model to avoid sharing state across scripting containers
-        // All calls are synchronized anyways (don't trust gems to be thread safe)
-        final ScriptingContainer scriptingContainer = new ScriptingContainer(LocalContextScope.SINGLETHREAD, LocalVariableBehavior.TRANSIENT, true);
+        final String propLocalContextScope =  configProperties.getString("org.killbill.jruby.context.scope");
+        final LocalContextScope localContextScope = propLocalContextScope != null ? LocalContextScope.valueOf(propLocalContextScope) : LocalContextScope.SINGLETHREAD;
+        log.info("JrubyPlugin creating scripting container with localContextScope " + localContextScope);
+        final ScriptingContainer scriptingContainer = new ScriptingContainer(localContextScope, LocalVariableBehavior.TRANSIENT, true);
 
         // Set the load paths instead of adding, to avoid looking at the filesystem
         scriptingContainer.setLoadPaths(Collections.<String>singletonList(pluginLibdir));
-
         return scriptingContainer;
     }
 

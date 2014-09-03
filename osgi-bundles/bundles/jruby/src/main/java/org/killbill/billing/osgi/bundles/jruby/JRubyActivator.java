@@ -82,14 +82,14 @@ public class JRubyActivator extends KillbillActivatorBase {
                 // Setup JRuby
                 final String pluginMain;
                 if (PluginType.NOTIFICATION.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyNotificationPlugin(rubyConfig, context, logService);
+                    plugin = new JRubyNotificationPlugin(rubyConfig, context, logService, configProperties);
                     dispatcher.registerEventHandler((OSGIKillbillEventHandler) plugin);
                     pluginMain = KILLBILL_PLUGIN_JNOTIFICATION;
                 } else if (PluginType.PAYMENT.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyPaymentPlugin(rubyConfig, context, logService);
+                    plugin = new JRubyPaymentPlugin(rubyConfig, context, logService, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JPAYMENT;
                 } else if (PluginType.CURRENCY.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyCurrencyPlugin(rubyConfig, context, logService);
+                    plugin = new JRubyCurrencyPlugin(rubyConfig, context, logService, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JCURRENCY;
                 } else {
                     throw new IllegalStateException("Unsupported plugin type " + rubyConfig.getPluginType());
