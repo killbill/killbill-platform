@@ -235,16 +235,13 @@ public abstract class JRubyPlugin {
     }
 
     protected <T> T callWithRuntimeAndChecking(final PluginCallback<T> cb) throws PaymentPluginApiException {
-        synchronized (pluginMonitor) {
-            try {
-                checkPluginIsRunning();
-
-                final Ruby runtime = getRuntime();
-                return cb.doCall(runtime);
-            } catch (final RuntimeException e) {
-                log.warn("RuntimeException in jruby plugin ", e);
-                throw e;
-            }
+        try {
+            checkPluginIsRunning();
+            final Ruby runtime = getRuntime();
+            return cb.doCall(runtime);
+        } catch (final RuntimeException e) {
+            log.warn("RuntimeException in jruby plugin ", e);
+            throw e;
         }
     }
 }
