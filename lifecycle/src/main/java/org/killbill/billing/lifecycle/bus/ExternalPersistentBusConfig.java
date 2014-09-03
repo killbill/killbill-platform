@@ -74,6 +74,11 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
+    public int getMaxInflightQEntriesClaimed() {
+        return externalPersistentBusConfig.getMaxInflightQEntriesClaimed();
+    }
+
+    @Override
     public TimeSpan getClaimedTime() {
         return externalPersistentBusConfig.getClaimedTime();
     }
