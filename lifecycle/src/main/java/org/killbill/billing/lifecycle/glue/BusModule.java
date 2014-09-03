@@ -56,6 +56,11 @@ public class BusModule extends AbstractModule {
 
     @Override
     protected void configure() {
+
+        final SkifePersistentBusConfigSource skifePersistentBusConfigSource = new SkifePersistentBusConfigSource();
+        final PersistentBusConfig busConfig = new ConfigurationObjectFactory(skifePersistentBusConfigSource).buildWithReplacements(PersistentBusConfig.class,
+                                                                                                                                   ImmutableMap.<String, String>of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
+
         if (isExternal) {
             bind(ExternalBusService.class).to(DefaultExternalBusService.class).asEagerSingleton();
         } else {
@@ -63,21 +68,17 @@ public class BusModule extends AbstractModule {
         }
         switch (type) {
             case MEMORY:
-                configureInMemoryEventBus();
+                configureInMemoryEventBus(busConfig);
                 break;
             case PERSISTENT:
-                configurePersistentEventBus();
+                configurePersistentEventBus(busConfig);
                 break;
             default:
                 throw new RuntimeException("Unrecognized EventBus type " + type);
         }
     }
 
-    protected void configurePersistentEventBus() {
-        final SkifePersistentBusConfigSource skifePersistentBusConfigSource = new SkifePersistentBusConfigSource();
-        final PersistentBusConfig busConfig = new ConfigurationObjectFactory(skifePersistentBusConfigSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                                                   ImmutableMap.<String, String>of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
-
+    protected void configurePersistentEventBus(final PersistentBusConfig busConfig) {
         final PersistentBusProvider busProvider = new PersistentBusProvider(busConfig);
         if (isExternal) {
             bind(PersistentBusProvider.class).annotatedWith(Names.named(BusModule.EXTERNAL_BUS_NAMED)).toInstance(busProvider);
@@ -88,12 +89,12 @@ public class BusModule extends AbstractModule {
         }
     }
 
-    private void configureInMemoryEventBus() {
+    private void configureInMemoryEventBus(final PersistentBusConfig busConfig) {
+        bind(PersistentBusConfig.class).toInstance(busConfig);
         bind(PersistentBus.class).to(InMemoryPersistentBus.class).asEagerSingleton();
     }
 
     private final class SkifePersistentBusConfigSource implements ConfigSource {
-
         @Override
         public String getString(final String propertyName) {
             return configSource.getString(propertyName);
