@@ -46,9 +46,11 @@ import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.LoggerContext;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.logback.InstrumentedAppender;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -161,8 +163,18 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void initializeMetrics(final ServletContextEvent event) {
+
+        final MetricRegistry metricRegistry = injector.getInstance(MetricRegistry.class);
+        final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final ch.qos.logback.classic.Logger root = factory.getLogger(Logger.ROOT_LOGGER_NAME);
+
+        final InstrumentedAppender metrics = new InstrumentedAppender(metricRegistry);
+        metrics.setContext(root.getLoggerContext());
+        metrics.start();
+        root.addAppender(metrics);
+
         event.getServletContext().setAttribute(HealthCheckServlet.HEALTH_CHECK_REGISTRY, injector.getInstance(HealthCheckRegistry.class));
-        event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, injector.getInstance(MetricRegistry.class));
+        event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, metricRegistry);
     }
 
     protected void registerEhcacheMBeans() {
