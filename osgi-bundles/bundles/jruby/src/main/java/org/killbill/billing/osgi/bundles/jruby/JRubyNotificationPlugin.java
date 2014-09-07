@@ -23,14 +23,15 @@ import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.notification.plugin.api.NotificationPluginApi;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
+import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
 public class JRubyNotificationPlugin extends JRubyPlugin implements OSGIKillbillEventHandler {
 
-    public JRubyNotificationPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger) {
-        super(config, bundleContext, logger);
+    public JRubyNotificationPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
+        super(config, bundleContext, logger, configProperties);
     }
 
     @Override

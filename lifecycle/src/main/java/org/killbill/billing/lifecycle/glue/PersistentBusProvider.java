@@ -62,7 +62,7 @@ public class PersistentBusProvider implements Provider<PersistentBus> {
     public PersistentBus get() {
         if (busConfig.isInMemory()) {
             logger.info("Creating InMemory bus for " + busConfig.getTableName());
-            return new InMemoryPersistentBus();
+            return new InMemoryPersistentBus(busConfig);
         } else {
             logger.info("Creating Persistent bus for " + busConfig.getTableName());
             return new DefaultPersistentBus(dbi, clock, busConfig, metricRegistry, databaseTransactionNotificationApi);

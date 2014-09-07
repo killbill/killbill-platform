@@ -26,8 +26,12 @@ import java.util.Observer;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
+
+    private final Logger logger = LoggerFactory.getLogger(OSGIKillbillEventDispatcher.class);
 
     private static final String OBSERVABLE_SERVICE_NAME = "java.util.Observable";
 
@@ -58,7 +62,7 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
                     @Override
                     public void update(final Observable o, final Object arg) {
                         if (!(arg instanceof ExtBusEvent)) {
-                            // TODO STEPH or should we throw because that should not happen
+                            logger.error("OSGIKillbillEventDispatcher unexpected event type " + (arg != null ? arg.getClass() : "null"));
                             return;
                         }
                         handler.handleKillbillEvent((ExtBusEvent) arg);

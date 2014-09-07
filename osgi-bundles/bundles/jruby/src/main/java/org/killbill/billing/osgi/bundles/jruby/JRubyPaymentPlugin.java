@@ -39,6 +39,7 @@ import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
 import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.entity.Pagination;
+import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
@@ -47,8 +48,8 @@ public class JRubyPaymentPlugin extends JRubyPlugin implements PaymentPluginApi 
 
     private volatile ServiceRegistration PaymentTransactionInfoPluginRegistration;
 
-    public JRubyPaymentPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger) {
-        super(config, bundleContext, logger);
+    public JRubyPaymentPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
+        super(config, bundleContext, logger, configProperties);
     }
 
     @Override

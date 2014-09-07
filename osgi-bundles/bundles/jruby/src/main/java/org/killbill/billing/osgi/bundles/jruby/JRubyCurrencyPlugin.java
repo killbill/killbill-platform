@@ -31,6 +31,7 @@ import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
+import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
@@ -39,8 +40,8 @@ public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginAp
 
     private volatile ServiceRegistration currencyPluginRegistration;
 
-    public JRubyCurrencyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger) {
-        super(config, bundleContext, logger);
+    public JRubyCurrencyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
+        super(config, bundleContext, logger, configProperties);
     }
 
     @Override

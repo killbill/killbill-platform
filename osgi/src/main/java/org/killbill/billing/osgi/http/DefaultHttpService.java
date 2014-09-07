@@ -19,7 +19,9 @@
 package org.killbill.billing.osgi.http;
 
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,14 +33,21 @@ import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.MetricRegistry;
+
 @Singleton
 public class DefaultHttpService implements HttpService {
 
     private final DefaultServletRouter servletRouter;
+    private final Map<String, Histogram> perPluginCallMetrics;
+    private final MetricRegistry metricsRegistry;
 
     @Inject
-    public DefaultHttpService(final DefaultServletRouter servletRouter) {
+    public DefaultHttpService(final DefaultServletRouter servletRouter, final MetricRegistry metricsRegistry) {
         this.servletRouter = servletRouter;
+        this.perPluginCallMetrics = new HashMap<String, Histogram>();
+        this.metricsRegistry = metricsRegistry;
     }
 
     @Override
@@ -49,7 +58,7 @@ public class DefaultHttpService implements HttpService {
         } else if (servlet == null) {
             throw new IllegalArgumentException("Invalid servlet (null)");
         }
-        final Servlet wrappedServlet = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(servlet);
+        final Servlet wrappedServlet = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(servlet, metricsRegistry, perPluginCallMetrics);
 
         servletRouter.registerServiceFromPath(alias, wrappedServlet);
     }
