@@ -18,28 +18,27 @@
 package org.killbill.billing.platform.jndi;
 
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.Enumeration;
 import java.util.logging.Logger;
 
 import javax.naming.NamingException;
-import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+import javax.naming.StringRefAddr;
 import javax.sql.DataSource;
-
-import org.killbill.billing.platform.jndi.utils.JavaBeanReferenceMaker;
 
 import net.sf.log4jdbc.sql.jdbcapi.DataSourceSpy;
 
 public class ReferenceableDataSourceSpy<T extends DataSource> extends DataSourceSpy implements Referenceable {
 
-    private static final JavaBeanReferenceMaker referenceMaker = new JavaBeanReferenceMaker();
-
     private final T dataSource;
+    private final String dataSourceId;
 
-    public ReferenceableDataSourceSpy(final T realDataSource) {
+    public ReferenceableDataSourceSpy(final T realDataSource, final String dataSourceId) {
         super(realDataSource);
         this.dataSource = realDataSource;
+        this.dataSourceId = dataSourceId;
+
+        DataSourceProxy.addDelegate(dataSourceId, realDataSource);
     }
 
     public T getDataSource() {
@@ -48,13 +47,9 @@ public class ReferenceableDataSourceSpy<T extends DataSource> extends DataSource
 
     @Override
     public Reference getReference() throws NamingException {
-        final Reference dataSourceReference = referenceMaker.createReference(dataSource);
-        final Reference reference = new Reference(dataSourceReference.getClassName(), ReferenceableDataSourceSpyFactory.class.getName(), null);
+        final Reference reference = new Reference(DataSourceProxy.class.getName(), ReferenceableDataSourceSpyFactory.class.getName(), null);
 
-        for (final Enumeration e = dataSourceReference.getAll(); e.hasMoreElements(); ) {
-            final RefAddr addr = (RefAddr) e.nextElement();
-            reference.add(addr);
-        }
+        reference.add(new StringRefAddr(ReferenceableDataSourceSpyFactory.DATA_SOURCE_ID, dataSourceId));
 
         return reference;
     }

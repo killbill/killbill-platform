@@ -52,6 +52,8 @@ import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillModule {
 
+    private static final String MAIN_DATA_SOURCE_ID = "main";
+
     protected final ServletContext servletContext;
 
     protected final KillbillServerConfig serverConfig;
@@ -99,7 +101,7 @@ public class KillbillPlatformModule extends KillBillModule {
         bind(DaoConfig.class).toInstance(daoConfig);
 
         final DataSource realDataSource = new DataSourceProvider(daoConfig).get();
-        final DataSource dataSource = new ReferenceableDataSourceSpy<DataSource>(realDataSource);
+        final DataSource dataSource = new ReferenceableDataSourceSpy<DataSource>(realDataSource, MAIN_DATA_SOURCE_ID);
         bind(DataSource.class).toInstance(dataSource);
 
         final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();

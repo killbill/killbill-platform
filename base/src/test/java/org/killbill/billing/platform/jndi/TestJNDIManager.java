@@ -74,8 +74,12 @@ public class TestJNDIManager {
         Assert.assertNotNull(retrievedJdbcDataSource.getConnection());
 
         // Try to wrap around a DataSourceSpy
-        final ReferenceableDataSourceSpy<JdbcDataSource> retrievedReferenceableDataSourceSpy = testForDataSource(jndiManager, new ReferenceableDataSourceSpy<JdbcDataSource>(dataSource), ReferenceableDataSourceSpy.class);
-        final JdbcDataSource retrievedJdbcDataSource2 = retrievedReferenceableDataSourceSpy.getDataSource();
+        final ReferenceableDataSourceSpy<DataSource> retrievedReferenceableDataSourceSpy = testForDataSource(jndiManager, new ReferenceableDataSourceSpy<DataSource>(dataSource, "something"), ReferenceableDataSourceSpy.class);
+        final DataSource retrievedJdbcDataSource2Proxy = retrievedReferenceableDataSourceSpy.getDataSource();
+        Assert.assertTrue(retrievedJdbcDataSource2Proxy instanceof DataSourceProxy);
+        final DataSource retrievedJdbcDataSource2Delegate = ((DataSourceProxy) retrievedJdbcDataSource2Proxy).getDelegate();
+        Assert.assertTrue(retrievedJdbcDataSource2Delegate instanceof JdbcDataSource);
+        final JdbcDataSource retrievedJdbcDataSource2 = (JdbcDataSource) retrievedJdbcDataSource2Delegate;
         Assert.assertEquals(retrievedJdbcDataSource2.getURL(), embeddedDB.getJdbcConnectionString());
         Assert.assertEquals(retrievedJdbcDataSource2.getUser(), embeddedDB.getUsername());
         Assert.assertEquals(retrievedJdbcDataSource2.getPassword(), embeddedDB.getPassword());
@@ -87,7 +91,7 @@ public class TestJNDIManager {
         jndiManager.export(name, dataSource);
 
         final Object retrievedDataSourceObject = jndiManager.lookup(name);
-        Assert.assertTrue(klass.isInstance(retrievedDataSourceObject));
+        Assert.assertTrue(klass.isInstance(retrievedDataSourceObject), klass + " is not an instance of " + retrievedDataSourceObject);
 
         return (T) retrievedDataSourceObject;
     }

@@ -21,20 +21,29 @@ import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-import javax.sql.DataSource;
 
-import org.killbill.billing.platform.jndi.utils.JavaBeanObjectFactory;
+import com.google.common.base.Preconditions;
 
 public class ReferenceableDataSourceSpyFactory implements ObjectFactory {
+
+    public static final String DATA_SOURCE_ID = "dataSourceId";
 
     @Override
     public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
         if (obj instanceof Reference) {
-            final ObjectFactory factory = new JavaBeanObjectFactory();
-            final DataSource dataSource = (DataSource) factory.getObjectInstance(obj, name, nameCtx, environment);
-            return new ReferenceableDataSourceSpy<DataSource>(dataSource);
+            final Reference reference = (Reference) obj;
+
+            final RefAddr dataSourceIdAddr = reference.get(DATA_SOURCE_ID);
+            Preconditions.checkNotNull(dataSourceIdAddr);
+
+            final String dataSourceId = (String) dataSourceIdAddr.getContent();
+            Preconditions.checkNotNull(dataSourceId);
+
+            final DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSourceId);
+            return new ReferenceableDataSourceSpy<DataSourceProxy>(dataSourceProxy, dataSourceId);
         }
 
         return null;
