@@ -40,7 +40,6 @@ import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.OSGIService;
 import org.killbill.billing.platform.glue.KillBillModule;
-import org.killbill.billing.platform.jndi.DataSourceProxy;
 import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.killbill.commons.jdbi.guice.DataSourceProvider;
@@ -79,7 +78,7 @@ public class DefaultOSGIModule extends KillBillModule {
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(osgiDataSourceConfig);
 
         final DataSource realDataSource = new DataSourceProvider(osgiDataSourceConfig).get();
-        final DataSource dataSource = new ReferenceableDataSourceSpy<DataSource>(realDataSource, OSGI_NAMED);
+        final DataSource dataSource = new ReferenceableDataSourceSpy(realDataSource, OSGI_NAMED);
         bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(dataSource);
     }
 

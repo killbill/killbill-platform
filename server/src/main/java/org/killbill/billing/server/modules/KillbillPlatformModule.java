@@ -101,7 +101,7 @@ public class KillbillPlatformModule extends KillBillModule {
         bind(DaoConfig.class).toInstance(daoConfig);
 
         final DataSource realDataSource = new DataSourceProvider(daoConfig).get();
-        final DataSource dataSource = new ReferenceableDataSourceSpy<DataSource>(realDataSource, MAIN_DATA_SOURCE_ID);
+        final DataSource dataSource = new ReferenceableDataSourceSpy(realDataSource, MAIN_DATA_SOURCE_ID);
         bind(DataSource.class).toInstance(dataSource);
 
         final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();

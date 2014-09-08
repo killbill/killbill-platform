@@ -41,7 +41,7 @@ import com.google.common.io.Resources;
 public class PlatformDBTestingHelper {
 
     private static final Logger log = LoggerFactory.getLogger(PlatformDBTestingHelper.class);
-    private static final String TEST_DATA_SOURCE_ID = "main";
+    private static final String TEST_DATA_SOURCE_ID = "test";
 
     protected EmbeddedDB instance;
 
@@ -84,7 +84,7 @@ public class PlatformDBTestingHelper {
 
     public DataSource getDataSource() throws IOException {
         final DataSource realDataSource = instance.getDataSource();
-        return new ReferenceableDataSourceSpy<DataSource>(realDataSource, TEST_DATA_SOURCE_ID);
+        return new ReferenceableDataSourceSpy(realDataSource, TEST_DATA_SOURCE_ID);
     }
 
     public synchronized void start() throws IOException {

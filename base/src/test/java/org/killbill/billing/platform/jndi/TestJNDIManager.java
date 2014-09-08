@@ -74,10 +74,8 @@ public class TestJNDIManager {
         Assert.assertNotNull(retrievedJdbcDataSource.getConnection());
 
         // Try to wrap around a DataSourceSpy
-        final ReferenceableDataSourceSpy<DataSource> retrievedReferenceableDataSourceSpy = testForDataSource(jndiManager, new ReferenceableDataSourceSpy<DataSource>(dataSource, "something"), ReferenceableDataSourceSpy.class);
-        final DataSource retrievedJdbcDataSource2Proxy = retrievedReferenceableDataSourceSpy.getDataSource();
-        Assert.assertTrue(retrievedJdbcDataSource2Proxy instanceof DataSourceProxy);
-        final DataSource retrievedJdbcDataSource2Delegate = ((DataSourceProxy) retrievedJdbcDataSource2Proxy).getDelegate();
+        final ReferenceableDataSourceSpy retrievedReferenceableDataSourceSpy = testForDataSource(jndiManager, new ReferenceableDataSourceSpy(dataSource, "something"), ReferenceableDataSourceSpy.class);
+        final DataSource retrievedJdbcDataSource2Delegate = retrievedReferenceableDataSourceSpy.getDataSource();
         Assert.assertTrue(retrievedJdbcDataSource2Delegate instanceof JdbcDataSource);
         final JdbcDataSource retrievedJdbcDataSource2 = (JdbcDataSource) retrievedJdbcDataSource2Delegate;
         Assert.assertEquals(retrievedJdbcDataSource2.getURL(), embeddedDB.getJdbcConnectionString());

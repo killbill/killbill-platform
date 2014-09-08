@@ -28,12 +28,18 @@ import javax.sql.DataSource;
 
 import net.sf.log4jdbc.sql.jdbcapi.DataSourceSpy;
 
-public class ReferenceableDataSourceSpy<T extends DataSource> extends DataSourceSpy implements Referenceable {
+public class ReferenceableDataSourceSpy extends DataSourceSpy implements Referenceable {
 
-    private final T dataSource;
+    private final DataSource dataSource;
     private final String dataSourceId;
 
-    public ReferenceableDataSourceSpy(final T realDataSource, final String dataSourceId) {
+    public ReferenceableDataSourceSpy(final String dataSourceId) {
+        super(DataSourceProxy.getDelegate(dataSourceId));
+        this.dataSource = DataSourceProxy.getDelegate(dataSourceId);
+        this.dataSourceId = dataSourceId;
+    }
+
+    public ReferenceableDataSourceSpy(final DataSource realDataSource, final String dataSourceId) {
         super(realDataSource);
         this.dataSource = realDataSource;
         this.dataSourceId = dataSourceId;
@@ -41,7 +47,7 @@ public class ReferenceableDataSourceSpy<T extends DataSource> extends DataSource
         DataSourceProxy.addDelegate(dataSourceId, realDataSource);
     }
 
-    public T getDataSource() {
+    public DataSource getDataSource() {
         return dataSource;
     }
 

@@ -42,8 +42,7 @@ public class ReferenceableDataSourceSpyFactory implements ObjectFactory {
             final String dataSourceId = (String) dataSourceIdAddr.getContent();
             Preconditions.checkNotNull(dataSourceId);
 
-            final DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSourceId);
-            return new ReferenceableDataSourceSpy<DataSourceProxy>(dataSourceProxy, dataSourceId);
+            return new ReferenceableDataSourceSpy(dataSourceId);
         }
 
         return null;

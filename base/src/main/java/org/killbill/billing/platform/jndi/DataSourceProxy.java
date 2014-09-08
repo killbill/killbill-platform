@@ -37,6 +37,10 @@ public class DataSourceProxy implements DataSource {
         delegates.put(dataSourceId, dataSource);
     }
 
+    public static DataSource getDelegate(final String dataSourceId) {
+        return delegates.get(dataSourceId);
+    }
+
     private final DataSource delegate;
 
     public DataSourceProxy(final String dataSourceId) {
