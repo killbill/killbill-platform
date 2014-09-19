@@ -88,18 +88,20 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.notificationq.main.nbThreads", "1");
         properties.put("org.killbill.notificationq.main.prefetch", "1");
         properties.put("org.killbill.notificationq.main.claimed", "1");
-        properties.put("org.killbill.notificationq.main.useInFlightQ", "false");
+        properties.put("org.killbill.notificationq.main.useInflightQ", "false");
+
         // Speed up the buses
         properties.put("org.killbill.persistent.bus.main.sleep", "100");
         properties.put("org.killbill.persistent.bus.main.nbThreads", "1");
-        properties.put("org.killbill.persistent.bus.main.prefetch", "1");
         properties.put("org.killbill.persistent.bus.main.claimed", "1");
-        properties.put("org.killbill.persistent.bus.main.useInFlightQ", "true");
+        properties.put("org.killbill.persistent.bus.main.inflight.claimed", "1");
+        properties.put("org.killbill.persistent.bus.main.useInflightQ", "false");
+
         properties.put("org.killbill.persistent.bus.external.sleep", "100");
         properties.put("org.killbill.persistent.bus.external.nbThreads", "1");
-        properties.put("org.killbill.persistent.bus.external.prefetch", "1");
         properties.put("org.killbill.persistent.bus.external.claimed", "1");
-        properties.put("org.killbill.persistent.bus.external.useInFlightQ", "true");
+        properties.put("org.killbill.persistent.bus.external.inflight.claimed", "1");
+        properties.put("org.killbill.persistent.bus.external.useInflightQ", "false");
 
         // Temporary directory for OSGI bundles
         properties.put("org.killbill.osgi.root.dir", Files.createTempDir().getAbsolutePath());
