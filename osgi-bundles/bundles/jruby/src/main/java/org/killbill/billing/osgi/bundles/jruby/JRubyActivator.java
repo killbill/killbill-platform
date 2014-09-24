@@ -39,8 +39,8 @@ import com.google.common.base.Objects;
 
 public class JRubyActivator extends KillbillActivatorBase {
 
-    private static final String JRUBY_PLUGINS_CONF_DIR = System.getProperty("org.killbill.billing.osgi.bundles.jruby.conf.dir");
-    private static final int JRUBY_PLUGINS_RESTART_DELAY_SECS = Integer.parseInt(System.getProperty("org.killbill.billing.osgi.bundles.jruby.restart.delay.secs", "5"));
+    private static final String JRUBY_PLUGINS_CONF_DIR = "org.killbill.billing.osgi.bundles.jruby.conf.dir";
+    private static final String JRUBY_PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.jruby.restart.delay.secs";
 
     private static final String TMP_DIR_NAME = "tmp";
     private static final String RESTART_FILE_NAME = "restart.txt";
@@ -106,7 +106,7 @@ public class JRubyActivator extends KillbillActivatorBase {
         killbillServices.put("root", rubyConfig.getPluginVersionRoot().getAbsolutePath());
         killbillServices.put("logger", logService);
         // Default to the plugin root dir if no jruby plugins specific configuration directory was specified
-        killbillServices.put("conf_dir", Objects.firstNonNull(JRUBY_PLUGINS_CONF_DIR, rubyConfig.getPluginVersionRoot().getAbsolutePath()));
+        killbillServices.put("conf_dir", Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
 
         // Start the plugin synchronously
         doStartPlugin(pluginMain, context, killbillServices);
@@ -126,6 +126,7 @@ public class JRubyActivator extends KillbillActivatorBase {
             return;
         }
 
+        final Integer restart_delay_sec = Integer.parseInt((Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_RESTART_DELAY_SECS), "5")));
         restartFuture = Executors.newSingleThreadScheduledExecutor("jruby-restarter-" + pluginMain)
                                  .scheduleWithFixedDelay(new Runnable() {
                                      long lastRestartMillis = System.currentTimeMillis();
@@ -147,7 +148,7 @@ public class JRubyActivator extends KillbillActivatorBase {
                                              lastRestartMillis = restartFile.lastModified();
                                          }
                                      }
-                                 }, JRUBY_PLUGINS_RESTART_DELAY_SECS, JRUBY_PLUGINS_RESTART_DELAY_SECS, TimeUnit.SECONDS);
+                                 }, restart_delay_sec, restart_delay_sec, TimeUnit.SECONDS);
     }
 
     private PluginRubyConfig retrievePluginRubyConfig(final BundleContext context) {
