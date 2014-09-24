@@ -35,9 +35,11 @@ import org.killbill.commons.profiling.ProfilingFeature.ProfilingFeatureType;
 
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
+import com.google.common.base.Joiner;
 
 public class ContextClassLoaderHelper {
 
+    private static final Joiner JOINER = Joiner.on(".");
 
     /*
       http://impalablog.blogspot.com/2008/10/using-threads-callcontext-class-loader-in.html:
@@ -69,13 +71,13 @@ public class ContextClassLoaderHelper {
 
                 final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
 
-                final String pluginServiceMethodKey = service.getClass().getSimpleName() + ":" + method.getName();
+                final String[] pluginServiceMethodKey = {service.getClass().getSimpleName(), method.getName()};
                 final Histogram histogram = getOrCreateHistogram(perPluginCallMetrics, metricRegistry, pluginServiceMethodKey);
                 final long beforeCall = System.nanoTime();
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                     final Profiling<Object> prof = new Profiling<Object>();
-                    return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, pluginServiceMethodKey, new WithProfilingCallback() {
+                    return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, JOINER.join(pluginServiceMethodKey), new WithProfilingCallback() {
                         @Override
                         public Object execute() throws Throwable {
                             return method.invoke(service, args);
@@ -99,13 +101,14 @@ public class ContextClassLoaderHelper {
         return wrappedService;
     }
 
-    private static Histogram getOrCreateHistogram( final Map<String, Histogram> perPluginCallMetrics, final MetricRegistry metricRegistry, final String key) {
-        Histogram result =  perPluginCallMetrics.get(key);
+    private static Histogram getOrCreateHistogram(final Map<String, Histogram> perPluginCallMetrics, final MetricRegistry metricRegistry, final String[] keys) {
+        final String key = JOINER.join(keys);
+        Histogram result = perPluginCallMetrics.get(key);
         if (result == null) {
             synchronized (perPluginCallMetrics) {
-                result =  perPluginCallMetrics.get(key);
+                result = perPluginCallMetrics.get(key);
                 if (result == null) {
-                    result =  metricRegistry.histogram(MetricRegistry.name(key));
+                    result = metricRegistry.histogram(MetricRegistry.name(keys[0], keys[1]));
                     perPluginCallMetrics.put(key, result);
                 }
             }
