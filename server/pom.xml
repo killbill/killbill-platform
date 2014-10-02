@@ -96,8 +96,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.mchange</groupId>
-            <artifactId>c3p0</artifactId>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP-java6</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
@@ -110,11 +111,6 @@
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>net.sf.ehcache</groupId>
@@ -159,6 +155,11 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-xml</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jdbi</groupId>
@@ -230,6 +231,11 @@
         <dependency>
             <groupId>org.kill-bill.commons</groupId>
             <artifactId>killbill-skeleton</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

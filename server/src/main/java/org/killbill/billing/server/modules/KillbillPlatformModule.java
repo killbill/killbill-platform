@@ -91,16 +91,10 @@ public class KillbillPlatformModule extends KillBillModule {
     }
 
     protected void configureDao() {
-        // Load mysql driver if needed
-        try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-        } catch (final Exception ignore) {
-        }
-
         daoConfig = new ConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
         bind(DaoConfig.class).toInstance(daoConfig);
 
-        final DataSource realDataSource = new DataSourceProvider(daoConfig).get();
+        final DataSource realDataSource = new DataSourceProvider(daoConfig, MAIN_DATA_SOURCE_ID).get();
         final DataSource dataSource = new ReferenceableDataSourceSpy(realDataSource, MAIN_DATA_SOURCE_ID);
         bind(DataSource.class).toInstance(dataSource);
 

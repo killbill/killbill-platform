@@ -77,7 +77,7 @@ public class DefaultOSGIModule extends KillBillModule {
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(osgiDataSourceConfig);
 
-        final DataSource realDataSource = new DataSourceProvider(osgiDataSourceConfig).get();
+        final DataSource realDataSource = new DataSourceProvider(osgiDataSourceConfig, OSGI_NAMED).get();
         final DataSource dataSource = new ReferenceableDataSourceSpy(realDataSource, OSGI_NAMED);
         bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(dataSource);
     }

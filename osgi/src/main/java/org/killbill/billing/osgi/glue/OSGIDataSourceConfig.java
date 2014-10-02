@@ -23,6 +23,7 @@ import org.killbill.commons.jdbi.guice.DataSourceConnectionPoolingType;
 import org.killbill.commons.jdbi.log.LogLevel;
 import org.skife.config.Config;
 import org.skife.config.Default;
+import org.skife.config.DefaultNull;
 import org.skife.config.Description;
 import org.skife.config.TimeSpan;
 
@@ -85,15 +86,50 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Default("5m")
     TimeSpan getIdleConnectionTestPeriod();
 
+    @Description("Number of prepared statements that the driver will cache per connection")
+    @Config(DATA_SOURCE_PROP_PREFIX + "prepStmtCacheSize")
+    @Default("500")
+    int getPreparedStatementsCacheSize();
+
+    @Description("Maximum length of a prepared SQL statement that the driver will cache")
+    @Config(DATA_SOURCE_PROP_PREFIX + "prepStmtCacheSqlLimit")
+    @Default("2048")
+    int getPreparedStatementsCacheSqlLimit();
+
+    @Description("Enable prepared statements cache")
+    @Config(DATA_SOURCE_PROP_PREFIX + "cachePrepStmts")
+    @Default("true")
+    boolean isPreparedStatementsCacheEnabled();
+
+    @Description("Enable server-side prepared statements")
+    @Config(DATA_SOURCE_PROP_PREFIX + "useServerPrepStmts")
+    @Default("true")
+    boolean isServerSidePreparedStatementsEnabled();
+
+    @Description("DataSource class name provided by the JDBC driver, leave null for autodetection")
+    @Config(DATA_SOURCE_PROP_PREFIX + "dataSourceClassName")
+    @DefaultNull
+    String getDataSourceClassName();
+
+    @Description("JDBC driver to use (when dataSourceClassName is null)")
+    @Config(DATA_SOURCE_PROP_PREFIX + "driverClassName")
+    @DefaultNull
+    String getDriverClassName();
+
+    @Description("MySQL server version")
+    @Config(DATA_SOURCE_PROP_PREFIX + "mysqlServerVersion")
+    @Default("4.0")
+    String getMySQLServerVersion();
+
     @Override
     @Description("Log level for SQL queries")
     @Config(DATA_SOURCE_PROP_PREFIX + "logLevel")
-    @Default("WARN")
+    @Default("DEBUG")
     LogLevel getLogLevel();
 
     @Override
     @Description("Connection pooling type")
     @Config(DATA_SOURCE_PROP_PREFIX + "poolingType")
-    @Default("C3P0")
+    @Default("HIKARICP")
     DataSourceConnectionPoolingType getConnectionPoolingType();
 }

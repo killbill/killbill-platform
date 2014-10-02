@@ -1,3 +1,6 @@
+0.0.13
+    Update killbill-commons to 0.2.25 (switch to HikariCP)
+
 0.0.12
     Minor bug fixes for properties and metric names
 
