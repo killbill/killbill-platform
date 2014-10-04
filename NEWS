@@ -1,4 +1,5 @@
 0.0.13
+    Switch to HikariCP and MariaDB JDBC driver
     Update killbill-commons to 0.2.25 (switch to HikariCP)
 
 0.0.12
