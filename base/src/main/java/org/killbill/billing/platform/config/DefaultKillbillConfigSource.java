@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
@@ -113,6 +114,27 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         final Properties defaultSystemProperties = getDefaultSystemProperties();
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
+
+            // Special case to overwrite user.timezone
+            if (propertyName.equals("user.timezone")) {
+                // If this is set to something different than GMT we log a WARN
+                if (System.getProperty(propertyName) != null && !System.getProperty(propertyName).equals("GMT")) {
+                    logger.warn("!!!  Naughty overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT !!!",
+                                System.getProperty(propertyName));
+                }
+
+                //
+                // We now set the java system property -- regardless of whether this has been set previously or not.
+                // Also, setting java System property is not enough because default timezone may have been SET earlier,
+                // when first call to TimeZone.getDefaultRef was invoked-- which has a side effect to set it by either looking at
+                // existing "user.timezone" or being super smart by inferring from "user.country", "java.home", so we need to reset it.
+                //
+                final String GMT_ID = defaultSystemProperties.get(propertyName).toString();
+                System.setProperty(propertyName, GMT_ID);
+                TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
+                continue;
+            }
+
             // Let the user override these properties
             if (System.getProperty(propertyName) == null) {
                 System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
@@ -136,7 +158,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     @VisibleForTesting
     protected Properties getDefaultSystemProperties() {
         final Properties properties = new Properties();
-        properties.put("user.timezone", "UTC");
+        properties.put("user.timezone", "GMT");
         properties.put("ANTLR_USE_DIRECT_CLASS_LOADING", "true");
         // Disable log4jdbc-log4j2 by default.
         // For slf4j-simple, this doesn't quite disable it (we cannot turn off the logger completely),
