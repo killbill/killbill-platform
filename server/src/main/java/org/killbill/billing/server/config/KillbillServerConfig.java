@@ -34,4 +34,9 @@ public interface KillbillServerConfig extends KillbillPlatformConfig {
     @Default("false")
     @Description("Whether to start in test mode")
     public boolean isTestModeEnabled();
+
+    @Config(KILL_BILL_NAMESPACE + "server.baseUrl")
+    @Default("http://127.0.0.1:8080")
+    @Description("Server base url")
+    public String getBaseUrl();
 }
