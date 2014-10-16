@@ -1,3 +1,8 @@
+0.0.14
+    Enforce user.timezone is set to GMT
+    Introduce org.killbill.server.baseUrl
+    Update killbill-oss-parent to 0.8.2
+
 0.0.13
     Switch to HikariCP and MariaDB JDBC driver
     Update killbill-commons to 0.2.25 (switch to HikariCP)
