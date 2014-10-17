@@ -62,6 +62,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.overdue," +
              "org.killbill.billing.payment.api," +
              "org.killbill.billing.payment.plugin.api," +
+             "org.killbill.billing.retry.plugin.api," +
              "org.killbill.billing.tenant.api," +
              "org.killbill.billing.usage.api," +
              "org.killbill.billing.util.api," +
@@ -76,6 +77,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.currency.plugin.api," +
              "org.killbill.billing.currency.api," +
              "org.killbill.billing.security.api," +
+             "org.killbill.killbill.osgi.libs.killbill," +
 
              // Add export for all the com.sun.xml.internal.ws required to have apache-cxf working properly within a plugin environment.
              "com.sun.xml.internal.ws," +
