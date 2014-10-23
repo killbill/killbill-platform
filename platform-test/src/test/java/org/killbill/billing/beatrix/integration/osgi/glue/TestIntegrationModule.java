@@ -29,6 +29,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillModule;
 import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.platform.test.glue.TestPlatformModuleWithEmbeddedDB;
+import org.killbill.billing.retry.plugin.api.PaymentControlPluginApi;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
 
@@ -47,6 +48,7 @@ public class TestIntegrationModule extends KillBillModule {
         bind(Clock.class).to(ClockMock.class).asEagerSingleton();
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentPluginApi>(PaymentPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CurrencyPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CurrencyPluginApi>(CurrencyPluginApi.class));
+        bind(new TypeLiteral<OSGIServiceRegistration<PaymentControlPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentControlPluginApi>(PaymentControlPluginApi.class));
     }
 
     public static final class TestPlatformPaymentProviderPluginRegistry<T> implements OSGIServiceRegistration<T> {
