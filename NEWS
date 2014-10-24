@@ -1,3 +1,7 @@
+0.1.0
+    Package/module renaming for retry -> routing
+    Fix broken test compilation
+
 0.0.14
     Enforce user.timezone is set to GMT
     Introduce org.killbill.server.baseUrl
