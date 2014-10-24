@@ -95,7 +95,7 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
-            <artifactId>killbill-plugin-api-retry</artifactId>
+            <artifactId>killbill-plugin-api-routing</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

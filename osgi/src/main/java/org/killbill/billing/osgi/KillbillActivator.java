@@ -42,7 +42,7 @@ import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
-import org.killbill.billing.retry.plugin.api.PaymentControlPluginApi;
+import org.killbill.billing.routing.plugin.api.PaymentRoutingPluginApi;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
@@ -73,7 +73,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final JNDIManager jndiManager;
     private final MetricRegistry metricsRegistry;
     private final Map<String, Histogram> perPluginCallMetrics;
-
 
     private final List<OSGIServiceRegistration> allRegistrationHandlers;
 
@@ -115,7 +114,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     }
 
     @Inject(optional = true)
-    public void addPaymentControlPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<PaymentControlPluginApi> paymentControlProviderPluginRegistry) {
+    public void addPaymentControlPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<PaymentRoutingPluginApi> paymentControlProviderPluginRegistry) {
         allRegistrationHandlers.add(paymentControlProviderPluginRegistry);
     }
 
