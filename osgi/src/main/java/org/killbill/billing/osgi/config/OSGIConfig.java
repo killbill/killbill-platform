@@ -51,6 +51,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.analytics.api.user," +
              "org.killbill.billing.beatrix.bus.api," + /* TODO PIERRE Remove it after plugins classes have been regenerated */
              "org.killbill.billing.catalog.api," +
+             "org.killbill.billing.invoice.plugin.api," +
              "org.killbill.billing.invoice.api," +
              "org.killbill.billing.entitlement.api," +
              "org.killbill.billing," +
