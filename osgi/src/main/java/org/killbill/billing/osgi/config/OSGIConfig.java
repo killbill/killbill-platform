@@ -174,6 +174,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              // Note: bundles should mark javax.servlet:servlet-api as provided
              "sun.misc," +
              "sun.misc.unsafe," +
+             "sun.security," +
+             "sun.security.util," +
              "javax.crypto," +
              "javax.crypto.spec," +
              "javax.management," +
