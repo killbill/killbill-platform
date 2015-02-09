@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -21,6 +21,9 @@ import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.glue.MockNotificationQueueModule;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
 
 public class TestPlatformModuleNoDB extends TestPlatformModule {
@@ -31,8 +34,16 @@ public class TestPlatformModuleNoDB extends TestPlatformModule {
 
     @Override
     protected void configureEmbeddedDB() {
-        final IDBI idbi = Mockito.mock(IDBI.class);
-        bind(IDBI.class).toInstance(idbi);
+        final DBI dbi = Mockito.mock(DBI.class);
+        // RETURNS_DEEP_STUBS doesn't work here
+        Mockito.when(dbi.onDemand(Mockito.<Class<?>>any())).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(final InvocationOnMock invocation) throws Throwable {
+                return Mockito.mock((Class<?>) invocation.getArguments()[0]);
+            }
+        });
+        bind(DBI.class).toInstance(dbi);
+        bind(IDBI.class).toInstance(dbi);
     }
 
     @Override
