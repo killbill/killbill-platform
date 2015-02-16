@@ -165,9 +165,42 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "com.sun.xml.internal.ws.wsdl.writer.document.xsd," +
 
              // sax parser
+             "javax.xml," +
+             "javax.xml.namespace," +
+             "javax.xml.parsers," +
+             "javax.xml.validation," +
+             "javax.xml.stream," +
+             "javax.xml.stream.events," +
+             "javax.xml.stream.util," +
+             "javax.xml.transform," +
+             "javax.xml.transform.dom," +
+             "javax.xml.transform.sax," +
+             "javax.xml.transform.stax," +
+             "javax.xml.transform.stream," +
+             "javax.xml.xpath," +
              "javax.annotation," +
              "javax.jws.soap," +
-             "org.xml.sax.ext;org.xml.sax.helpers;org.xml.sax," +
+             "com.sun.org," +
+             "com.sun.org.apache," +
+             "com.sun.org.apache.xml," +
+             "com.sun.org.apache.xml.internal," +
+             "com.sun.org.apache.xml.internal.utils," +
+             "com.sun.org.apache.xpath," +
+             "com.sun.org.apache.xpath.internal," +
+             "com.sun.org.apache.xpath.internal.jaxp," +
+             "org.w3c.dom," +
+             "org.w3c.dom.bootstrap," +
+             "org.w3c.dom.events," +
+             "org.w3c.dom.ls," +
+             "org.w3c.dom.css," +
+             "org.w3c.dom.html," +
+             "org.w3c.dom.ranges," +
+             "org.w3c.dom.stylesheets," +
+             "org.w3c.dom.traversal," +
+             "org.w3c.dom.views," +
+             "org.xml.sax," +
+             "org.xml.sax.ext," +
+             "org.xml.sax.helpers," +
 
              // javax.servlet and javax.servlet.http are not exported by default - we
              // need the bundles to see them for them to be able to register their servlets.
