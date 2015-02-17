@@ -1,3 +1,8 @@
+0.1.3
+    osgi: add missing imports/exports
+    platform-test: enhance DBI mocking
+    Update killbill-oss-parent to 0.9.11
+
 0.1.2
     Add support for invoice plugins
     Update killbill-oss-parent to 0.9.6
