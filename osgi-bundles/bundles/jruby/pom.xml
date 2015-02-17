@@ -176,6 +176,10 @@
                             sun.misc.*;
                             sun.misc.unsafe;
                             sun.misc.unsafe.*;
+                            sun.security;
+                            sun.security.*;
+                            sun.security.util;
+                            sun.security.util.*;
                             javax.management;
                             javax.management.*;
                             javax.naming;
