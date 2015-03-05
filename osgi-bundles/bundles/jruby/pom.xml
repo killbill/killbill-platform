@@ -235,7 +235,8 @@
                             com.sun.org.apache.xml.internal.utils;
                             com.sun.org.apache.xpath;
                             com.sun.org.apache.xpath.internal;
-                            com.sun.org.apache.xpath.internal.jaxp;resolution:=optional,
+                            com.sun.org.apache.xpath.internal.jaxp;
+                            com.sun.org.apache.xpath.internal.objects;resolution:=optional,
                         </Import-Package>
                     </instructions>
                 </configuration>
