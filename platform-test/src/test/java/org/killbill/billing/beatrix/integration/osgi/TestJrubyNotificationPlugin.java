@@ -83,14 +83,14 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
         final UUID tenantId = UUID.randomUUID();
 
         // Post ACCOUNT_CREATION event
-        final ExternalBusTestEvent firstEvent = new ExternalBusTestEvent(objectId, ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CREATION, accountId, tenantId, 0L, 1L, UUID.randomUUID());
+        final ExternalBusTestEvent firstEvent = new ExternalBusTestEvent(objectId, ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CREATION, accountId, tenantId, null, 0L, 1L, UUID.randomUUID());
         externalBus.post(firstEvent);
 
         // The plugin should have created a TAG_CREATION event
         checkThePluginGotTheEvent(firstEvent, ExtBusEventType.TAG_CREATION);
 
         // Post ACCOUNT_CHANGE event
-        final ExternalBusTestEvent secondEvent = new ExternalBusTestEvent(objectId, ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CHANGE, accountId, tenantId, 0L, 1L, UUID.randomUUID());
+        final ExternalBusTestEvent secondEvent = new ExternalBusTestEvent(objectId, ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CHANGE, accountId, tenantId, null, 0L, 1L, UUID.randomUUID());
         externalBus.post(secondEvent);
 
         // The plugin should have created a TAG_DELETION event

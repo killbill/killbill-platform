@@ -35,12 +35,13 @@ public class ExternalBusTestEvent implements ExtBusEvent, BusEvent {
     private final UUID tenantId;
     private final ObjectType objectType;
     private final ExtBusEventType eventType;
+    private final String metaData;
     private final Long searchKey1;
     private final Long searchKey2;
     private final UUID userToken;
 
     public ExternalBusTestEvent() {
-        this(UUID.randomUUID(), ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CREATION, UUID.randomUUID(), UUID.randomUUID(), 1L, 2L, UUID.randomUUID());
+        this(UUID.randomUUID(), ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CREATION, UUID.randomUUID(), UUID.randomUUID(), null, 1L, 2L, UUID.randomUUID());
     }
 
     @JsonCreator
@@ -49,6 +50,7 @@ public class ExternalBusTestEvent implements ExtBusEvent, BusEvent {
                                 @JsonProperty("eventType") final ExtBusEventType eventType,
                                 @JsonProperty("accountId") final UUID accountId,
                                 @JsonProperty("tenantId") final UUID tenantId,
+                                @JsonProperty("metaData") final String metaData,
                                 @JsonProperty("searchKey1") final Long searchKey1,
                                 @JsonProperty("searchKey2") final Long searchKey2,
                                 @JsonProperty("userToken") final UUID userToken) {
@@ -57,6 +59,7 @@ public class ExternalBusTestEvent implements ExtBusEvent, BusEvent {
         this.objectId = objectId;
         this.accountId = accountId;
         this.tenantId = tenantId;
+        this.metaData = metaData;
         this.searchKey1 = searchKey1;
         this.searchKey2 = searchKey2;
         this.userToken = userToken;
@@ -65,6 +68,11 @@ public class ExternalBusTestEvent implements ExtBusEvent, BusEvent {
     @Override
     public UUID getObjectId() {
         return objectId;
+    }
+
+    @Override
+    public String getMetaData() {
+        return null;
     }
 
     @Override
