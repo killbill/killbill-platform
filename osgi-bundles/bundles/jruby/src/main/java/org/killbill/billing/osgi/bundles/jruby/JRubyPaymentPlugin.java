@@ -44,7 +44,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
 
-public class JRubyPaymentPlugin extends JRubyPlugin implements PaymentPluginApi {
+public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements PaymentPluginApi {
 
     private volatile ServiceRegistration PaymentTransactionInfoPluginRegistration;
 

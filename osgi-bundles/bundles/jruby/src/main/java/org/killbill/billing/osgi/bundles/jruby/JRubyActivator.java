@@ -37,6 +37,12 @@ import org.osgi.service.log.LogService;
 
 import com.google.common.base.Objects;
 
+/**
+ * Nomenclature:
+ * - 'plugin' is the java wrapper that in this jar (JRubyPlugin and sub-classes)
+ * - 'pluginMain' is the auto-generated api that is charge of the ruby <-> java translation
+ * - config.getRubyMainClass() (i.e: pluginMainClass in JRubyPlugin) is the delegate, that is the real ruby plugin code, which in some case (PaymentPluginApi )is also pseudo-generated)
+ */
 public class JRubyActivator extends KillbillActivatorBase {
 
     private static final String JRUBY_PLUGINS_CONF_DIR = "org.killbill.billing.osgi.bundles.jruby.conf.dir";
@@ -48,10 +54,10 @@ public class JRubyActivator extends KillbillActivatorBase {
     private JRubyPlugin plugin = null;
     private ScheduledFuture<?> restartFuture = null;
 
-    private static final String KILLBILL_PLUGIN_JPAYMENT = "Killbill::Plugin::Api::PaymentPluginApi";
+    private static final String KILLBILL_PLUGIN_JPAYMENT = "Killbill::Plugin::Api::PaymentPluginWithEventsApi";
     private static final String KILLBILL_PLUGIN_JNOTIFICATION = "Killbill::Plugin::Api::NotificationPluginApi";
-    private static final String KILLBILL_PLUGIN_JINVOICE = "Killbill::Plugin::Api::InvoicePluginApi";
-    private static final String KILLBILL_PLUGIN_JCURRENCY = "Killbill::Plugin::Api::CurrencyPluginApi";
+    private static final String KILLBILL_PLUGIN_JINVOICE = "Killbill::Plugin::Api::InvoicePluginWithEventsApi";
+    private static final String KILLBILL_PLUGIN_JCURRENCY = "Killbill::Plugin::Api::CurrencyPluginWithEventsApi";
 
     public void start(final BundleContext context) throws Exception {
         super.start(context);
@@ -84,7 +90,6 @@ public class JRubyActivator extends KillbillActivatorBase {
                 final String pluginMain;
                 if (PluginType.NOTIFICATION.equals(rubyConfig.getPluginType())) {
                     plugin = new JRubyNotificationPlugin(rubyConfig, context, logService, configProperties);
-                    dispatcher.registerEventHandler((OSGIKillbillEventHandler) plugin);
                     pluginMain = KILLBILL_PLUGIN_JNOTIFICATION;
                 } else if (PluginType.PAYMENT.equals(rubyConfig.getPluginType())) {
                     plugin = new JRubyPaymentPlugin(rubyConfig, context, logService, configProperties);
@@ -98,6 +103,8 @@ public class JRubyActivator extends KillbillActivatorBase {
                 } else {
                     throw new IllegalStateException("Unsupported plugin type " + rubyConfig.getPluginType());
                 }
+                // All plugin types can now receive event notifications
+                dispatcher.registerEventHandler((OSGIKillbillEventHandler) plugin);
 
                 // Validate and instantiate the plugin
                 startPlugin(rubyConfig, pluginMain, context);

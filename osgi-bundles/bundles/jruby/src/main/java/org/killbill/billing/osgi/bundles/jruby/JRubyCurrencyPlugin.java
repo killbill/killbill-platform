@@ -36,7 +36,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
 
-public class JRubyCurrencyPlugin extends JRubyPlugin implements CurrencyPluginApi {
+public class JRubyCurrencyPlugin extends JRubyNotificationPlugin implements CurrencyPluginApi {
 
     private volatile ServiceRegistration currencyPluginRegistration;
 

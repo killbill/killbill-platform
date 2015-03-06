@@ -35,7 +35,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
 
-public class JRubyInvoicePlugin extends JRubyPlugin implements InvoicePluginApi {
+public class JRubyInvoicePlugin extends JRubyNotificationPlugin implements InvoicePluginApi {
 
     private volatile ServiceRegistration invoicePluginRegistration;
 
