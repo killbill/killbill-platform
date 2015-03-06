@@ -188,6 +188,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "com.sun.org.apache.xpath," +
              "com.sun.org.apache.xpath.internal," +
              "com.sun.org.apache.xpath.internal.jaxp," +
+             "com.sun.org.apache.xpath.internal.objects," +
              "org.w3c.dom," +
              "org.w3c.dom.bootstrap," +
              "org.w3c.dom.events," +
