@@ -47,9 +47,6 @@ public abstract class JRubyPlugin {
 
     // Killbill gem base classes
     private static final String KILLBILL_PLUGIN_BASE = "Killbill::Plugin::PluginBase";
-    private static final String KILLBILL_PLUGIN_NOTIFICATION = "Killbill::Plugin::Notification";
-    private static final String KILLBILL_PLUGIN_PAYMENT = "Killbill::Plugin::Payment";
-    private static final String KILLBILL_PLUGIN_CURRENCY = "Killbill::Plugin::Currency";
 
     // Magic ruby variables
     private static final String KILLBILL_SERVICES = "java_apis";
