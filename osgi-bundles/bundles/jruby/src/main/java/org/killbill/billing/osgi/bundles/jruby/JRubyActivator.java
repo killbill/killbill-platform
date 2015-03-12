@@ -103,11 +103,12 @@ public class JRubyActivator extends KillbillActivatorBase {
                 } else {
                     throw new IllegalStateException("Unsupported plugin type " + rubyConfig.getPluginType());
                 }
-                // All plugin types can now receive event notifications
-                dispatcher.registerEventHandler((OSGIKillbillEventHandler) plugin);
 
                 // Validate and instantiate the plugin
                 startPlugin(rubyConfig, pluginMain, context);
+
+                // All plugin types can now receive event notifications (register the handler only after the plugin has started)
+                dispatcher.registerEventHandler((OSGIKillbillEventHandler) plugin);
             }
         }, this.getClass().getClassLoader());
     }
