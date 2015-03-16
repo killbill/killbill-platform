@@ -40,12 +40,12 @@ import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.OSGIService;
 import org.killbill.billing.platform.glue.KillBillModule;
-import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
+import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.commons.jdbi.guice.DaoConfig;
-import org.killbill.commons.jdbi.guice.DataSourceProvider;
 import org.osgi.service.http.HttpService;
 import org.skife.config.ConfigurationObjectFactory;
 
+import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
@@ -77,9 +77,9 @@ public class DefaultOSGIModule extends KillBillModule {
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(osgiDataSourceConfig);
 
-        final DataSource realDataSource = new DataSourceProvider(osgiDataSourceConfig, OSGI_NAMED).get();
-        final DataSource dataSource = new ReferenceableDataSourceSpy(realDataSource, OSGI_NAMED);
-        bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(dataSource);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, OSGI_NAMED);
+        requestInjection(dataSourceSpyProvider);
+        bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }
 
     protected void installHttpService() {
