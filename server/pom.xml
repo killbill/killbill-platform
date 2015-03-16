@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright 2010-2013 Ning, Inc.
-  ~ Copyright 2014 Groupon, Inc
-  ~ Copyright 2014 The Billing Project, LLC
+  ~ Copyright 2014-2015 Groupon, Inc
+  ~ Copyright 2014-2015 The Billing Project, LLC
   ~
   ~ The Billing Project licenses this file to you under the Apache License, version 2.0
   ~ (the "License"); you may not use this file except in compliance with the
@@ -317,32 +317,10 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.mortbay.jetty</groupId>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <dependencies>
-                    <dependency>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-classic</artifactId>
-                        <version>${logback.version}</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-core</artifactId>
-                        <version>${logback.version}</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-deploy</artifactId>
-                        <version>${jetty.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-jmx</artifactId>
-                        <version>${jetty.version}</version>
-                    </dependency>
                     <!-- Needed to redirect Jetty logs to slf4j -->
                     <dependency>
                         <groupId>org.slf4j</groupId>
@@ -351,22 +329,13 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <jettyXml>${basedir}/src/main/jetty-config/ning-jetty-conf.xml</jettyXml>
-                    <contextXml>${basedir}/src/main/jetty-config/contexts/root.xml</contextXml>
+                    <webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>
                     <systemProperties>
                         <systemProperty>
-                            <!-- See root.xml -->
-                            <name>xn.jetty.webapps.defaultsDescriptor</name>
-                            <value>${basedir}/src/main/jetty-config/etc/webdefault.xml</value>
-                        </systemProperty>
-                        <systemProperty>
                             <name>logback.configurationFile</name>
-                            <value>file:${basedir}/src/main/resources/logback.xml</value>
+                            <value>file:${basedir}/src/main/webapp/logback.xml</value>
                         </systemProperty>
                     </systemProperties>
-                    <scanIntervalSeconds>0</scanIntervalSeconds>
-                    <stopPort>9966</stopPort>
-                    <stopKey>foo</stopKey>
                 </configuration>
             </plugin>
             <plugin>
@@ -453,7 +422,9 @@
 
                                         <!-- Kill Bill specific files -->
                                         <data>
-                                            <src>${project.build.directory}/${project.name}-${project.version}-jetty-console.war</src>
+                                            <src>
+                                                ${project.build.directory}/${project.name}-${project.version}-jetty-console.war
+                                            </src>
                                             <type>file</type>
                                             <dst>/usr/share/killbill/${project.name}-standalone.war</dst>
                                         </data>
