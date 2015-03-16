@@ -21,6 +21,7 @@ package org.killbill.billing.beatrix.integration.osgi;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+import javax.sql.DataSource;
 
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
@@ -29,7 +30,9 @@ import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.config.OSGIConfig;
+import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
+import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.util.callcontext.CallContext;
@@ -37,6 +40,7 @@ import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
 import org.mockito.Mockito;
 import org.skife.jdbi.v2.IDBI;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
@@ -48,6 +52,7 @@ import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.name.Named;
 import com.jayway.awaitility.Awaitility;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class TestOSGIBase {
 
@@ -63,6 +68,13 @@ public class TestOSGIBase {
 
     @Inject
     protected IDBI dbi;
+
+    @Inject
+    protected DataSource dataSource;
+
+    @Inject
+    @Named(DefaultOSGIModule.OSGI_NAMED)
+    protected DataSource osgiDataSource;
 
     @Inject
     protected OSGIConfig osgiConfig;
@@ -120,6 +132,16 @@ public class TestOSGIBase {
     public void afterMethod() throws Exception {
         lifecycle.fireShutdownSequencePriorEventUnRegistration();
         lifecycle.fireShutdownSequencePostEventUnRegistration();
+    }
+
+    @AfterClass(groups = "slow")
+    public void afterClass() throws Exception {
+        if (dataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) dataSource).getDataSource() instanceof HikariDataSource) {
+            ((HikariDataSource) ((ReferenceableDataSourceSpy) dataSource).getDataSource()).shutdown();
+        }
+        if (osgiDataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource() instanceof HikariDataSource) {
+            ((HikariDataSource) ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource()).shutdown();
+        }
     }
 
     @AfterSuite(groups = "slow")
