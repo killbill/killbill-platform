@@ -214,8 +214,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.crypto.spec," +
              "javax.management," +
              "javax.naming," +
-             "javax.servlet;version=3.0," +
-             "javax.servlet.http;version=3.0," +
+             "javax.servlet;version=3.1," +
+             "javax.servlet.http;version=3.1," +
 
              // Since we are using joda in our APIs we need to export it
              "org.joda.time;org.joda.time.format;version=2.3," +
