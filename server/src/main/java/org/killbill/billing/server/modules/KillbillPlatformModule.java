@@ -44,9 +44,14 @@ import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
 import org.skife.jdbi.v2.IDBI;
+import org.skife.jdbi.v2.TimingCollector;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jdbi.InstrumentedTimingCollector;
 import com.google.inject.Provider;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillModule {
@@ -106,6 +111,13 @@ public class KillbillPlatformModule extends KillBillModule {
         bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toProvider(DBIProvider.class).asEagerSingleton();
     }
 
+    @Provides
+    @Singleton
+    protected TimingCollector provideTimingCollector(final MetricRegistry metricRegistry) {
+        // Metrics / jDBI integration
+        return new InstrumentedTimingCollector(metricRegistry);
+    }
+
     protected void configureConfig() {
         bind(ConfigSource.class).toInstance(skifeConfigSource);
         bind(KillbillServerConfig.class).toInstance(serverConfig);
@@ -125,7 +137,6 @@ public class KillbillPlatformModule extends KillBillModule {
     protected void configureBuses() {
         install(new BusModule(BusModule.BusType.PERSISTENT, false, configSource));
         install(new BusModule(BusModule.BusType.PERSISTENT, true, configSource));
-        //install(new MetricsModule(configSource));
     }
 
     protected void configureNotificationQ() {
