@@ -21,6 +21,7 @@ package org.killbill.billing.server.listeners;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.util.Map.Entry;
 
 import javax.management.MBeanServer;
 import javax.servlet.ServletContext;
@@ -47,10 +48,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
+import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck;
+import com.codahale.metrics.jvm.BufferPoolMetricSet;
+import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.codahale.metrics.logback.InstrumentedAppender;
+import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,6 +87,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
     protected EmbeddedDB embeddedDB;
+    protected JmxReporter metricsJMXReporter;
 
     @Override
     public void contextInitialized(final ServletContextEvent event) {
@@ -107,6 +119,8 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         stopLifecycle();
 
         stopEmbeddedDB();
+
+        stopMetrics();
     }
 
     protected void initializeConfig() throws IOException, URISyntaxException {
@@ -130,7 +144,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
                                                                 METRICS_SERVLETS_PATHS.get(1),
                                                                 METRICS_SERVLETS_PATHS.get(2),
                                                                 METRICS_SERVLETS_PATHS.get(3),
-                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class)),
+                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class, ThreadDeadlockHealthCheck.class)),
                                                 getModule(event.getServletContext()));
 
         // Start the Guice machinery
@@ -163,18 +177,41 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void initializeMetrics(final ServletContextEvent event) {
-
+        final MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
         final MetricRegistry metricRegistry = injector.getInstance(MetricRegistry.class);
+
+        // Instrument SLF4J
         final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
         final ch.qos.logback.classic.Logger root = factory.getLogger(Logger.ROOT_LOGGER_NAME);
-
         final InstrumentedAppender metrics = new InstrumentedAppender(metricRegistry);
         metrics.setContext(root.getLoggerContext());
         metrics.start();
         root.addAppender(metrics);
 
+        // Instrument the JVM
+        registerAll("buffers", new BufferPoolMetricSet(platformMBeanServer), metricRegistry);
+        registerAll("classloading", new ClassLoadingGaugeSet(), metricRegistry);
+        registerAll("gc", new GarbageCollectorMetricSet(), metricRegistry);
+        registerAll("memory", new MemoryUsageGaugeSet(), metricRegistry);
+        registerAll("threads", new ThreadStatesGaugeSet(), metricRegistry);
+
+        // Expose metrics via JMX
+        metricsJMXReporter = JmxReporter.forRegistry(metricRegistry).registerWith(platformMBeanServer).build();
+        metricsJMXReporter.start();
+
         event.getServletContext().setAttribute(HealthCheckServlet.HEALTH_CHECK_REGISTRY, injector.getInstance(HealthCheckRegistry.class));
         event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, metricRegistry);
+        event.getServletContext().setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE, metricRegistry);
+    }
+
+    private void registerAll(final String prefix, final MetricSet metricSet, final MetricRegistry registry) {
+        for (final Entry<String, Metric> entry : metricSet.getMetrics().entrySet()) {
+            if (entry.getValue() instanceof MetricSet) {
+                registerAll(prefix + "." + entry.getKey(), (MetricSet) entry.getValue(), registry);
+            } else {
+                registry.register(prefix + "." + entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     protected void registerEhcacheMBeans() {
@@ -236,6 +273,12 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
                 embeddedDB.stop();
             } catch (final IOException ignored) {
             }
+        }
+    }
+
+    protected void stopMetrics() {
+        if (metricsJMXReporter != null) {
+            metricsJMXReporter.stop();
         }
     }
 
