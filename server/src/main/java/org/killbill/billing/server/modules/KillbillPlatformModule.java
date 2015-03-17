@@ -49,6 +49,7 @@ import org.skife.jdbi.v2.tweak.TransactionHandler;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jdbi.InstrumentedTimingCollector;
+import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
@@ -96,10 +97,6 @@ public class KillbillPlatformModule extends KillBillModule {
         daoConfig = new ConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
         bind(DaoConfig.class).toInstance(daoConfig);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, MAIN_DATA_SOURCE_ID);
-        requestInjection(dataSourceSpyProvider);
-        bind(DataSource.class).toProvider(dataSourceSpyProvider).asEagerSingleton();
-
         final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();
         bind(DatabaseTransactionNotificationApi.class).toInstance(databaseTransactionNotificationApi);
 
@@ -109,6 +106,17 @@ public class KillbillPlatformModule extends KillBillModule {
 
         bind(IDBI.class).toProvider(DBIProvider.class).asEagerSingleton();
         bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toProvider(DBIProvider.class).asEagerSingleton();
+    }
+
+    // https://code.google.com/p/google-guice/issues/detail?id=627
+    // https://github.com/google/guice/issues/627
+    // https://github.com/google/guice/commit/6b7e7187bd074d3f2df9b04e17fa01e7592f295c
+    @Provides
+    @Singleton
+    protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, MAIN_DATA_SOURCE_ID);
+        injector.injectMembers(dataSourceSpyProvider);
+        return dataSourceSpyProvider.get();
     }
 
     @Provides
