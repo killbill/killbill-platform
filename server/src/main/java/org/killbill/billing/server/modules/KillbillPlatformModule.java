@@ -64,7 +64,6 @@ public class KillbillPlatformModule extends KillBillModule {
     protected final KillbillServerConfig serverConfig;
 
     protected DaoConfig daoConfig;
-    protected EmbeddedDB embeddedDB;
 
     public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
         super(configSource);
@@ -132,10 +131,7 @@ public class KillbillPlatformModule extends KillBillModule {
     }
 
     protected void configureEmbeddedDB() {
-        // TODO Pierre Refactor GlobalLockerModule for this to be a real provider?
-        final EmbeddedDBProvider embeddedDBProvider = new EmbeddedDBProvider(daoConfig);
-        embeddedDB = embeddedDBProvider.get();
-        bind(EmbeddedDB.class).toInstance(embeddedDB);
+        bind(EmbeddedDB.class).toProvider(EmbeddedDBProvider.class).asEagerSingleton();
     }
 
     protected void configureLifecycle() {
