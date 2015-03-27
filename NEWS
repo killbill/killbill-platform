@@ -5,7 +5,7 @@
     OSGI
     - export servlet API v3.1.0
     - fix issue in JRuby plugins lifecycle
-    Update killbill-oss-parent to 0.10.0
+    Update killbill-oss-parent to 0.11.0
 
 0.1.4
     OSGI support
