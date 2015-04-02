@@ -1,3 +1,6 @@
+0.1.5
+    Update oss pom to include latest api and plugin-api (and not create transitive dependency issues)
+
 0.1.4
     OSGI support
     Add ability for any plugin to receive bus ext events
