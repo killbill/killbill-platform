@@ -54,6 +54,12 @@
             <artifactId>killbill-api</artifactId>
         </dependency>
         <dependency>
+            <!-- To fix a compilation failure on jdk 1.8 -->
+            <groupId>org.kill-bill.billing</groupId>
+            <artifactId>killbill-platform-osgi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
         </dependency>
