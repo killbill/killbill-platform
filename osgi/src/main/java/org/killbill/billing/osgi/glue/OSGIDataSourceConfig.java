@@ -34,7 +34,7 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Override
     @Description("The jdbc url for the database")
     @Config(DATA_SOURCE_PROP_PREFIX + "url")
-    @Default("jdbc:h2:file:killbill;MODE=MYSQL;DB_CLOSE_DELAY=-1;MVCC=true;DB_CLOSE_ON_EXIT=FALSE")
+    @Default("jdbc:h2:file:/var/tmp/killbill;MODE=MYSQL;DB_CLOSE_DELAY=-1;MVCC=true;DB_CLOSE_ON_EXIT=FALSE")
     String getJdbcUrl();
 
     @Override
