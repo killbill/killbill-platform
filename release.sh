@@ -56,6 +56,4 @@ mvn release:clean && \
 echo "Running: mvn release:prepare" && \
 mvn release:prepare && \
 echo "Running: mvn release:perform" && \
-mvn release:perform && \
-echo "Running mvn nexus-staging:release -Psonatype-oss-release" && \
-cd target/checkout ; mvn nexus-staging:release -Psonatype-oss-release
+mvn release:perform
