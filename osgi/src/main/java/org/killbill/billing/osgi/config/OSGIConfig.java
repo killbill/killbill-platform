@@ -45,11 +45,11 @@ public interface OSGIConfig extends KillbillPlatformConfig {
     @Description("Bundles install directory")
     public String getRootInstallationDir();
 
-    @Config("org.killbill.osgi.system.bundle.export.packages")
+    @Config("org.killbill.osgi.system.bundle.export.packages.api")
     @Default("org.killbill.billing.account.api," +
              "org.killbill.billing.analytics.api.sanity," +
              "org.killbill.billing.analytics.api.user," +
-             "org.killbill.billing.beatrix.bus.api," + /* TODO PIERRE Remove it after plugins classes have been regenerated */
+             "org.killbill.billing.beatrix.bus.api," +
              "org.killbill.billing.catalog.api," +
              "org.killbill.billing.invoice.plugin.api," +
              "org.killbill.billing.invoice.api," +
@@ -79,9 +79,25 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.currency.api," +
              "org.killbill.billing.security.api," +
              "org.killbill.killbill.osgi.libs.killbill," +
+             //
+             // We also add the dependencies from own set of APIs and some osgi compendium thingies...
+             //
+             "org.joda.time;org.joda.time.format;version=2.3," +
+             // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.slf4j)(version>=1.7.0)(!(version>=2.0.0)))
+             "org.slf4j;version=1.7.2," +
+             "org.osgi.service.log;version=1.3," +
+             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (osgi.wiring.package=org.osgi.service.http)
+             "org.osgi.service.http;version=1.2.0," +
+             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
+             "org.osgi.service.deploymentadmin;version=1.1.0," +
+             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
+             "org.osgi.service.event;version=1.2.0")
+    @Description("Kill Bill API packages to export from the system bundle")
+    public String getSystemBundleExportPackagesApi();
 
-             // Add export for all the com.sun.xml.internal.ws required to have apache-cxf working properly within a plugin environment.
-             "com.sun.xml.internal.ws," +
+    // Add export for all the com.sun.xml.internal.ws required to have apache-cxf working properly within a plugin environment
+    @Config("org.killbill.osgi.system.bundle.export.packages.java")
+    @Default("com.sun.xml.internal.ws," +
              "com.sun.xml.internal.ws.addressing," +
              "com.sun.xml.internal.ws.addressing.model," +
              "com.sun.xml.internal.ws.addressing.policy," +
@@ -163,8 +179,9 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "com.sun.xml.internal.ws.wsdl.writer.document.soap," +
              "com.sun.xml.internal.ws.wsdl.writer.document.soap12," +
              "com.sun.xml.internal.ws.wsdl.writer.document.xsd," +
-
              // sax parser
+             "javax.net," +
+             "javax.net.ssl," +
              "javax.xml," +
              "javax.xml.namespace," +
              "javax.xml.parsers," +
@@ -202,7 +219,6 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.xml.sax," +
              "org.xml.sax.ext," +
              "org.xml.sax.helpers," +
-
              // javax.servlet and javax.servlet.http are not exported by default - we
              // need the bundles to see them for them to be able to register their servlets.
              // Note: bundles should mark javax.servlet:servlet-api as provided
@@ -215,19 +231,13 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.management," +
              "javax.naming," +
              "javax.servlet;version=3.1," +
-             "javax.servlet.http;version=3.1," +
+             "javax.servlet.http;version=3.1")
+    @Description("Java extension/platform Packages to export from the system bundle")
+    public String getSystemBundleExportPackagesJava();
 
-             // Since we are using joda in our APIs we need to export it
-             "org.joda.time;org.joda.time.format;version=2.3," +
-             "org.osgi.service.log;version=1.3," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (osgi.wiring.package=org.osgi.service.http)
-             "org.osgi.service.http;version=1.2.0," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
-             "org.osgi.service.deploymentadmin;version=1.1.0," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
-             "org.osgi.service.event;version=1.2.0," +
-             // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.slf4j)(version>=1.7.0)(!(version>=2.0.0)))
-             "org.slf4j;version=1.7.2")
-    @Description("Packages to export from the system bundle")
-    public String getSystemBundleExportPackages();
+    @Config("org.killbill.osgi.system.bundle.export.packages.extra")
+    @Description("Extra packages to export from the system bundle")
+    @Default("")
+    public String getSystemBundleExportPackagesExtra();
+
 }

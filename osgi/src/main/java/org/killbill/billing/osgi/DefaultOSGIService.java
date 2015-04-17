@@ -109,8 +109,20 @@ public class DefaultOSGIService implements OSGIService {
     }
 
     private Framework createAndInitFramework() throws BundleException {
+        final StringBuffer systemExtraPackages = new StringBuffer(osgiConfig.getSystemBundleExportPackagesApi());
+        if (!osgiConfig.getSystemBundleExportPackagesJava().isEmpty()) {
+            systemExtraPackages
+                    .append(",")
+                    .append(osgiConfig.getSystemBundleExportPackagesJava());
+        }
+        if (!osgiConfig.getSystemBundleExportPackagesExtra().isEmpty()) {
+            systemExtraPackages
+                    .append(",")
+                    .append(osgiConfig.getSystemBundleExportPackagesExtra());
+        }
+
         final Map<String, String> config = new HashMap<String, String>();
-        config.put("org.osgi.framework.system.packages.extra", osgiConfig.getSystemBundleExportPackages());
+        config.put("org.osgi.framework.system.packages.extra", systemExtraPackages.toString());
         config.put("felix.cache.rootdir", osgiConfig.getOSGIBundleRootDir());
         config.put("org.osgi.framework.storage", osgiConfig.getOSGIBundleCacheName());
         return createAndInitFelixFrameworkWithSystemBundle(config);
