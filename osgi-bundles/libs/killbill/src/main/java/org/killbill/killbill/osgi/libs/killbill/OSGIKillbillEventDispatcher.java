@@ -65,7 +65,18 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
                             logger.error("OSGIKillbillEventDispatcher unexpected event type " + (arg != null ? arg.getClass() : "null"));
                             return;
                         }
-                        handler.handleKillbillEvent((ExtBusEvent) arg);
+
+                        //
+                        // This is similar to what we did for API calls through ContextClassLoaderHelper, where we ensure that
+                        // plugin is called with a ContextClassLoader correctly initialized with the one from the bundle
+                        //
+                        final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
+                        Thread.currentThread().setContextClassLoader(handler.getClass().getClassLoader());
+                        try {
+                            handler.handleKillbillEvent((ExtBusEvent) arg);
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(initialContextClassLoader);
+                        }
                     }
                 };
                 handlerToObserver.put(handler, observer);
