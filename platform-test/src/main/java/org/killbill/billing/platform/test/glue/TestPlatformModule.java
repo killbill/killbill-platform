@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -30,10 +30,9 @@ import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
-import org.killbill.billing.platform.glue.KillBillModule;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
-import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.queue.DefaultQueueLifecycle;
@@ -41,7 +40,7 @@ import org.skife.jdbi.v2.IDBI;
 
 import com.google.inject.name.Names;
 
-public abstract class TestPlatformModule extends KillBillModule {
+public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
 
     private final boolean withOSGI;
     private final OSGIConfigProperties osgiConfigProperties;

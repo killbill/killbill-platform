@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -27,7 +27,7 @@ import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.api.KillbillConfigSource;
-import org.killbill.billing.platform.glue.KillBillModule;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.platform.test.glue.TestPlatformModuleWithEmbeddedDB;
 import org.killbill.billing.routing.plugin.api.PaymentRoutingPluginApi;
@@ -36,7 +36,7 @@ import org.killbill.clock.ClockMock;
 
 import com.google.inject.TypeLiteral;
 
-public class TestIntegrationModule extends KillBillModule {
+public class TestIntegrationModule extends KillBillPlatformModuleBase {
 
     public TestIntegrationModule(final KillbillConfigSource configSource) {
         super(configSource);

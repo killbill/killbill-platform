@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -26,7 +26,7 @@ import org.killbill.billing.lifecycle.glue.LifecycleModule;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
-import org.killbill.billing.platform.glue.KillBillModule;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.billing.platform.jndi.JNDIManager;
@@ -53,11 +53,10 @@ import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-public class KillbillPlatformModule extends KillBillModule {
-
-    private static final String MAIN_DATA_SOURCE_ID = "main";
+public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
     protected final ServletContext servletContext;
 
@@ -114,6 +113,15 @@ public class KillbillPlatformModule extends KillBillModule {
     @Singleton
     protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
         final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, MAIN_DATA_SOURCE_ID);
+        injector.injectMembers(dataSourceSpyProvider);
+        return dataSourceSpyProvider.get();
+    }
+
+    @Provides
+    @Named(SHIRO_DATA_SOURCE_ID_NAMED)
+    @Singleton
+    protected DataSource provideShiroDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, SHIRO_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
     }

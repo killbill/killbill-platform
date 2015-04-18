@@ -39,7 +39,7 @@ import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.OSGIService;
-import org.killbill.billing.platform.glue.KillBillModule;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.osgi.service.http.HttpService;
@@ -49,7 +49,7 @@ import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 
-public class DefaultOSGIModule extends KillBillModule {
+public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
     public static final String OSGI_NAMED = "osgi";
 
@@ -75,11 +75,11 @@ public class DefaultOSGIModule extends KillBillModule {
     protected void installDataSource() {
         final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
-        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_NAMED)).toInstance(osgiDataSourceConfig);
+        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiDataSourceConfig);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, OSGI_NAMED);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, OSGI_DATA_SOURCE_ID_NAMED);
         requestInjection(dataSourceSpyProvider);
-        bind(DataSource.class).annotatedWith(Names.named(OSGI_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
+        bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }
 
     protected void installHttpService() {

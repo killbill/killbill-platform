@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -22,12 +22,18 @@ import org.skife.config.ConfigSource;
 
 import com.google.inject.AbstractModule;
 
-public abstract class KillBillModule extends AbstractModule {
+public abstract class KillBillPlatformModuleBase extends AbstractModule {
+
+    public static final String MAIN_DATA_SOURCE_ID = "main";
+    public static final String SHIRO_DATA_SOURCE_ID = "shiro";
+    public static final String SHIRO_DATA_SOURCE_ID_NAMED = SHIRO_DATA_SOURCE_ID;
+    public static final String OSGI_DATA_SOURCE_ID = "osgi";
+    public static final String OSGI_DATA_SOURCE_ID_NAMED = OSGI_DATA_SOURCE_ID;
 
     protected final KillbillConfigSource configSource;
     protected final ConfigSource skifeConfigSource;
 
-    public KillBillModule(final KillbillConfigSource configSource) {
+    public KillBillPlatformModuleBase(final KillbillConfigSource configSource) {
         this.configSource = configSource;
         this.skifeConfigSource = new KillbillSkifeConfigSource(configSource);
     }
