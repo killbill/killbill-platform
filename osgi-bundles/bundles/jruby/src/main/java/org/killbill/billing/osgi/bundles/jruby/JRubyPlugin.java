@@ -184,22 +184,22 @@ public abstract class JRubyPlugin {
             builder.append("require 'killbill'\n");
             // Assume the plugin is shipped as a Gem
             builder.append("begin\n")
-                   .append("gem '").append(pluginGemName).append("'\n")
+                   .append("  gem '").append(pluginGemName).append("'\n")
                    .append("rescue Gem::LoadError\n")
-                   .append("warn \"WARN: unable to load gem ").append(pluginGemName).append("\"\n")
+                   .append("  warn \"WARN: unable to load gem ").append(pluginGemName).append("\"\n")
                    .append("end\n");
             builder.append("begin\n")
-                   .append("require '").append(pluginGemName).append("'\n")
-                    .append("rescue LoadError\n")
-                            // Could be useful for debugging
-                            //.append("warn \"WARN: unable to require ").append(pluginGemName).append("\"\n")
-                    .append("end\n");
+                   .append("  require '").append(pluginGemName).append("'\n")
+                   .append("rescue LoadError\n")
+                   // Could be useful for debugging
+                   //.append("  warn \"WARN: unable to require ").append(pluginGemName).append("\"\n")
+                   .append("end\n");
             // Load the extra require file, if specified
             if (rubyRequire != null) {
                 builder.append("begin\n")
-                       .append("require '").append(rubyRequire).append("'\n")
+                       .append("  require '").append(rubyRequire).append("'\n")
                        .append("rescue LoadError => e\n")
-                       .append("warn \"WARN: unable to require ").append(rubyRequire).append(": \" + e.to_s\n")
+                       .append("  warn \"WARN: unable to require ").append(rubyRequire).append(": \" #{e.inspect}\n")
                        .append("end\n");
             }
             // Require any file directly in the pluginLibdir directory (e.g. /var/tmp/bundles/ruby/foo/1.0/gems/*.rb).
