@@ -175,10 +175,18 @@ public abstract class JRubyPlugin {
     private String getRequireLine() {
         if (cachedRequireLine == null) {
             final StringBuilder builder = new StringBuilder();
-            builder.append("ENV[\"GEM_HOME\"] = \"").append(pluginLibdir).append("\"").append("\n");
-            builder.append("ENV[\"GEM_PATH\"] = ENV[\"GEM_HOME\"]\n");
+            builder.append("boot_rb = File.join( File.dirname('").append(pluginLibdir).append("'), 'boot.rb' )\n");
+            builder.append("if File.exists?( boot_rb ) \n");
+            builder.append("  puts 'boot.rb found loading script ...' if $DEBUG \n");
+            builder.append("  load boot_rb \n");
+            builder.append("else\n");
+            builder.append("  puts 'boot.rb not found, setting up GEM_HOME' if $DEBUG \n");
+            builder.append("  ENV[\"GEM_HOME\"] = \"").append(pluginLibdir).append("\"").append("\n");
+            builder.append("  ENV[\"GEM_PATH\"] = ENV[\"GEM_HOME\"]\n");
             // We need to set it really early, as the environment is set statically, as soon as Sinatra is loaded
-            builder.append("ENV[\"RACK_ENV\"] = \"production\"\n");
+            builder.append(" ENV[\"RACK_ENV\"] = \"production\"\n");
+            builder.append("end\n");
+
             // Always require the Killbill gem
             builder.append("gem 'killbill'\n");
             builder.append("require 'killbill'\n");
