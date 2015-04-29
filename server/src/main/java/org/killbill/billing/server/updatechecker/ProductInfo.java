@@ -63,7 +63,6 @@ public class ProductInfo {
 
     private void parseProductInfo(final String resource) throws IOException {
         final URL resourceURL = Resources.getResource(resource);
-        Resources.toString(resourceURL, Charset.forName("UTF-8"));
         props.load(resourceURL.openStream());
     }
 

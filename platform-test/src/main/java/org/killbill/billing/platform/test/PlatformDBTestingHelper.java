@@ -35,8 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CharStreams;
-import com.google.common.io.InputSupplier;
 import com.google.common.io.Resources;
 
 public class PlatformDBTestingHelper {
@@ -107,7 +105,11 @@ public class PlatformDBTestingHelper {
     }
 
     protected String streamToString(final InputStream inputStream) throws IOException {
-        return new String(ByteStreams.toByteArray(inputStream), Charsets.UTF_8);
+        try {
+            return new String(ByteStreams.toByteArray(inputStream), Charsets.UTF_8);
+        } finally {
+            inputStream.close();
+        }
     }
 
     private boolean isUsingLocalInstance() {
