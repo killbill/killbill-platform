@@ -20,6 +20,7 @@ package org.killbill.billing.server.modules;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 import javax.inject.Inject;
 
@@ -75,8 +76,14 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
         }
 
         for (final String ddlFile : getDDLFiles()) {
-            final String ddl = streamToString(Resources.getResource(ddlFile).openStream());
-            embeddedDB.executeScript(ddl);
+            final URL resource = Resources.getResource(ddlFile);
+            final InputStream inputStream = resource.openStream();
+            try {
+                final String ddl = streamToString(inputStream);
+                embeddedDB.executeScript(ddl);
+            } finally {
+                inputStream.close();
+            }
         }
         embeddedDB.refreshTableNames();
     }
