@@ -160,7 +160,7 @@ public abstract class JRubyPlugin {
 
     private String checkInstanceOfPlugin(final String baseClass) {
         // Note: this call can be quite expensive, between 50ms and 100+ms for common plugins
-        final StringBuilder builder = new StringBuilder(getRequireLine());
+        final StringBuilder builder = new StringBuilder(getPluginBootScript());
         builder.append("raise ArgumentError.new('Invalid plugin: ")
                .append(pluginMainClass)
                .append(", is not a ")
@@ -172,51 +172,54 @@ public abstract class JRubyPlugin {
         return builder.toString();
     }
 
-    private String getRequireLine() {
+    private String getPluginBootScript() {
         if (cachedRequireLine == null) {
             final StringBuilder builder = new StringBuilder();
             builder.append("boot_rb = File.join( File.dirname('").append(pluginLibdir).append("'), 'boot.rb' )\n");
-            builder.append("if File.exists?( boot_rb ) \n");
-            builder.append("  puts 'boot.rb found loading script ...' if $DEBUG \n");
-            builder.append("  load boot_rb \n");
-            builder.append("else\n");
-            builder.append("  puts 'boot.rb not found, setting up GEM_HOME' if $DEBUG \n");
-            builder.append("  ENV[\"GEM_HOME\"] = \"").append(pluginLibdir).append("\"").append("\n");
-            builder.append("  ENV[\"GEM_PATH\"] = ENV[\"GEM_HOME\"]\n");
-            // We need to set it really early, as the environment is set statically, as soon as Sinatra is loaded
-            builder.append(" ENV[\"RACK_ENV\"] = \"production\"\n");
-            builder.append("end\n");
-
-            // Always require the Killbill gem
-            builder.append("gem 'killbill'\n");
-            builder.append("require 'killbill'\n");
-            // Assume the plugin is shipped as a Gem
-            builder.append("begin\n")
-                   .append("  gem '").append(pluginGemName).append("'\n")
-                   .append("rescue Gem::LoadError\n")
-                   .append("  warn \"WARN: unable to load gem ").append(pluginGemName).append("\"\n")
+            builder.append("if File.exists?( boot_rb ) \n")
+                   .append("  puts 'boot.rb found loading script ...' if $DEBUG \n")
+                   .append("  load boot_rb \n");
+            builder.append("else\n")
+                   .append("  puts 'boot.rb not found, setting up GEM_HOME' if $DEBUG \n");
+                   appendFallbackBootScript(builder)
                    .append("end\n");
-            builder.append("begin\n")
-                   .append("  require '").append(pluginGemName).append("'\n")
-                   .append("rescue LoadError\n")
-                   // Could be useful for debugging
-                   //.append("  warn \"WARN: unable to require ").append(pluginGemName).append("\"\n")
-                   .append("end\n");
-            // Load the extra require file, if specified
-            if (rubyRequire != null) {
-                builder.append("begin\n")
-                       .append("  require '").append(rubyRequire).append("'\n")
-                       .append("rescue LoadError => e\n")
-                       .append("  warn \"WARN: unable to require ").append(rubyRequire).append(": \" #{e.inspect}\n")
-                       .append("end\n");
-            }
-            // Require any file directly in the pluginLibdir directory (e.g. /var/tmp/bundles/ruby/foo/1.0/gems/*.rb).
-            // Although it is likely that any Killbill plugin will be distributed as a gem, it is still useful to
-            // be able to load individual scripts for prototyping/testing/...
-            builder.append("Dir.glob(ENV[\"GEM_HOME\"] + \"/*.rb\").each {|x| require x rescue warn \"WARN: unable to load #{x}\"}\n");
             cachedRequireLine = builder.toString();
         }
         return cachedRequireLine;
+    }
+
+    private StringBuilder appendFallbackBootScript(final StringBuilder builder) {
+        builder.append("  ENV[\"GEM_HOME\"] = \"").append(pluginLibdir).append("\"").append("\n");
+        builder.append("  ENV[\"GEM_PATH\"] = ENV[\"GEM_HOME\"]\n");
+        // We need to set it really early, as the environment is set statically, as soon as Sinatra is loaded
+        builder.append(" ENV[\"RACK_ENV\"] = \"production\"\n");
+        // Always require the Killbill gem
+        builder.append("  gem 'killbill'\n");
+        builder.append("  require 'killbill'\n");
+        // Assume the plugin is shipped as a Gem
+        builder.append("  begin\n")
+               .append("    gem '").append(pluginGemName).append("'\n")
+               .append("  rescue LoadError \n")
+               .append("    warn \"WARN: unable to load gem ").append(pluginGemName).append("\"\n")
+               .append("  end\n");
+        builder.append("  begin\n")
+               .append("    require '").append(pluginGemName).append("'\n")
+               .append("  rescue LoadError => e \n")
+               .append("    warn \"WARN: unable to require ").append(pluginGemName).append("\" if $DEBUG \n")
+               .append("  end\n");
+        // Load the extra require file, if specified
+        if (rubyRequire != null) {
+            builder.append("  begin\n")
+                   .append("    require '").append(rubyRequire).append("'\n")
+                   .append("  rescue LoadError => e \n")
+                   .append("    warn \"WARN: unable to require ").append(rubyRequire).append(": #{e.inspect} \"\n")
+                   .append("  end\n");
+        }
+        // Require any file directly in the pluginLibdir directory (e.g. /var/tmp/bundles/ruby/foo/1.0/gems/*.rb).
+        // Although it is likely that any Killbill plugin will be distributed as a gem, it is still useful to
+        // be able to load individual scripts for prototyping/testing/...
+        builder.append("  Dir.glob(ENV[\"GEM_HOME\"] + \"/*.rb\").each {|x| require x rescue warn \"WARN: unable to load #{x}\"}\n");
+        return builder;
     }
 
     private Ruby getRuntime() {
