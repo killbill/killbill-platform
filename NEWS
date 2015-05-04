@@ -8,6 +8,7 @@
     Update killbill-oss-parent to 0.11
     https://github.com/killbill/killbill-platform/issues/5
     https://github.com/killbill/killbill-platform/issues/6
+    JRuby: add support for boot.rb script (https://github.com/killbill/killbill-plugin-framework-ruby/pull/36)
 
 0.1.5
     Update oss pom to include latest api and plugin-api (and not create transitive dependency issues)
