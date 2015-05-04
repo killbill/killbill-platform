@@ -47,7 +47,6 @@ import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -60,7 +59,6 @@ import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
-import com.codahale.metrics.logback.InstrumentedAppender;
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
@@ -181,12 +179,17 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         final MetricRegistry metricRegistry = injector.getInstance(MetricRegistry.class);
 
         // Instrument SLF4J
-        final LoggerContext factory = (LoggerContext) LoggerFactory.getILoggerFactory();
-        final ch.qos.logback.classic.Logger root = factory.getLogger(Logger.ROOT_LOGGER_NAME);
-        final InstrumentedAppender metrics = new InstrumentedAppender(metricRegistry);
-        metrics.setContext(root.getLoggerContext());
-        metrics.start();
-        root.addAppender(metrics);
+        final Object factory = LoggerFactory.getILoggerFactory();
+        if ("ch.qos.logback.classic.LoggerContext".equals(factory.getClass().getName())) {
+            final ch.qos.logback.classic.Logger root = ((ch.qos.logback.classic.LoggerContext) factory).getLogger(Logger.ROOT_LOGGER_NAME);
+
+            final com.codahale.metrics.logback.InstrumentedAppender metrics = new com.codahale.metrics.logback.InstrumentedAppender(metricRegistry);
+            metrics.setContext(root.getLoggerContext());
+            metrics.start();
+            root.addAppender(metrics);
+        } else {
+            logger.info("{} not a logback logger factory, {} not started", factory, metricRegistry);
+        }
 
         // Instrument the JVM
         registerAll("buffers", new BufferPoolMetricSet(platformMBeanServer), metricRegistry);
