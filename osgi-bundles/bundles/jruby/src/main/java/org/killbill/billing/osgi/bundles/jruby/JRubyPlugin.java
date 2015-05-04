@@ -225,8 +225,9 @@ public abstract class JRubyPlugin {
 
     private ScriptingContainer setupScriptingContainer() {
         final String propLocalContextScope =  configProperties.getString("org.killbill.jruby.context.scope");
-        final LocalContextScope localContextScope = propLocalContextScope != null ? LocalContextScope.valueOf(propLocalContextScope) : LocalContextScope.SINGLETHREAD;
-        log.info("JrubyPlugin creating scripting container with localContextScope " + localContextScope);
+        final LocalContextScope localContextScope = propLocalContextScope != null ?
+                LocalContextScope.valueOf(propLocalContextScope) : LocalContextScope.SINGLETHREAD;
+        log.info("Creating scripting container with localContextScope " + localContextScope);
         final ScriptingContainer scriptingContainer = new ScriptingContainer(localContextScope, LocalVariableBehavior.TRANSIENT, true);
 
         // Set the load paths instead of adding, to avoid looking at the filesystem
