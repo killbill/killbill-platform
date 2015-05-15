@@ -190,6 +190,12 @@
                             javax.management.*;
                             javax.naming;
                             javax.naming.*;
+                            javax.sql;
+                            javax.sql.*;
+                            javax.sql.rowset;
+                            javax.sql.rowset.*;
+                            javax.sql.rowset.serial;
+                            javax.sql.rowset.serial.*;
                             javax.crypto;
                             javax.crypto.*;
                             javax.crypto.spec;

@@ -187,6 +187,9 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.net.ssl," +
              "javax.crypto," +
              "javax.crypto.spec," +
+             "javax.sql," +
+             "javax.sql.rowset," +
+             "javax.sql.rowset.serial," +
              // XML (sax parser)
              "javax.xml," +
              "javax.xml.namespace," +
