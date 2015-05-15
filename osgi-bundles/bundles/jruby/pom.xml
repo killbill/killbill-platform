@@ -184,6 +184,8 @@
                             sun.security.*;
                             sun.security.util;
                             sun.security.util.*;
+                            javax.annotation;
+                            javax.annotation.*;
                             javax.management;
                             javax.management.*;
                             javax.naming;
