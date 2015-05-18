@@ -190,6 +190,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.sql," +
              "javax.sql.rowset," +
              "javax.sql.rowset.serial," +
+             "javax.transaction," +
+             "javax.transaction.xa," +
              // XML (sax parser)
              "javax.xml," +
              "javax.xml.namespace," +

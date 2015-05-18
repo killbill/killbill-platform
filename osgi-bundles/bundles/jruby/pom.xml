@@ -212,6 +212,8 @@
                             javax.security.auth.*;
                             javax.security.auth.x500;
                             javax.security.auth.x500.*;
+                            javax.transaction;
+                            javax.transaction.xa;
                             <!-- nokogiri -->
                             javax.xml;
                             javax.xml.namespace;
