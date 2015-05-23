@@ -184,10 +184,18 @@
                             sun.security.*;
                             sun.security.util;
                             sun.security.util.*;
+                            javax.annotation;
+                            javax.annotation.*;
                             javax.management;
                             javax.management.*;
                             javax.naming;
                             javax.naming.*;
+                            javax.sql;
+                            javax.sql.*;
+                            javax.sql.rowset;
+                            javax.sql.rowset.*;
+                            javax.sql.rowset.serial;
+                            javax.sql.rowset.serial.*;
                             javax.crypto;
                             javax.crypto.*;
                             javax.crypto.spec;
@@ -204,6 +212,8 @@
                             javax.security.auth.*;
                             javax.security.auth.x500;
                             javax.security.auth.x500.*;
+                            javax.transaction;
+                            javax.transaction.xa;
                             <!-- nokogiri -->
                             javax.xml;
                             javax.xml.namespace;
