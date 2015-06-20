@@ -32,6 +32,7 @@ import javax.inject.Named;
 import javax.servlet.Servlet;
 import javax.sql.DataSource;
 
+import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
@@ -122,6 +123,12 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     @Inject(optional = true)
     public void addPaymentControlPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<PaymentRoutingPluginApi> paymentControlProviderPluginRegistry) {
         allRegistrationHandlers.add(paymentControlProviderPluginRegistry);
+    }
+
+
+    @Inject(optional = true)
+    public void addCatalogPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<CatalogPluginApi> catalogProviderPluginRegistry) {
+        allRegistrationHandlers.add(catalogProviderPluginRegistry);
     }
 
     @Override
