@@ -76,6 +76,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.util.template," +
              "org.killbill.billing.util.template.translation," +
              "org.killbill.billing.currency.plugin.api," +
+             "org.killbill.billing.catalog.plugin.api," +
              "org.killbill.billing.currency.api," +
              "org.killbill.billing.security.api," +
              "org.killbill.killbill.osgi.libs.killbill," +
@@ -194,6 +195,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.transaction.xa," +
              // XML (sax parser)
              "javax.xml," +
+             "javax.xml.bind," +
+             "javax.xml.validation," +
              "javax.xml.namespace," +
              "javax.xml.parsers," +
              "javax.xml.validation," +
