@@ -271,12 +271,12 @@ public abstract class JRubyPlugin {
         return escaped;
     }
 
-    protected abstract class PluginCallback<T> {
+    protected abstract class PluginCallback<T, E extends Throwable> {
 
-        public abstract T doCall(final Ruby runtime) throws PaymentPluginApiException;
+        public abstract T doCall(final Ruby runtime) throws E;
     }
 
-    protected <T> T callWithRuntimeAndChecking(final PluginCallback<T> cb) throws PaymentPluginApiException {
+    protected <T, E extends Throwable> T callWithRuntimeAndChecking(final PluginCallback<T, E > cb) throws E {
         try {
             checkPluginIsRunning();
             final Ruby runtime = getRuntime();

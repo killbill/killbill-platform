@@ -22,7 +22,6 @@ import org.jruby.Ruby;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.notification.plugin.api.NotificationPluginApi;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
@@ -36,16 +35,12 @@ public class JRubyNotificationPlugin extends JRubyPlugin implements OSGIKillbill
 
     @Override
     public void handleKillbillEvent(final ExtBusEvent killbillEvent) {
-        try {
-            callWithRuntimeAndChecking(new PluginCallback() {
-                @Override
-                public Void doCall(final Ruby runtime) throws PaymentPluginApiException {
-                    ((NotificationPluginApi) pluginInstance).onEvent(killbillEvent);
-                    return null;
-                }
-            });
-        } catch (final PaymentPluginApiException e) {
-            throw new IllegalStateException("Unexpected PaymentApiException for notification plugin", e);
-        }
+        callWithRuntimeAndChecking(new PluginCallback<Void, RuntimeException>() {
+            @Override
+            public Void doCall(final Ruby runtime) throws RuntimeException {
+                ((NotificationPluginApi) pluginInstance).onEvent(killbillEvent);
+                return null;
+            }
+        });
     }
 }
