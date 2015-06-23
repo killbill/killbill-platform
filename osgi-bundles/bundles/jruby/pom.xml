@@ -80,6 +80,10 @@
             <artifactId>killbill-plugin-api-payment</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-routing</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.commons</groupId>
             <artifactId>killbill-concurrent</artifactId>
         </dependency>
