@@ -1,3 +1,6 @@
+
+    Add jruby support for catalog and control plugin
+
 0.2
     Upgrade Dropwizard metrics (3.1.1)
     - enable JVM, servlet and jDBI metrics
