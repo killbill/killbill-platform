@@ -80,6 +80,11 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-catalog</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-currency</artifactId>
             <scope>provided</scope>
         </dependency>

@@ -46,7 +46,7 @@ import org.osgi.service.log.LogService;
 
 public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements PaymentPluginApi {
 
-    private volatile ServiceRegistration PaymentTransactionInfoPluginRegistration;
+    private volatile ServiceRegistration serviceRegistration;
 
     public JRubyPaymentPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
         super(config, bundleContext, logger, configProperties);
@@ -59,13 +59,13 @@ public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements Payme
         final Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("name", pluginMainClass);
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
-        PaymentTransactionInfoPluginRegistration = context.registerService(PaymentPluginApi.class.getName(), this, props);
+        serviceRegistration = context.registerService(PaymentPluginApi.class.getName(), this, props);
     }
 
     @Override
     public void stopPlugin(final BundleContext context) {
-        if (PaymentTransactionInfoPluginRegistration != null) {
-            PaymentTransactionInfoPluginRegistration.unregister();
+        if (serviceRegistration != null) {
+            serviceRegistration.unregister();
         }
         super.stopPlugin(context);
     }
