@@ -30,7 +30,6 @@ import org.killbill.billing.currency.api.Rate;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -64,71 +63,51 @@ public class JRubyCurrencyPlugin extends JRubyNotificationPlugin implements Curr
 
     @Override
     public Set<Currency> getBaseCurrencies() {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<Set<Currency>>() {
-                @Override
-                public Set<Currency> doCall(final Ruby runtime) throws PaymentPluginApiException {
-                    return ((CurrencyPluginApi) pluginInstance).getBaseCurrencies();
-                }
-            });
-        } catch (final PaymentPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<Set<Currency>, RuntimeException>() {
+            @Override
+            public Set<Currency> doCall(final Ruby runtime) {
+                return ((CurrencyPluginApi) pluginInstance).getBaseCurrencies();
+            }
+        });
     }
 
     @Override
     public DateTime getLatestConversionDate(final Currency currency) {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<DateTime>() {
-                @Override
-                public DateTime doCall(final Ruby runtime) throws PaymentPluginApiException {
-                    return ((CurrencyPluginApi) pluginInstance).getLatestConversionDate(currency);
-                }
-            });
-        } catch (final PaymentPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<DateTime, RuntimeException>() {
+            @Override
+            public DateTime doCall(final Ruby runtime) {
+                return ((CurrencyPluginApi) pluginInstance).getLatestConversionDate(currency);
+            }
+        });
     }
 
     @Override
     public SortedSet<DateTime> getConversionDates(final Currency currency) {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<SortedSet<DateTime>>() {
-                @Override
-                public SortedSet<DateTime> doCall(final Ruby runtime) throws PaymentPluginApiException {
-                    return ((CurrencyPluginApi) pluginInstance).getConversionDates(currency);
-                }
-            });
-        } catch (final PaymentPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<SortedSet<DateTime>, RuntimeException>() {
+            @Override
+            public SortedSet<DateTime> doCall(final Ruby runtime) {
+                return ((CurrencyPluginApi) pluginInstance).getConversionDates(currency);
+            }
+        });
     }
 
     @Override
     public Set<Rate> getCurrentRates(final Currency currency) {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>>() {
-                @Override
-                public Set<Rate> doCall(final Ruby runtime) throws PaymentPluginApiException {
-                    return ((CurrencyPluginApi) pluginInstance).getCurrentRates(currency);
-                }
-            });
-        } catch (final PaymentPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>, RuntimeException>() {
+            @Override
+            public Set<Rate> doCall(final Ruby runtime) {
+                return ((CurrencyPluginApi) pluginInstance).getCurrentRates(currency);
+            }
+        });
     }
 
     @Override
     public Set<Rate> getRates(final Currency currency, final DateTime time) {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>>() {
-                @Override
-                public Set<Rate> doCall(final Ruby runtime) throws PaymentPluginApiException {
-                    return ((CurrencyPluginApi) pluginInstance).getRates(currency, time);
-                }
-            });
-        } catch (final PaymentPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<Set<Rate>, RuntimeException>() {
+            @Override
+            public Set<Rate> doCall(final Ruby runtime) {
+                return ((CurrencyPluginApi) pluginInstance).getRates(currency, time);
+            }
+        });
     }
 }
