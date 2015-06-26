@@ -173,6 +173,7 @@
                             org.killbill.billing.subscription.api.transfer;
                             org.killbill.billing.subscription.api.user;
                             org.killbill.billing.junction.api;
+                            org.killbill.billing.catalog.api.rules;
                             org.killbill.billing;
                             org.killbill.billing.osgi.api;
                             org.killbill.billing.overdue;
