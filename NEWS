@@ -1,4 +1,5 @@
 
+    Add missing import/export package in OSGIConfig and for the jruby MANIFEST plugin
     Add jruby support for catalog and control plugin
 
 0.2
