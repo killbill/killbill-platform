@@ -28,6 +28,7 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
+import org.killbill.commons.embeddeddb.postgresql.PostgreSQLStandaloneDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
 import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
@@ -57,12 +58,22 @@ public class PlatformDBTestingHelper {
         if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.h2"))) {
             log.info("Using h2 as the embedded database");
             instance = new H2EmbeddedDB();
+        } else if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.postgresql"))) {
+            if (isUsingLocalInstance()) {
+                log.info("Using postgresql local database");
+                final String databaseName = System.getProperty("org.killbill.billing.dbi.test.localDb.database", "postgres");
+                final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "postgres");
+                final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "postgres");
+                instance = new PostgreSQLStandaloneDB(databaseName, username, password);
+            } else {
+                throw new UnsupportedOperationException("PostgreSQL can be chosen for stand-alone mode; set org.killbill.billing.dbi.test.useLocalDb to true.");
+            }
         } else {
             if (isUsingLocalInstance()) {
                 log.info("Using MySQL local database");
                 final String databaseName = System.getProperty("org.killbill.billing.dbi.test.localDb.database", "killbill");
-                final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "root");
-                final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "root");
+                final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "root");
+                final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "root");
                 instance = new MySQLStandaloneDB(databaseName, username, password);
             } else {
                 log.info("Using MySQL as the embedded database");
