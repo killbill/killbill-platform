@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -28,6 +28,7 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
+import org.killbill.commons.embeddeddb.postgresql.PostgreSQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.postgresql.PostgreSQLStandaloneDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
 import org.skife.jdbi.v2.IDBI;
@@ -60,13 +61,14 @@ public class PlatformDBTestingHelper {
             instance = new H2EmbeddedDB();
         } else if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.postgresql"))) {
             if (isUsingLocalInstance()) {
-                log.info("Using postgresql local database");
+                log.info("Using PostgreSQL local database");
                 final String databaseName = System.getProperty("org.killbill.billing.dbi.test.localDb.database", "postgres");
                 final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "postgres");
                 final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "postgres");
                 instance = new PostgreSQLStandaloneDB(databaseName, username, password);
             } else {
-                throw new UnsupportedOperationException("PostgreSQL can be chosen for stand-alone mode; set org.killbill.billing.dbi.test.useLocalDb to true.");
+                log.info("Using PostgreSQL as the embedded database");
+                instance = new PostgreSQLEmbeddedDB();
             }
         } else {
             if (isUsingLocalInstance()) {
