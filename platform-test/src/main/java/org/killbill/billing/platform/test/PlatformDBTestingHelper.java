@@ -43,6 +43,7 @@ public class PlatformDBTestingHelper {
 
     private static final Logger log = LoggerFactory.getLogger(PlatformDBTestingHelper.class);
     private static final String TEST_DATA_SOURCE_ID = "test";
+    private static final String TEST_DB_PROPERTY_PREFIX = "org.killbill.billing.dbi.test.";
 
     protected EmbeddedDB instance;
 
@@ -56,15 +57,15 @@ public class PlatformDBTestingHelper {
     }
 
     protected PlatformDBTestingHelper() {
-        if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.h2"))) {
+        if ("true".equals(System.getProperty(TEST_DB_PROPERTY_PREFIX + "h2"))) {
             log.info("Using h2 as the embedded database");
             instance = new H2EmbeddedDB();
-        } else if ("true".equals(System.getProperty("org.killbill.billing.dbi.test.postgresql"))) {
+        } else if ("true".equals(System.getProperty(TEST_DB_PROPERTY_PREFIX + "postgresql"))) {
             if (isUsingLocalInstance()) {
                 log.info("Using PostgreSQL local database");
-                final String databaseName = System.getProperty("org.killbill.billing.dbi.test.localDb.database", "postgres");
-                final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "postgres");
-                final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "postgres");
+                final String databaseName = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.database", "postgres");
+                final String username = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.username", "postgres");
+                final String password = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.password", "postgres");
                 instance = new PostgreSQLStandaloneDB(databaseName, username, password);
             } else {
                 log.info("Using PostgreSQL as the embedded database");
@@ -73,9 +74,9 @@ public class PlatformDBTestingHelper {
         } else {
             if (isUsingLocalInstance()) {
                 log.info("Using MySQL local database");
-                final String databaseName = System.getProperty("org.killbill.billing.dbi.test.localDb.database", "killbill");
-                final String username = System.getProperty("org.killbill.billing.dbi.test.localDb.username", "root");
-                final String password = System.getProperty("org.killbill.billing.dbi.test.localDb.password", "root");
+                final String databaseName = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.database", "killbill");
+                final String username = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.username", "root");
+                final String password = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.password", "root");
                 instance = new MySQLStandaloneDB(databaseName, username, password);
             } else {
                 log.info("Using MySQL as the embedded database");
@@ -126,6 +127,6 @@ public class PlatformDBTestingHelper {
     }
 
     private boolean isUsingLocalInstance() {
-        return (System.getProperty("org.killbill.billing.dbi.test.useLocalDb") != null);
+        return (System.getProperty(TEST_DB_PROPERTY_PREFIX + "useLocalDb") != null);
     }
 }
