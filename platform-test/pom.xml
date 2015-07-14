@@ -153,6 +153,11 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-entitlement</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-invoice</artifactId>
             <scope>test</scope>
         </dependency>

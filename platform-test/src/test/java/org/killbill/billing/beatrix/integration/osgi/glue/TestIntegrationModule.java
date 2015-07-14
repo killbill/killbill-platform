@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
+import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
@@ -53,6 +54,7 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
         bind(new TypeLiteral<OSGIServiceRegistration<InvoicePluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<InvoicePluginApi>(InvoicePluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentRoutingPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentRoutingPluginApi>(PaymentRoutingPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CatalogPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CatalogPluginApi>(CatalogPluginApi.class));
+        bind(new TypeLiteral<OSGIServiceRegistration<EntitlementPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<EntitlementPluginApi>(EntitlementPluginApi.class));
     }
 
     public static final class TestPlatformPaymentProviderPluginRegistry<T> implements OSGIServiceRegistration<T> {
