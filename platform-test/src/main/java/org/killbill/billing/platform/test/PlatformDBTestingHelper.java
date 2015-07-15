@@ -63,7 +63,7 @@ public class PlatformDBTestingHelper {
         } else if ("true".equals(System.getProperty(TEST_DB_PROPERTY_PREFIX + "postgresql"))) {
             if (isUsingLocalInstance()) {
                 log.info("Using PostgreSQL local database");
-                final String databaseName = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.database", "postgres");
+                final String databaseName = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.database", "killbill");
                 final String username = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.username", "postgres");
                 final String password = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.password", "postgres");
                 instance = new PostgreSQLStandaloneDB(databaseName, username, password);
