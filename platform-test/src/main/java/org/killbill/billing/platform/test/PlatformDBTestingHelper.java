@@ -20,11 +20,13 @@ package org.killbill.billing.platform.test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 
 import javax.sql.DataSource;
 
 import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.killbill.commons.embeddeddb.GenericStandaloneDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
@@ -108,14 +110,43 @@ public class PlatformDBTestingHelper {
             return;
         }
 
+        executeEngineSpecificScripts();
+
         executePostStartupScripts();
 
         instance.refreshTableNames();
     }
 
     protected synchronized void executePostStartupScripts() throws IOException {
-        final String ddl = streamToString(Resources.getResource("org/killbill/billing/beatrix/ddl.sql").openStream());
+        final String resourcesBase = "org/killbill/billing/beatrix";
+        try {
+            final String databaseSpecificDDL = streamToString(Resources.getResource(resourcesBase + "/" + "ddl-" + instance.getDBEngine().name().toLowerCase() + ".sql").openStream());
+            instance.executeScript(databaseSpecificDDL);
+        } catch (final IllegalArgumentException e) {
+            // No engine-specific DDL
+        }
+
+        final String ddl = streamToString(Resources.getResource(resourcesBase + "/ddl.sql").openStream());
         instance.executeScript(ddl);
+    }
+
+    protected synchronized void executeEngineSpecificScripts() throws IOException {
+        switch (instance.getDBEngine()) {
+            case POSTGRESQL:
+                final int port = URI.create(instance.getJdbcConnectionString().substring(5)).getPort();
+                final GenericStandaloneDB postgreSQLDBConnection = new PostgreSQLStandaloneDB(instance.getDatabaseName(), "postgres", "postgres", "jdbc:postgresql://localhost:" + port + "/postgres");
+                postgreSQLDBConnection.initialize();
+                postgreSQLDBConnection.start();
+                try {
+                    // Setup permissions required by the PostgreSQL-specific DDL
+                    postgreSQLDBConnection.executeScript("alter role " + instance.getUsername() + " with superuser;");
+                } finally {
+                    postgreSQLDBConnection.stop();
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     protected String streamToString(final InputStream inputStream) throws IOException {
