@@ -40,12 +40,12 @@ public class TestDao {
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
                 conn.execute("DROP TABLE IF EXISTS test_bundle;");
                 conn.execute("CREATE TABLE test_bundle (" +
-                             "record_id int(11) unsigned NOT NULL AUTO_INCREMENT, " +
+                             "record_id serial unique, " +
                              "is_started bool DEFAULT false, " +
                              "is_logged bool DEFAULT false, " +
                              "external_key varchar(128) NULL, " +
-                             "payment_id char(36) NULL," +
-                             "payment_method_id char(36) NULL," +
+                             "payment_id varchar(36) NULL," +
+                             "payment_method_id varchar(36) NULL," +
                              "payment_amount decimal(10,4) NULL," +
                              "PRIMARY KEY(record_id)" +
                              ");");
@@ -58,7 +58,7 @@ public class TestDao {
         dbi.inTransaction(new TransactionCallback<Object>() {
             @Override
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
-                conn.execute("INSERT INTO test_bundle (is_started) VALUES (1);");
+                conn.execute("INSERT INTO test_bundle (is_started) VALUES (true);");
                 return null;
             }
         });
