@@ -31,3 +31,4 @@ killbill.trace.db
 server/test.db
 TODO
 .idea/dictionaries/
+.idea/dbnavigator.xml
