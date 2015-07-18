@@ -119,6 +119,10 @@ public class PlatformDBTestingHelper {
 
     protected synchronized void executePostStartupScripts() throws IOException {
         final String resourcesBase = "org/killbill/billing/beatrix";
+        executePostStartupScripts(resourcesBase);
+    }
+
+    protected void executePostStartupScripts(final String resourcesBase) throws IOException {
         try {
             final String databaseSpecificDDL = streamToString(Resources.getResource(resourcesBase + "/" + "ddl-" + instance.getDBEngine().name().toLowerCase() + ".sql").openStream());
             instance.executeScript(databaseSpecificDDL);
