@@ -32,21 +32,105 @@
         <module name="killbill-osgi-bundles-test-beatrix" />
         <module name="killbill-osgi-bundles-test-payment" />
         <module name="killbill-osgi-bundles-webconsolebranding" />
-        <module name="killbill-platform-api" />
-        <module name="killbill-platform-base" />
-        <module name="killbill-platform-lifecycle" />
-        <module name="killbill-platform-osgi" />
-        <module name="killbill-platform-osgi-api" />
-        <module name="killbill-platform-osgi-bundles-jruby" />
-        <module name="killbill-platform-osgi-bundles-lib-killbill" />
-        <module name="killbill-platform-osgi-bundles-lib-slf4j-osgi" />
-        <module name="killbill-platform-osgi-bundles-logger" />
-        <module name="killbill-platform-osgi-bundles-test-beatrix" />
-        <module name="killbill-platform-osgi-bundles-test-payment" />
-        <module name="killbill-platform-osgi-bundles-webconsolebranding" />
-        <module name="killbill-platform-server" />
-        <module name="killbill-platform-test" />
         <module name="killbill-server" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-test" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-test" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-api" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-api" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-lib-killbill" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-lib-killbill" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-test-beatrix" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-test-beatrix" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-api" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-api" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-logger" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-logger" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-base" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-base" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-webconsolebranding" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-webconsolebranding" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-jruby" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-jruby" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-server" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-server" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-test-payment" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-test-payment" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-lifecycle" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-lifecycle" />
+      </profile>
+      <profile default="false" name="Annotation profile for killbill-platform-osgi-bundles-lib-slf4j-osgi" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="killbill-platform-osgi-bundles-lib-slf4j-osgi" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -89,4 +173,3 @@
     </bytecodeTargetLevel>
   </component>
 </project>
-

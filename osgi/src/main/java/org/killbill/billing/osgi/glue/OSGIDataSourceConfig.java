@@ -58,7 +58,7 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Override
     @Description("The maximum allowed number of active connections to the database")
     @Config(DATA_SOURCE_PROP_PREFIX + "maxActive")
-    @Default("30")
+    @Default("100")
     int getMaxActive();
 
     @Override

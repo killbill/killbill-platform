@@ -24,18 +24,18 @@ import org.jruby.Ruby;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.api.PluginProperty;
-import org.killbill.billing.routing.plugin.api.OnFailurePaymentRoutingResult;
-import org.killbill.billing.routing.plugin.api.OnSuccessPaymentRoutingResult;
-import org.killbill.billing.routing.plugin.api.PaymentRoutingApiException;
-import org.killbill.billing.routing.plugin.api.PaymentRoutingContext;
-import org.killbill.billing.routing.plugin.api.PaymentRoutingPluginApi;
-import org.killbill.billing.routing.plugin.api.PriorPaymentRoutingResult;
+import org.killbill.billing.control.plugin.api.OnFailurePaymentControlResult;
+import org.killbill.billing.control.plugin.api.OnSuccessPaymentControlResult;
+import org.killbill.billing.control.plugin.api.PaymentControlApiException;
+import org.killbill.billing.control.plugin.api.PaymentControlContext;
+import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
+import org.killbill.billing.control.plugin.api.PriorPaymentControlResult;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
 
-public class JRubyPaymentControlPlugin extends JRubyNotificationPlugin implements PaymentRoutingPluginApi {
+public class JRubyPaymentControlPlugin extends JRubyNotificationPlugin implements PaymentControlPluginApi {
 
     private volatile ServiceRegistration serviceRegistration;
 
@@ -50,7 +50,7 @@ public class JRubyPaymentControlPlugin extends JRubyNotificationPlugin implement
         final Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("name", pluginMainClass);
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
-        serviceRegistration = context.registerService(PaymentRoutingPluginApi.class.getName(), this, props);
+        serviceRegistration = context.registerService(PaymentControlPluginApi.class.getName(), this, props);
     }
 
     @Override
@@ -62,43 +62,43 @@ public class JRubyPaymentControlPlugin extends JRubyNotificationPlugin implement
     }
 
     @Override
-    public PriorPaymentRoutingResult priorCall(final PaymentRoutingContext context, final Iterable<PluginProperty> properties) throws PaymentRoutingApiException {
+    public PriorPaymentControlResult priorCall(final PaymentControlContext context, final Iterable<PluginProperty> properties) throws PaymentControlApiException {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<PriorPaymentRoutingResult, PaymentRoutingApiException>() {
+            return callWithRuntimeAndChecking(new PluginCallback<PriorPaymentControlResult, PaymentControlApiException>() {
                 @Override
-                public PriorPaymentRoutingResult doCall(final Ruby runtime) throws PaymentRoutingApiException {
-                    return ((PaymentRoutingPluginApi) pluginInstance).priorCall(context, properties);
+                public PriorPaymentControlResult doCall(final Ruby runtime) throws PaymentControlApiException {
+                    return ((PaymentControlPluginApi) pluginInstance).priorCall(context, properties);
                 }
             });
-        } catch (PaymentRoutingApiException e) {
+        } catch (PaymentControlApiException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public OnSuccessPaymentRoutingResult onSuccessCall(final PaymentRoutingContext context, final Iterable<PluginProperty> properties) throws PaymentRoutingApiException {
+    public OnSuccessPaymentControlResult onSuccessCall(final PaymentControlContext context, final Iterable<PluginProperty> properties) throws PaymentControlApiException {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<OnSuccessPaymentRoutingResult, PaymentRoutingApiException>() {
+            return callWithRuntimeAndChecking(new PluginCallback<OnSuccessPaymentControlResult, PaymentControlApiException>() {
                 @Override
-                public OnSuccessPaymentRoutingResult doCall(final Ruby runtime) throws PaymentRoutingApiException {
-                    return ((PaymentRoutingPluginApi) pluginInstance).onSuccessCall(context, properties);
+                public OnSuccessPaymentControlResult doCall(final Ruby runtime) throws PaymentControlApiException {
+                    return ((PaymentControlPluginApi) pluginInstance).onSuccessCall(context, properties);
                 }
             });
-        } catch (PaymentRoutingApiException e) {
+        } catch (PaymentControlApiException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public OnFailurePaymentRoutingResult onFailureCall(final PaymentRoutingContext context, final Iterable<PluginProperty> properties) throws PaymentRoutingApiException {
+    public OnFailurePaymentControlResult onFailureCall(final PaymentControlContext context, final Iterable<PluginProperty> properties) throws PaymentControlApiException {
         try {
-            return callWithRuntimeAndChecking(new PluginCallback<OnFailurePaymentRoutingResult, PaymentRoutingApiException>() {
+            return callWithRuntimeAndChecking(new PluginCallback<OnFailurePaymentControlResult, PaymentControlApiException>() {
                 @Override
-                public OnFailurePaymentRoutingResult doCall(final Ruby runtime) throws PaymentRoutingApiException {
-                    return ((PaymentRoutingPluginApi) pluginInstance).onFailureCall(context, properties);
+                public OnFailurePaymentControlResult doCall(final Ruby runtime) throws PaymentControlApiException {
+                    return ((PaymentControlPluginApi) pluginInstance).onFailureCall(context, properties);
                 }
             });
-        } catch (PaymentRoutingApiException e) {
+        } catch (PaymentControlApiException e) {
             throw new RuntimeException(e);
         }
     }

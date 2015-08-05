@@ -64,7 +64,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.overdue," +
              "org.killbill.billing.payment.api," +
              "org.killbill.billing.payment.plugin.api," +
-             "org.killbill.billing.routing.plugin.api," +
+             "org.killbill.billing.control.plugin.api," +
              "org.killbill.billing.tenant.api," +
              "org.killbill.billing.usage.api," +
              "org.killbill.billing.util.api," +

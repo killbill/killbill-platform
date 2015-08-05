@@ -32,7 +32,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.platform.test.glue.TestPlatformModuleWithEmbeddedDB;
-import org.killbill.billing.routing.plugin.api.PaymentRoutingPluginApi;
+import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
 
@@ -52,7 +52,7 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentPluginApi>(PaymentPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CurrencyPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CurrencyPluginApi>(CurrencyPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<InvoicePluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<InvoicePluginApi>(InvoicePluginApi.class));
-        bind(new TypeLiteral<OSGIServiceRegistration<PaymentRoutingPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentRoutingPluginApi>(PaymentRoutingPluginApi.class));
+        bind(new TypeLiteral<OSGIServiceRegistration<PaymentControlPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentControlPluginApi>(PaymentControlPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CatalogPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CatalogPluginApi>(CatalogPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<EntitlementPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<EntitlementPluginApi>(EntitlementPluginApi.class));
     }
