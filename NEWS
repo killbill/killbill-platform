@@ -1,10 +1,7 @@
-
-    Support for PostgreSQL
-    Renaming of routing to control for plugin-api
-
 0.6
     PostgreSQL support
     Update killbill-oss-parent to 0.28
+    Rename PaymentRoutingPluginApi to PaymentControlPluginApi
 
 0.5
     Add support for new EntitlementPluginApi (no ruby yet)
