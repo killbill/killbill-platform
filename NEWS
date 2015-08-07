@@ -1,6 +1,6 @@
 0.6
     PostgreSQL support
-    Update killbill-oss-parent to 0.28
+    Update killbill-oss-parent to 0.30
     Rename PaymentRoutingPluginApi to PaymentControlPluginApi
 
 0.5
