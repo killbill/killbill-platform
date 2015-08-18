@@ -1,4 +1,6 @@
 
+    Update killbill-oss-parent to 0.36
+    Fix config changes for queue
     Add RUBY support for entitlement plugin api
 
 0.6
