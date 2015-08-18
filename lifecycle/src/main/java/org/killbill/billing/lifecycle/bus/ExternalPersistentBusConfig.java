@@ -59,11 +59,6 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
-    public boolean isSticky() {
-        return externalPersistentBusConfig.isSticky();
-    }
-
-    @Override
     public int getMaxFailureRetries() {
         return externalPersistentBusConfig.getMaxFailureRetries();
     }
@@ -74,8 +69,8 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
-    public int getMaxInflightQEntriesClaimed() {
-        return externalPersistentBusConfig.getMaxInflightQEntriesClaimed();
+    public PersistentQueueMode getPersistentQueueMode() {
+        return externalPersistentBusConfig.getPersistentQueueMode();
     }
 
     @Override
@@ -84,8 +79,8 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
-    public long getSleepTimeMs() {
-        return externalPersistentBusConfig.getSleepTimeMs();
+    public long getPollingSleepTimeMs() {
+        return externalPersistentBusConfig.getPollingSleepTimeMs();
     }
 
     @Override
@@ -94,18 +89,13 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
-    public int getNbThreads() {
-        return externalPersistentBusConfig.getNbThreads();
+    public int geMaxDispatchThreads() {
+        return externalPersistentBusConfig.geMaxDispatchThreads();
     }
 
     @Override
-    public boolean isUsingInflightQueue() {
-        return externalPersistentBusConfig.isUsingInflightQueue();
-    }
-
-    @Override
-    public int getQueueCapacity() {
-        return externalPersistentBusConfig.getQueueCapacity();
+    public int getEventQueueCapacity() {
+        return 0;
     }
 
     @Override
