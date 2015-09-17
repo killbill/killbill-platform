@@ -130,8 +130,12 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     protected void initializeConfig() throws IOException, URISyntaxException {
         configSource = getConfigSource();
-        config = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource)).build(KillbillServerConfig.class);
-        metricsGraphiteConfig = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource)).build(MetricsGraphiteConfig.class);
+
+        final ConfigurationObjectFactory configFactory =
+                new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
+
+        config = configFactory.build(KillbillServerConfig.class);
+        metricsGraphiteConfig = configFactory.build(MetricsGraphiteConfig.class);
     }
 
     protected KillbillConfigSource getConfigSource() throws IOException, URISyntaxException {
