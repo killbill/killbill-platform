@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 
 public class OSGIKillbillRegistrar {
@@ -34,6 +35,11 @@ public class OSGIKillbillRegistrar {
     }
 
     public <S> void registerService(final BundleContext context, final Class<S> svcClass, final S service, final Dictionary props) {
+        final ServiceRegistration svcRegistration = context.registerService(svcClass.getName(), service, props);
+        serviceRegistrations.put(svcClass.getName(), svcRegistration);
+    }
+
+    public <S> void registerService(final BundleContext context, final Class<S> svcClass, final ServiceFactory<S> service, final Dictionary props) {
         final ServiceRegistration svcRegistration = context.registerService(svcClass.getName(), service, props);
         serviceRegistrations.put(svcClass.getName(), svcRegistration);
     }
