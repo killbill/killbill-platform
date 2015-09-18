@@ -156,7 +156,7 @@ public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements Payme
         callWithRuntimeAndChecking(new PluginCallback<Void, PaymentPluginApiException>() {
             @Override
             public Void doCall(final Ruby runtime) throws PaymentPluginApiException {
-                ((PaymentPluginApi) pluginInstance).addPaymentMethod(kbAccountId, kbPaymentMethodId, paymentMethodProps, Boolean.valueOf(setDefault), properties, context);
+                ((PaymentPluginApi) pluginInstance).addPaymentMethod(kbAccountId, kbPaymentMethodId, paymentMethodProps, setDefault, properties, context);
                 return null;
             }
         });
@@ -199,7 +199,7 @@ public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements Payme
         return callWithRuntimeAndChecking(new PluginCallback<List<PaymentMethodInfoPlugin>, PaymentPluginApiException>() {
             @Override
             public List<PaymentMethodInfoPlugin> doCall(final Ruby runtime) throws PaymentPluginApiException {
-                return ((PaymentPluginApi) pluginInstance).getPaymentMethods(kbAccountId, Boolean.valueOf(refreshFromGateway), properties, context);
+                return ((PaymentPluginApi) pluginInstance).getPaymentMethods(kbAccountId, refreshFromGateway, properties, context);
             }
         });
     }

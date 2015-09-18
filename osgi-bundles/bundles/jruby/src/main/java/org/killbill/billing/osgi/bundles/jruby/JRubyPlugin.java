@@ -33,7 +33,6 @@ import org.jruby.embed.LocalVariableBehavior;
 import org.jruby.embed.ScriptingContainer;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;

@@ -109,7 +109,7 @@ public class DefaultOSGIService implements OSGIService {
     }
 
     private Framework createAndInitFramework() throws BundleException {
-        final StringBuffer systemExtraPackages = new StringBuffer(osgiConfig.getSystemBundleExportPackagesApi());
+        final StringBuilder systemExtraPackages = new StringBuilder(osgiConfig.getSystemBundleExportPackagesApi());
         if (!osgiConfig.getSystemBundleExportPackagesJava().isEmpty()) {
             systemExtraPackages
                     .append(",")
