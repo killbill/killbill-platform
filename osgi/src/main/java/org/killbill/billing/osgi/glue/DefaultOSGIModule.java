@@ -26,6 +26,7 @@ import org.killbill.billing.osgi.DefaultOSGIKillbill;
 import org.killbill.billing.osgi.DefaultOSGIService;
 import org.killbill.billing.osgi.KillbillActivator;
 import org.killbill.billing.osgi.KillbillEventObservable;
+import org.killbill.billing.osgi.OSGIMetricsFactory;
 import org.killbill.billing.osgi.PureOSGIBundleFinder;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
@@ -92,6 +93,8 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         installOSGIServlet();
         installHttpService();
         installDataSource();
+
+        bind(OSGIMetricsFactory.class);
 
         bind(OSGIService.class).to(DefaultOSGIService.class).asEagerSingleton();
 

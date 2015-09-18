@@ -33,19 +33,20 @@ import javax.servlet.Servlet;
 import javax.sql.DataSource;
 
 import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
+import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
+import org.killbill.billing.osgi.api.OSGIMetrics;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
-import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
@@ -78,6 +79,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final Map<String, Histogram> perPluginCallMetrics;
 
     private final List<OSGIServiceRegistration> allRegistrationHandlers;
+    private final OSGIMetricsFactory metricsServiceFactory;
 
     private BundleContext context = null;
 
@@ -88,7 +90,8 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
                              final MetricRegistry metricsRegistry,
-                             final JNDIManager jndiManager) {
+                             final JNDIManager jndiManager,
+                             final OSGIMetricsFactory metricsServiceFactory) {
         this.osgiKillbill = osgiKillbill;
         this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
@@ -99,6 +102,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistration>();
         this.perPluginCallMetrics = new HashMap<String, Histogram>();
+        this.metricsServiceFactory = metricsServiceFactory;
     }
 
     @Inject(optional = true)
@@ -151,6 +155,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         registrar.registerService(context, Observable.class, observable, props);
         registrar.registerService(context, DataSource.class, dataSource, props);
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
+        registrar.registerService(context, OSGIMetrics.class, metricsServiceFactory, props);
 
         context.addServiceListener(this);
 
@@ -213,7 +218,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         return true;
     }
 
-    private final boolean checkSanityPluginRegistrationName(final String pluginName) {
+    private boolean checkSanityPluginRegistrationName(final String pluginName) {
         final Matcher m = PLUGIN_NAME_PATTERN.matcher(pluginName);
         if (!m.matches()) {
             logger.warn("Invalid plugin name {} : should be of the form {}", pluginName, PLUGIN_NAME_PATTERN.toString());
