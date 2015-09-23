@@ -20,8 +20,10 @@ package org.killbill.billing.server.listeners;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.servlet.ServletContext;
@@ -32,6 +34,7 @@ import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.server.config.KillbillServerConfig;
+import org.killbill.billing.server.config.MetricsGraphiteConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
 import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
@@ -49,8 +52,11 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck;
@@ -81,6 +87,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     protected KillbillServerConfig config;
     protected KillbillConfigSource configSource;
+    protected MetricsGraphiteConfig metricsGraphiteConfig;
     protected Injector injector;
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
@@ -123,7 +130,10 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     protected void initializeConfig() throws IOException, URISyntaxException {
         configSource = getConfigSource();
-        config = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource)).build(KillbillServerConfig.class);
+
+        final ConfigurationObjectFactory configFactory = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
+        config = configFactory.build(KillbillServerConfig.class);
+        metricsGraphiteConfig = configFactory.build(MetricsGraphiteConfig.class);
     }
 
     protected KillbillConfigSource getConfigSource() throws IOException, URISyntaxException {
@@ -201,6 +211,23 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         // Expose metrics via JMX
         metricsJMXReporter = JmxReporter.forRegistry(metricRegistry).registerWith(platformMBeanServer).build();
         metricsJMXReporter.start();
+
+        // stream metric values to a Graphite server
+        if (metricsGraphiteConfig.isGraphiteReportingEnabled()) {
+            final Graphite graphite = new Graphite(new InetSocketAddress(metricsGraphiteConfig.getHostname(),
+                                                                         metricsGraphiteConfig.getPort()));
+            final GraphiteReporter reporter = GraphiteReporter.forRegistry(metricRegistry)
+                                                              .prefixedWith(metricsGraphiteConfig.getPrefix())
+                                                              .convertRatesTo(TimeUnit.SECONDS)
+                                                              .convertDurationsTo(TimeUnit.NANOSECONDS)
+                                                              .filter(MetricFilter.ALL)
+                                                              .build(graphite);
+
+            reporter.start(metricsGraphiteConfig.getInterval(), TimeUnit.SECONDS);
+
+            logger.info(String.format("reporting metrics to %s:%d",
+                                      metricsGraphiteConfig.getHostname(), metricsGraphiteConfig.getPort()));
+        }
 
         event.getServletContext().setAttribute(HealthCheckServlet.HEALTH_CHECK_REGISTRY, injector.getInstance(HealthCheckRegistry.class));
         event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, metricRegistry);
