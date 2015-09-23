@@ -39,4 +39,9 @@ public interface KillbillServerConfig extends KillbillPlatformConfig {
     @Default("http://127.0.0.1:8080")
     @Description("Server base url")
     public String getBaseUrl();
+
+    @Config(KILL_BILL_NAMESPACE + "server.http.gzip")
+    @Default("false")
+    @Description("Allow Kill Bill to return gzip json when Content-Encoding is set with gzip")
+    public boolean isConfiguredToReturnGZIPResponses();
 }
