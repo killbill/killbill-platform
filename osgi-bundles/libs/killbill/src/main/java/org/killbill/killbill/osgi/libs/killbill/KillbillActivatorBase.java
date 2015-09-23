@@ -31,6 +31,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     protected OSGIKillbillDataSource dataSource;
     protected OSGIKillbillEventDispatcher dispatcher;
     protected OSGIConfigPropertiesService configProperties;
+    protected OSGIKillbillMetrics killbillMetrics;
 
     @Override
     public void start(final BundleContext context) throws Exception {
@@ -40,6 +41,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         dataSource = new OSGIKillbillDataSource(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
+        killbillMetrics = new OSGIKillbillMetrics(context);
 
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
@@ -69,6 +71,10 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         if (logService != null) {
             logService.close();
             logService = null;
+        }
+        if (killbillMetrics != null) {
+            killbillMetrics.close();
+            killbillMetrics = null;
         }
 
         try {

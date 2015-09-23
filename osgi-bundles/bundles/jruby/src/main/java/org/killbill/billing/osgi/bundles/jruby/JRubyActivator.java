@@ -35,7 +35,7 @@ import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGI
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * Nomenclature:
@@ -130,7 +130,7 @@ public class JRubyActivator extends KillbillActivatorBase {
         killbillServices.put("root", rubyConfig.getPluginVersionRoot().getAbsolutePath());
         killbillServices.put("logger", logService);
         // Default to the plugin root dir if no jruby plugins specific configuration directory was specified
-        killbillServices.put("conf_dir", Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
+        killbillServices.put("conf_dir", MoreObjects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
 
         // Start the plugin synchronously
         doStartPlugin(pluginMain, context, killbillServices);
@@ -150,7 +150,7 @@ public class JRubyActivator extends KillbillActivatorBase {
             return;
         }
 
-        final Integer restart_delay_sec = Integer.parseInt((Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_RESTART_DELAY_SECS), "5")));
+        final Integer restart_delay_sec = Integer.parseInt((MoreObjects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_RESTART_DELAY_SECS), "5")));
         restartFuture = Executors.newSingleThreadScheduledExecutor("jruby-restarter-" + pluginMain)
                                  .scheduleWithFixedDelay(new Runnable() {
                                      long lastRestartMillis = System.currentTimeMillis();

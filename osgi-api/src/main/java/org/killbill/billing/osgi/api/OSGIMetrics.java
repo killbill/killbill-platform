@@ -1,8 +1,7 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2015 Groupon, Inc
  *
- * The Billing Project licenses this file to you under the Apache License, version 2.0
+ * Groupon licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at:
  *
@@ -15,9 +14,18 @@
  * under the License.
  */
 
-package org.killbill.billing.platform.api;
+package org.killbill.billing.osgi.api;
 
-public interface KillbillPlatformConfig {
+public interface OSGIMetrics {
+    void markMeter(String meterName);
 
-    String KILL_BILL_NAMESPACE = "org.killbill.";
+    void recordHistogramValue(String histogramName, long value);
+
+    void incrementCounter(String counterName);
+
+    void incrementCounter(String counterName, long step);
+
+    void decrementCounter(String counterName);
+
+    void decrementCounter(String counterName, long step);
 }
