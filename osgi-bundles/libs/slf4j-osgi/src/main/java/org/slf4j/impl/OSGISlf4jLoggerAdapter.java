@@ -18,20 +18,19 @@
 
 package org.slf4j.impl;
 
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
 import org.osgi.service.log.LogService;
 import org.slf4j.spi.LocationAwareLogger;
 
 public final class OSGISlf4jLoggerAdapter extends SimpleLogger {
 
-    private OSGIKillbillLogService delegate;
+    private LogService delegate;
 
-    public OSGISlf4jLoggerAdapter(final OSGIKillbillLogService logger) {
+    public OSGISlf4jLoggerAdapter(final LogService logger) {
         super(OSGISlf4jLoggerAdapter.class.getName());
         this.delegate = logger;
     }
 
-    public void setDelegate(final OSGIKillbillLogService delegate) {
+    public void setDelegate(final LogService delegate) {
         this.delegate = delegate;
     }
 

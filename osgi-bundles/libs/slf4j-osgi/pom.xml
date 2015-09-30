@@ -28,8 +28,14 @@
     <name>killbill-platform-osgi-bundles-lib-slf4j-osgi</name>
     <dependencies>
         <dependency>
-            <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
+            <!-- Required for org.osgi.service.log.LogService -->
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Required for org.osgi.framework.ServiceReference -->
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

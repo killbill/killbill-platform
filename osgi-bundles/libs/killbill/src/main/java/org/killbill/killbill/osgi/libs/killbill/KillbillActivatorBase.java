@@ -18,10 +18,13 @@
 
 package org.killbill.killbill.osgi.libs.killbill;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.log.LogService;
 
 public abstract class KillbillActivatorBase implements BundleActivator {
 
@@ -37,6 +40,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         // Tracked resource
         killbillAPI = new OSGIKillbillAPI(context);
         logService = new OSGIKillbillLogService(context);
+        configureSLF4JBinding();
         dataSource = new OSGIKillbillDataSource(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
@@ -90,4 +94,29 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     }
 
     public abstract OSGIKillbillEventHandler getOSGIKillbillEventHandler();
+
+    protected void configureSLF4JBinding() {
+        try {
+            // KillbillActivatorBase.class.getClassLoader() is the WebAppClassLoader (org.killbill.killbill.osgi.libs.killbill is exported)
+            // Make sure to use the BundleClassLoader instead
+            final Class<?> staticLoggerBinderClass = this.getClass()
+                                                         .getClassLoader()
+                                                         .loadClass("org.slf4j.impl.StaticLoggerBinder");
+
+            final Object staticLoggerBinder = staticLoggerBinderClass.getMethod("getSingleton")
+                                                                     .invoke(null);
+
+            staticLoggerBinderClass.getMethod("setLogService", LogService.class)
+                                   .invoke(staticLoggerBinder, logService);
+        } catch (final ClassNotFoundException e) {
+            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
+        } catch (final InvocationTargetException e) {
+            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
+        } catch (final NoSuchMethodException e) {
+            // Don't log the full stack trace for backward compatibility (old plugins would throw NoSuchMethodException)
+            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs");
+        } catch (final IllegalAccessException e) {
+            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
+        }
+    }
 }

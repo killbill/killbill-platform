@@ -21,7 +21,7 @@ package org.slf4j.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
+import org.osgi.service.log.LogService;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 
@@ -29,7 +29,7 @@ public class OSGISlf4jLoggerFactory implements ILoggerFactory {
 
     private final Map<String, OSGISlf4jLoggerAdapter> loggerMap = new HashMap<String, OSGISlf4jLoggerAdapter>();
 
-    private OSGIKillbillLogService delegate = null;
+    private LogService delegate = null;
 
     public Logger getLogger(final String name) {
         if (loggerMap.get(name) == null) {
@@ -43,7 +43,7 @@ public class OSGISlf4jLoggerFactory implements ILoggerFactory {
         return loggerMap.get(name);
     }
 
-    public void setDelegate(final OSGIKillbillLogService delegate) {
+    public void setDelegate(final LogService delegate) {
         this.delegate = delegate;
         synchronized (loggerMap) {
             for (final OSGISlf4jLoggerAdapter adapter : loggerMap.values()) {

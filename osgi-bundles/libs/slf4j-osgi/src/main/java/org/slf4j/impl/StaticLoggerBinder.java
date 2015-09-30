@@ -18,7 +18,7 @@
 
 package org.slf4j.impl;
 
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillLogService;
+import org.osgi.service.log.LogService;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.spi.LoggerFactoryBinder;
 
@@ -65,7 +65,7 @@ public class StaticLoggerBinder implements LoggerFactoryBinder {
         return loggerFactoryClassStr;
     }
 
-    public void setLogService(final OSGIKillbillLogService logService) {
+    public void setLogService(final LogService logService) {
         loggerFactory.setDelegate(logService);
     }
 }
