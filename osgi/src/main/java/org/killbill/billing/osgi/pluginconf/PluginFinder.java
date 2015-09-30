@@ -145,7 +145,13 @@ public class PluginFinder {
                 }
                 final String version = curVersion.getName();
 
-                final T plugin = extractPluginConfig(pluginLanguage, pluginName, version, curVersion);
+                final T plugin;
+                try {
+                    plugin = extractPluginConfig(pluginLanguage, pluginName, version, curVersion);
+                } catch (final PluginConfigException e) {
+                    logger.warn("Skipping plugin {}: {}", pluginName, e.getMessage());
+                    continue;
+                }
                 List<T> curPluginVersionlist = (List<T>) allPlugins.get(plugin.getPluginName());
                 if (curPluginVersionlist == null) {
                     curPluginVersionlist = new LinkedList<T>();
