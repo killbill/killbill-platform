@@ -50,6 +50,9 @@
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi-bundles-lib-slf4j-osgi</artifactId>
+            <!-- Mark it as provided to prevent the StaticLoggerBinder from being bundled in Kill Bill,
+                which would cause multiple SLF4J bindings (needs to be bundled in the plugins only) -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
