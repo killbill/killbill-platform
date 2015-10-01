@@ -75,6 +75,10 @@ public class KillbillEventObservable extends Observable {
     @Subscribe
     public void handleKillbillEvent(final ExtBusEvent event) {
         logger.debug("Received external event " + event.toString());
+        setChangedAndNotifyObservers(event);
+    }
+
+    public void setChangedAndNotifyObservers(final Object event) {
         setChanged();
         notifyObservers(event);
     }

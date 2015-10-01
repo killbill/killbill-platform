@@ -33,6 +33,7 @@ import javax.servlet.Servlet;
 import javax.sql.DataSource;
 
 import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
+import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
@@ -45,12 +46,12 @@ import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
-import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.event.Event;
 import org.osgi.service.http.HttpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,6 +181,10 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
                 break;
             }
         }
+    }
+
+    public void sendEvent(final String topic, final Map<String, String> properties) {
+        observable.setChangedAndNotifyObservers(new Event(topic, properties));
     }
 
     private <T> boolean listenForServiceType(final ServiceReference serviceReference, final int eventType, final Class<T> claz, final OSGIServiceRegistration<T> registration) {

@@ -92,6 +92,8 @@ public class DefaultOSGIService implements OSGIService {
     public void start() {
         // This will call the start() method for the bundles
         fileInstall.startBundles(installedBundles);
+        // Tell the plugins all bundles have started
+        killbillActivator.sendEvent("org/killbill/billing/osgi/lifecycle/STARTED", new HashMap<String, String>());
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.STOP_PLUGIN)

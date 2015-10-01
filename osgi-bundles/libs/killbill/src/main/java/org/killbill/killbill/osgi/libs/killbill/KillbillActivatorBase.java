@@ -21,6 +21,7 @@ package org.killbill.killbill.osgi.libs.killbill;
 import java.lang.reflect.InvocationTargetException;
 
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
+import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -52,6 +53,12 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         final OSGIKillbillEventHandler handler = getOSGIKillbillEventHandler();
         if (handler != null) {
             dispatcher.registerEventHandler(handler);
+        }
+
+        // OSGI Framework events
+        final OSGIFrameworkEventHandler frameworkEventHandler = getOSGIFrameworkEventHandler();
+        if (frameworkEventHandler != null) {
+            dispatcher.registerEventHandler(frameworkEventHandler);
         }
     }
 
@@ -94,6 +101,8 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     }
 
     public abstract OSGIKillbillEventHandler getOSGIKillbillEventHandler();
+
+    public OSGIFrameworkEventHandler getOSGIFrameworkEventHandler() { return null; }
 
     protected void configureSLF4JBinding() {
         try {
