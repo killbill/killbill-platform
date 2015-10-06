@@ -62,11 +62,11 @@ public class JRubyInvoicePlugin extends JRubyNotificationPlugin implements Invoi
     }
 
     @Override
-    public List<InvoiceItem> getAdditionalInvoiceItems(final Invoice invoice, final Iterable<PluginProperty> properties, final CallContext context) {
+    public List<InvoiceItem> getAdditionalInvoiceItems(final Invoice invoice, final boolean dryRun, final Iterable<PluginProperty> properties, final CallContext context) {
         return callWithRuntimeAndChecking(new PluginCallback<List<InvoiceItem>, RuntimeException>() {
             @Override
             public List<InvoiceItem> doCall(final Ruby runtime) {
-                return ((InvoicePluginApi) pluginInstance).getAdditionalInvoiceItems(invoice, properties, context);
+                return ((InvoicePluginApi) pluginInstance).getAdditionalInvoiceItems(invoice, dryRun, properties, context);
             }
         });
     }
