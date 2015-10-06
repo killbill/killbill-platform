@@ -1,5 +1,7 @@
 0.9
     Redirect SLF4J to OSGIKillbillLogService in plugins by default
+    Send OSGI event when all bundles have started
+    Add option to stream metric values to Graphite
     Update killbill-oss-parent to 0.50
 
 0.8
