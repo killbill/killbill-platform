@@ -76,7 +76,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final OSGIConfigProperties configProperties;
     private final JNDIManager jndiManager;
     private final MetricRegistry metricsRegistry;
-    private final Map<String, Histogram> perPluginCallMetrics;
 
     private final List<OSGIServiceRegistration> allRegistrationHandlers;
 
@@ -99,7 +98,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.metricsRegistry = metricsRegistry;
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistration>();
-        this.perPluginCallMetrics = new HashMap<String, Histogram>();
     }
 
     @Inject(optional = true)
@@ -206,7 +204,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         final OSGIServiceDescriptor desc = new DefaultOSGIServiceDescriptor(serviceReference.getBundle().getSymbolicName(), serviceName);
         switch (eventType) {
             case ServiceEvent.REGISTERED:
-                final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, metricsRegistry, perPluginCallMetrics);
+                final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, serviceName, metricsRegistry);
                 registration.registerService(desc, wrappedService);
                 break;
             case ServiceEvent.UNREGISTERING:
