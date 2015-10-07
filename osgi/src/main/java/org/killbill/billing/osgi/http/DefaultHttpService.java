@@ -40,13 +40,11 @@ import com.codahale.metrics.MetricRegistry;
 public class DefaultHttpService implements HttpService {
 
     private final DefaultServletRouter servletRouter;
-    private final Map<String, Histogram> perPluginCallMetrics;
     private final MetricRegistry metricsRegistry;
 
     @Inject
     public DefaultHttpService(final DefaultServletRouter servletRouter, final MetricRegistry metricsRegistry) {
         this.servletRouter = servletRouter;
-        this.perPluginCallMetrics = new HashMap<String, Histogram>();
         this.metricsRegistry = metricsRegistry;
     }
 
@@ -58,7 +56,7 @@ public class DefaultHttpService implements HttpService {
         } else if (servlet == null) {
             throw new IllegalArgumentException("Invalid servlet (null)");
         }
-        final Servlet wrappedServlet = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(servlet, metricsRegistry, perPluginCallMetrics);
+        final Servlet wrappedServlet = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(servlet, Servlet.class, alias, metricsRegistry);
 
         servletRouter.registerServiceFromPath(alias, wrappedServlet);
     }

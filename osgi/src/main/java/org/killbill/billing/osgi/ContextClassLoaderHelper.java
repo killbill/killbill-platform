@@ -25,7 +25,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -33,13 +32,15 @@ import org.killbill.commons.profiling.Profiling;
 import org.killbill.commons.profiling.Profiling.WithProfilingCallback;
 import org.killbill.commons.profiling.ProfilingFeature.ProfilingFeatureType;
 
-import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
 import com.google.common.base.Joiner;
 
 public class ContextClassLoaderHelper {
 
-    private static final Joiner JOINER = Joiner.on(".");
+    private static final Joiner DOT_JOINER = Joiner.on(".");
 
     /*
       http://impalablog.blogspot.com/2008/10/using-threads-callcontext-class-loader-in.html:
@@ -59,7 +60,7 @@ public class ContextClassLoaderHelper {
 
     */
 
-    public static <T> T getWrappedServiceWithCorrectContextClassLoader(final T service, @Nullable final MetricRegistry metricRegistry, @Nullable final Map<String, Histogram> perPluginCallMetrics) {
+    public static <T> T getWrappedServiceWithCorrectContextClassLoader(final T service, final Class<T> serviceType, final String serviceName, @Nullable final MetricRegistry metricRegistry) {
 
         final Class<T> serviceClass = (Class<T>) service.getClass();
         final List<Class> allServiceInterfaces = getAllInterfaces(serviceClass);
@@ -68,29 +69,31 @@ public class ContextClassLoaderHelper {
         final InvocationHandler handler = new InvocationHandler() {
             @Override
             public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-
                 final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
 
-                final String[] pluginServiceMethodKey = {service.getClass().getSimpleName(), method.getName()};
-                final Histogram histogram = getOrCreateHistogram(perPluginCallMetrics, metricRegistry, pluginServiceMethodKey);
-                final long beforeCall = System.nanoTime();
+                final String serviceTypeName = serviceType.getSimpleName();
+                final String methodName = method.getName();
+                final Meter errors = errorMeter(metricRegistry, serviceName, serviceTypeName, methodName);
+                final Context timerContext = timer(metricRegistry, serviceName, serviceTypeName, methodName).time();
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                     final Profiling<Object> prof = new Profiling<Object>();
-                    return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, JOINER.join(pluginServiceMethodKey), new WithProfilingCallback() {
+                    final String profilingId = DOT_JOINER.join(serviceTypeName, methodName);
+                    return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
                         @Override
                         public Object execute() throws Throwable {
                             return method.invoke(service, args);
                         }
                     });
                 } catch (final InvocationTargetException e) {
+                    errors.mark();
                     if (e.getCause() != null) {
                         throw e.getCause();
                     } else {
                         throw new RuntimeException(e);
                     }
                 } finally {
-                    histogram.update((System.nanoTime() - beforeCall) / 1000000);
+                    timerContext.stop();
                     Thread.currentThread().setContextClassLoader(initialContextClassLoader);
                 }
             }
@@ -101,19 +104,16 @@ public class ContextClassLoaderHelper {
         return wrappedService;
     }
 
-    private static Histogram getOrCreateHistogram(final Map<String, Histogram> perPluginCallMetrics, final MetricRegistry metricRegistry, final String[] keys) {
-        final String key = JOINER.join(keys);
-        Histogram result = perPluginCallMetrics.get(key);
-        if (result == null) {
-            synchronized (perPluginCallMetrics) {
-                result = perPluginCallMetrics.get(key);
-                if (result == null) {
-                    result = metricRegistry.histogram(MetricRegistry.name(keys[0], keys[1]));
-                    perPluginCallMetrics.put(key, result);
-                }
-            }
-        }
-        return result;
+    private static Timer timer(final MetricRegistry metricRegistry, final String... keys) {
+        final String timerMetricName = DOT_JOINER.join("killbill-service", "kb_plugin_latency", DOT_JOINER.join(keys));
+
+        return metricRegistry.timer(timerMetricName);
+    }
+
+    private static Meter errorMeter(final MetricRegistry metricRegistry, final String... keys) {
+        final String counterMetricName = DOT_JOINER.join("killbill-service", "kb_plugin_errors", DOT_JOINER.join(keys));
+
+        return metricRegistry.meter(counterMetricName);
     }
 
     // From apache-commons
