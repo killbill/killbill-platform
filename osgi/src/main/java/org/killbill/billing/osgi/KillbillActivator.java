@@ -204,7 +204,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         final OSGIServiceDescriptor desc = new DefaultOSGIServiceDescriptor(serviceReference.getBundle().getSymbolicName(), serviceName);
         switch (eventType) {
             case ServiceEvent.REGISTERED:
-                final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, serviceName, metricsRegistry);
+                final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, registration.getServiceType(), serviceName, metricsRegistry);
                 registration.registerService(desc, wrappedService);
                 break;
             case ServiceEvent.UNREGISTERING:

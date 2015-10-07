@@ -56,7 +56,7 @@ public class DefaultHttpService implements HttpService {
         } else if (servlet == null) {
             throw new IllegalArgumentException("Invalid servlet (null)");
         }
-        final Servlet wrappedServlet = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(servlet, alias, metricsRegistry);
+        final Servlet wrappedServlet = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(servlet, Servlet.class, alias, metricsRegistry);
 
         servletRouter.registerServiceFromPath(alias, wrappedServlet);
     }

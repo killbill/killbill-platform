@@ -25,7 +25,6 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -33,8 +32,7 @@ import org.killbill.commons.profiling.Profiling;
 import org.killbill.commons.profiling.Profiling.WithProfilingCallback;
 import org.killbill.commons.profiling.ProfilingFeature.ProfilingFeatureType;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
@@ -42,7 +40,7 @@ import com.google.common.base.Joiner;
 
 public class ContextClassLoaderHelper {
 
-    private static final Joiner JOINER = Joiner.on(".");
+    private static final Joiner DOT_JOINER = Joiner.on(".");
 
     /*
       http://impalablog.blogspot.com/2008/10/using-threads-callcontext-class-loader-in.html:
@@ -62,7 +60,7 @@ public class ContextClassLoaderHelper {
 
     */
 
-    public static <T> T getWrappedServiceWithCorrectContextClassLoader(final T service, final String serviceName, @Nullable final MetricRegistry metricRegistry) {
+    public static <T> T getWrappedServiceWithCorrectContextClassLoader(final T service, final Class<T> serviceType, final String serviceName, @Nullable final MetricRegistry metricRegistry) {
 
         final Class<T> serviceClass = (Class<T>) service.getClass();
         final List<Class> allServiceInterfaces = getAllInterfaces(serviceClass);
@@ -72,13 +70,15 @@ public class ContextClassLoaderHelper {
             @Override
             public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
                 final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
-                final Context timerContext = timer(metricRegistry, serviceName, method.getName()).time();
-                final Counter errors = errorCounter(metricRegistry, serviceName, method.getName());
 
+                final String serviceTypeName = serviceType.getSimpleName();
+                final String methodName = method.getName();
+                final Meter errors = errorMeter(metricRegistry, serviceName, serviceTypeName, methodName);
+                final Context timerContext = timer(metricRegistry, serviceName, serviceTypeName, methodName).time();
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                     final Profiling<Object> prof = new Profiling<Object>();
-                    final String profilingId = JOINER.join(service.getClass().getSimpleName(), method.getName());
+                    final String profilingId = DOT_JOINER.join(serviceTypeName, methodName);
                     return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
                         @Override
                         public Object execute() throws Throwable {
@@ -86,7 +86,7 @@ public class ContextClassLoaderHelper {
                         }
                     });
                 } catch (final InvocationTargetException e) {
-                    errors.inc();
+                    errors.mark();
                     if (e.getCause() != null) {
                         throw e.getCause();
                     } else {
@@ -105,15 +105,15 @@ public class ContextClassLoaderHelper {
     }
 
     private static Timer timer(final MetricRegistry metricRegistry, final String... keys) {
-        final String timerMetricName = JOINER.join("killbill-service", "kb_plugin_latency", JOINER.join(keys));
+        final String timerMetricName = DOT_JOINER.join("killbill-service", "kb_plugin_latency", DOT_JOINER.join(keys));
 
         return metricRegistry.timer(timerMetricName);
     }
 
-    private static Counter errorCounter(final MetricRegistry metricRegistry, final String... keys) {
-        final String counterMetricName = JOINER.join("killbill-service", "kb_plugin_errors", JOINER.join(keys));
+    private static Meter errorMeter(final MetricRegistry metricRegistry, final String... keys) {
+        final String counterMetricName = DOT_JOINER.join("killbill-service", "kb_plugin_errors", DOT_JOINER.join(keys));
 
-        return metricRegistry.counter(counterMetricName);
+        return metricRegistry.meter(counterMetricName);
     }
 
     // From apache-commons
