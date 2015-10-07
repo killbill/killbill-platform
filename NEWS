@@ -1,4 +1,5 @@
 0.9
+    Improve metrics for registered OSGI services
     Redirect SLF4J to OSGIKillbillLogService in plugins by default
     Send OSGI event when all bundles have started
     Add option to stream metric values to Graphite
