@@ -1,3 +1,6 @@
+
+    New BundleRegistry and PluginsInfoApi
+
 0.9
     Improve metrics for registered OSGI services
     Redirect SLF4J to OSGIKillbillLogService in plugins by default
