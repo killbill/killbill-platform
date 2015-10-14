@@ -67,9 +67,9 @@ public class FileInstall {
         this.pluginConfigServiceApi = pluginConfigServiceApi;
     }
 
-    public List<Bundle> installBundles(final Framework framework) {
+    public List<BundleWithConfig> installBundles(final Framework framework) {
 
-        final List<Bundle> installedBundles = new LinkedList<Bundle>();
+        final List<BundleWithConfig> installedBundles = new LinkedList<BundleWithConfig>();
         try {
 
             final BundleContext context = framework.getBundleContext();
@@ -88,14 +88,7 @@ public class FileInstall {
         return installedBundles;
     }
 
-    public void startBundles(final List<Bundle> installedBundles) {
-        // Start all the bundles
-        for (final Bundle bundle : installedBundles) {
-            startBundle(bundle);
-        }
-    }
-
-    private void installAllJavaBundles(final BundleContext context, final List<Bundle> installedBundles, @Nullable final String jrubyBundlePath) throws PluginConfigException, BundleException {
+    private void installAllJavaBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, @Nullable final String jrubyBundlePath) throws PluginConfigException, BundleException {
         final List<String> bundleJarPaths = osgiBundleFinder.getLatestBundles();
         for (final String cur : bundleJarPaths) {
             // Don't install the jruby.jar bundle
@@ -105,21 +98,21 @@ public class FileInstall {
 
             logger.info("Installing Java OSGI bundle from {}", cur);
             final Bundle bundle = context.installBundle("file:" + cur);
-            installedBundles.add(bundle);
+            installedBundles.add(new BundleWithConfig(bundle, null));
         }
     }
 
-    private void installAllJavaPluginBundles(final BundleContext context, final List<Bundle> installedBundles) throws PluginConfigException, BundleException {
+    private void installAllJavaPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles) throws PluginConfigException, BundleException {
         final List<PluginJavaConfig> pluginJavaConfigs = pluginFinder.getLatestJavaPlugins();
         for (final PluginJavaConfig cur : pluginJavaConfigs) {
             logger.info("Installing Java bundle for plugin {} from {}", cur.getPluginName(), cur.getBundleJarPath());
             final Bundle bundle = context.installBundle("file:" + cur.getBundleJarPath());
             ((DefaultPluginConfigServiceApi) pluginConfigServiceApi).registerBundle(bundle.getBundleId(), cur);
-            installedBundles.add(bundle);
+            installedBundles.add(new BundleWithConfig(bundle, cur));
         }
     }
 
-    private void installAllJRubyPluginBundles(final BundleContext context, final List<Bundle> installedBundles, @Nullable final String jrubyBundlePath) throws PluginConfigException, BundleException {
+    private void installAllJRubyPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, @Nullable final String jrubyBundlePath) throws PluginConfigException, BundleException {
         if (jrubyBundlePath == null) {
             return;
         }
@@ -136,7 +129,7 @@ public class FileInstall {
                 tweakedInputStream = tweakRubyManifestToBeUnique(jrubyBundlePath, ++i);
                 final Bundle bundle = context.installBundle(uniqueJrubyBundlePath, tweakedInputStream);
                 ((DefaultPluginConfigServiceApi) pluginConfigServiceApi).registerBundle(bundle.getBundleId(), cur);
-                installedBundles.add(bundle);
+                installedBundles.add(new BundleWithConfig(bundle, cur));
             } catch (final IOException e) {
                 logger.warn("Failed to open file {}", jrubyBundlePath);
             } finally {
@@ -190,7 +183,7 @@ public class FileInstall {
         }
     }
 
-    private boolean startBundle(final Bundle bundle) {
+    public boolean startBundle(final Bundle bundle) {
         if (bundle.getState() == Bundle.UNINSTALLED) {
             logger.info("Skipping uninstalled bundle {}", bundle.getLocation());
         } else if (isFragment(bundle)) {

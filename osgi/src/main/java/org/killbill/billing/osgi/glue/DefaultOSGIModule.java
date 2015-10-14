@@ -22,14 +22,17 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 import javax.sql.DataSource;
 
+import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.DefaultOSGIKillbill;
 import org.killbill.billing.osgi.DefaultOSGIService;
 import org.killbill.billing.osgi.KillbillActivator;
 import org.killbill.billing.osgi.KillbillEventObservable;
 import org.killbill.billing.osgi.PureOSGIBundleFinder;
+import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.config.OSGIConfig;
 import org.killbill.billing.osgi.http.DefaultHttpService;
@@ -94,12 +97,13 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         installDataSource();
 
         bind(OSGIService.class).to(DefaultOSGIService.class).asEagerSingleton();
-
+        bind(BundleRegistry.class).asEagerSingleton();
         bind(KillbillActivator.class).asEagerSingleton();
         bind(PureOSGIBundleFinder.class).asEagerSingleton();
         bind(PluginFinder.class).asEagerSingleton();
         bind(PluginConfigServiceApi.class).to(DefaultPluginConfigServiceApi.class).asEagerSingleton();
         bind(OSGIKillbill.class).to(DefaultOSGIKillbill.class).asEagerSingleton();
         bind(KillbillEventObservable.class).asEagerSingleton();
+        bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
     }
 }

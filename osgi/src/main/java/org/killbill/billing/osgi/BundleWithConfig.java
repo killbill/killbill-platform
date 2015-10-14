@@ -1,7 +1,6 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2015 Groupon, Inc
+ * Copyright 2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -16,25 +15,26 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.api;
+package org.killbill.billing.osgi;
 
-public interface OSGIServiceDescriptor {
+import org.killbill.billing.osgi.api.config.PluginConfig;
+import org.osgi.framework.Bundle;
 
-    /**
-     * @return the symbolic name of the OSGI plugin registering that service
-     */
-    public String getPluginSymbolicName();
+public class BundleWithConfig {
 
-    /**
-     *
-     * @return the plugin name as it appears on the file system
-     */
-    public String getPluginName();
+    private final Bundle bundle;
+    private final PluginConfig config;
 
-    /**
-     * @return the name the plugin decided to use to register a specific service
-     */
-    public String getRegistrationName();
+    public BundleWithConfig(final Bundle bundle, final PluginConfig config) {
+        this.bundle = bundle;
+        this.config = config;
+    }
 
+    public Bundle getBundle() {
+        return bundle;
+    }
 
+    public PluginConfig getConfig() {
+        return config;
+    }
 }

@@ -122,7 +122,7 @@ public class DefaultServletRouter implements OSGIServiceRegistration<Servlet> {
 
     @Override
     public Set<String> getAllServices() {
-        return pluginPathServlets.keySet();
+        return pluginRegistrations.keySet();
     }
 
     @Override

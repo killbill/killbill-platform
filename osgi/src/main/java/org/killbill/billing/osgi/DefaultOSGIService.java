@@ -50,19 +50,18 @@ public class DefaultOSGIService implements OSGIService {
 
     private final OSGIConfig osgiConfig;
     private final KillbillActivator killbillActivator;
-    private final FileInstall fileInstall;
-    private final List<Bundle> installedBundles;
+    private final BundleRegistry bundleRegistry;
+    private final List<BundleWithConfig> installedBundles;
 
     private Framework framework;
 
     @Inject
-    public DefaultOSGIService(final OSGIConfig osgiConfig, final PureOSGIBundleFinder osgiBundleFinder,
-                              final PluginFinder pluginFinder, final PluginConfigServiceApi pluginConfigServiceApi,
+    public DefaultOSGIService(final OSGIConfig osgiConfig, final BundleRegistry bundleRegistry,
                               final KillbillActivator killbillActivator) {
         this.osgiConfig = osgiConfig;
         this.killbillActivator = killbillActivator;
-        this.fileInstall = new FileInstall(osgiBundleFinder, pluginFinder, pluginConfigServiceApi);
-        this.installedBundles = new LinkedList<Bundle>();
+        this.bundleRegistry = bundleRegistry;
+        this.installedBundles = new LinkedList<BundleWithConfig>();
         this.framework = null;
     }
 
@@ -80,8 +79,7 @@ public class DefaultOSGIService implements OSGIService {
             // Create the system bundle for killbill and start the framework
             this.framework = createAndInitFramework();
             framework.start();
-
-            installedBundles.addAll(fileInstall.installBundles(framework));
+            bundleRegistry.installBundles(framework);
         } catch (final BundleException e) {
             logger.error("Failed to initialize Killbill OSGIService", e);
         }
@@ -91,7 +89,7 @@ public class DefaultOSGIService implements OSGIService {
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.START_PLUGIN)
     public void start() {
         // This will call the start() method for the bundles
-        fileInstall.startBundles(installedBundles);
+        bundleRegistry.startBundles();
         // Tell the plugins all bundles have started
         killbillActivator.sendEvent("org/killbill/billing/osgi/lifecycle/STARTED", new HashMap<String, String>());
     }
@@ -108,6 +106,10 @@ public class DefaultOSGIService implements OSGIService {
         } catch (final InterruptedException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         }
+    }
+
+    public List<BundleWithConfig> getInstalledBundles() {
+        return installedBundles;
     }
 
     private Framework createAndInitFramework() throws BundleException {

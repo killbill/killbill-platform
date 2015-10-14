@@ -19,7 +19,6 @@
 package org.killbill.billing.osgi;
 
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +55,6 @@ import org.osgi.service.http.HttpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Inject;
 
@@ -76,7 +74,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final OSGIConfigProperties configProperties;
     private final JNDIManager jndiManager;
     private final MetricRegistry metricsRegistry;
-
+    private final BundleRegistry bundleRegistry;
     private final List<OSGIServiceRegistration> allRegistrationHandlers;
 
     private BundleContext context = null;
@@ -84,12 +82,14 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     @Inject
     public KillbillActivator(@Named(DefaultOSGIModule.OSGI_DATA_SOURCE_ID_NAMED) final DataSource dataSource,
                              final OSGIKillbill osgiKillbill,
+                             final BundleRegistry bundleRegistry,
                              final HttpService defaultHttpService,
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
                              final MetricRegistry metricsRegistry,
                              final JNDIManager jndiManager) {
         this.osgiKillbill = osgiKillbill;
+        this.bundleRegistry = bundleRegistry;
         this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
         this.observable = observable;
@@ -99,6 +99,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistration>();
     }
+
 
     @Inject(optional = true)
     public void addServletOSGIServiceRegistration(final OSGIServiceRegistration<Servlet> servletRouter) {
@@ -172,7 +173,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
             // We are not initialized or uninterested
             return;
         }
-
         final ServiceReference serviceReference = event.getServiceReference();
         for (final OSGIServiceRegistration cur : allRegistrationHandlers) {
             if (listenForServiceType(serviceReference, event.getType(), cur.getServiceType(), cur)) {
@@ -183,6 +183,11 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
 
     public void sendEvent(final String topic, final Map<String, String> properties) {
         observable.setChangedAndNotifyObservers(new Event(topic, properties));
+    }
+
+
+    public List<OSGIServiceRegistration> getAllRegistrationHandlers() {
+        return allRegistrationHandlers;
     }
 
     private <T> boolean listenForServiceType(final ServiceReference serviceReference, final int eventType, final Class<T> claz, final OSGIServiceRegistration<T> registration) {
@@ -201,14 +206,18 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         }
         final T theService = (T) theServiceObject;
 
-        final OSGIServiceDescriptor desc = new DefaultOSGIServiceDescriptor(serviceReference.getBundle().getSymbolicName(), serviceName);
+        final OSGIServiceDescriptor desc = new DefaultOSGIServiceDescriptor(serviceReference.getBundle().getSymbolicName(),
+                                                                            bundleRegistry.getPluginName(serviceReference.getBundle()),
+                                                                            serviceName);
         switch (eventType) {
             case ServiceEvent.REGISTERED:
                 final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, registration.getServiceType(), serviceName, metricsRegistry);
                 registration.registerService(desc, wrappedService);
+                bundleRegistry.registerService(desc, registration.getServiceType().getName());
                 break;
             case ServiceEvent.UNREGISTERING:
                 registration.unregisterService(desc.getRegistrationName());
+                bundleRegistry.unregisterService(desc, registration.getServiceType().getName());
                 break;
             default:
                 break;

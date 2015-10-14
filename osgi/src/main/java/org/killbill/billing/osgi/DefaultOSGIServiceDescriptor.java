@@ -23,16 +23,23 @@ import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 public class DefaultOSGIServiceDescriptor implements OSGIServiceDescriptor {
 
     private final String pluginSymbolicName;
+    private final String pluginName;
     private final String serviceName;
 
-    public DefaultOSGIServiceDescriptor(final String pluginSymbolicName, final String serviceName) {
+    public DefaultOSGIServiceDescriptor(final String pluginSymbolicName, final String pluginName, final String serviceName) {
         this.pluginSymbolicName = pluginSymbolicName;
+        this.pluginName = pluginName;
         this.serviceName = serviceName;
     }
 
     @Override
     public String getPluginSymbolicName() {
         return pluginSymbolicName;
+    }
+
+    @Override
+    public String getPluginName() {
+        return pluginName;
     }
 
     @Override
