@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
 import org.killbill.billing.osgi.api.PluginInfo.PluginServiceInfo;
+import org.osgi.framework.Bundle;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -50,7 +51,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             @Nullable
             @Override
             public PluginInfo apply(final BundleWithMetadata input) {
-                return new DefaultPluginInfo(input.getBundle().getSymbolicName(), input.getPluginName(), input.getVersion(), input.isStarted(), input.getServiceNames());
+                return new DefaultPluginInfo(input.getBundle().getSymbolicName(), input.getPluginName(), input.getVersion(), input.getBundle().getState() == Bundle.ACTIVE, input.getServiceNames());
             }
         });
     }

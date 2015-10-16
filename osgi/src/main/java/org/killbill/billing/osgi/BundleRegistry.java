@@ -62,7 +62,6 @@ public class BundleRegistry {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             final boolean started = fileInstall.startBundle(bundleWithConfig.getBundle());
             final BundleWithMetadata bundleWithMetadata = registry.get(getPluginName(bundleWithConfig));
-            bundleWithMetadata.setStarted(started);
         }
     }
 
@@ -103,19 +102,9 @@ public class BundleRegistry {
 
         private final Set<PluginServiceInfo> serviceNames;
 
-        private boolean started;
-
         public BundleWithMetadata(final BundleWithConfig bundleWithConfig) {
             super(bundleWithConfig.getBundle(), bundleWithConfig.getConfig());
             serviceNames = new HashSet<PluginServiceInfo>();
-        }
-
-        public boolean isStarted() {
-            return started;
-        }
-
-        public void setStarted(final boolean started) {
-            this.started = started;
         }
 
         public String getPluginName() {
