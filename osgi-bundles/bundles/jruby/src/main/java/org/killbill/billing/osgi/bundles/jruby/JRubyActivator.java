@@ -181,13 +181,15 @@ public class JRubyActivator extends KillbillActivatorBase {
     }
 
     public void stop(final BundleContext context) throws Exception {
-
         withContextClassLoader(new PluginCall() {
             @Override
             public void doCall() {
                 if (restartFuture != null) {
                     restartFuture.cancel(true);
                 }
+
+                dispatcher.unregisterEventHandler(plugin);
+
                 doStopPlugin(context);
                 killbillAPI.close();
                 logService.close();
