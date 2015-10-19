@@ -65,7 +65,11 @@ public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements Payme
     @Override
     public void stopPlugin(final BundleContext context) {
         if (serviceRegistration != null) {
-            serviceRegistration.unregister();
+            try {
+                serviceRegistration.unregister();
+            } catch (final IllegalStateException ignored) {
+                // Already stopped?
+            }
         }
         super.stopPlugin(context);
     }
