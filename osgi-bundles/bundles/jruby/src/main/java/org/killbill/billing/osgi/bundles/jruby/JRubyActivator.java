@@ -199,7 +199,8 @@ public class JRubyActivator extends KillbillActivatorBase {
 
     private void doStartPlugin(final String pluginMain, final BundleContext context, final Map<String, Object> killbillServices) {
         logService.log(LogService.LOG_INFO, "Starting JRuby plugin " + pluginMain);
-        plugin.instantiatePlugin(killbillServices, pluginMain);
+        // Make sure to copy the services map in case the plugin modifies it (we'll need it for restarts)
+        plugin.instantiatePlugin(new HashMap<String, Object>(killbillServices), pluginMain);
         plugin.startPlugin(context);
         logService.log(LogService.LOG_INFO, "JRuby plugin " + pluginMain + " started");
     }
