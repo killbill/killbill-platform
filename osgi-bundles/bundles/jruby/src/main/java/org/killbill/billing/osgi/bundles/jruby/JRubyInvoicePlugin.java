@@ -18,17 +18,14 @@
 package org.killbill.billing.osgi.bundles.jruby;
 
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
 
 import org.jruby.Ruby;
 import org.killbill.billing.invoice.api.Invoice;
 import org.killbill.billing.invoice.api.InvoiceItem;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
-import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.api.PluginProperty;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
@@ -37,28 +34,13 @@ import org.osgi.service.log.LogService;
 
 public class JRubyInvoicePlugin extends JRubyNotificationPlugin implements InvoicePluginApi {
 
-    private volatile ServiceRegistration invoicePluginRegistration;
-
     public JRubyInvoicePlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
         super(config, bundleContext, logger, configProperties);
     }
 
     @Override
-    public void startPlugin(final BundleContext context) {
-        super.startPlugin(context);
-
-        final Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put("name", pluginMainClass);
-        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
-        invoicePluginRegistration = context.registerService(InvoicePluginApi.class.getName(), this, props);
-    }
-
-    @Override
-    public void stopPlugin(final BundleContext context) {
-        if (invoicePluginRegistration != null) {
-            invoicePluginRegistration.unregister();
-        }
-        super.stopPlugin(context);
+    protected ServiceRegistration doRegisterService(final BundleContext context, final Dictionary<String, Object> props) {
+        return context.registerService(InvoicePluginApi.class.getName(), this, props);
     }
 
     @Override

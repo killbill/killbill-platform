@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -20,13 +20,11 @@ package org.killbill.billing.osgi.bundles.jruby;
 
 import java.math.BigDecimal;
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.UUID;
 
 import org.jruby.Ruby;
 import org.killbill.billing.catalog.api.Currency;
-import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
 import org.killbill.billing.payment.api.PluginProperty;
@@ -46,32 +44,13 @@ import org.osgi.service.log.LogService;
 
 public class JRubyPaymentPlugin extends JRubyNotificationPlugin implements PaymentPluginApi {
 
-    private volatile ServiceRegistration serviceRegistration;
-
     public JRubyPaymentPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
         super(config, bundleContext, logger, configProperties);
     }
 
     @Override
-    public void startPlugin(final BundleContext context) {
-        super.startPlugin(context);
-
-        final Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put("name", pluginMainClass);
-        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
-        serviceRegistration = context.registerService(PaymentPluginApi.class.getName(), this, props);
-    }
-
-    @Override
-    public void stopPlugin(final BundleContext context) {
-        if (serviceRegistration != null) {
-            try {
-                serviceRegistration.unregister();
-            } catch (final IllegalStateException ignored) {
-                // Already stopped?
-            }
-        }
-        super.stopPlugin(context);
+    protected ServiceRegistration doRegisterService(final BundleContext context, final Dictionary<String, Object> props) {
+        return context.registerService(PaymentPluginApi.class.getName(), this, props);
     }
 
     @Override

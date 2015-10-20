@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -19,7 +19,6 @@
 package org.killbill.billing.osgi.bundles.jruby;
 
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -28,7 +27,6 @@ import org.jruby.Ruby;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.currency.api.Rate;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
-import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
@@ -37,28 +35,13 @@ import org.osgi.service.log.LogService;
 
 public class JRubyCurrencyPlugin extends JRubyNotificationPlugin implements CurrencyPluginApi {
 
-    private volatile ServiceRegistration currencyPluginRegistration;
-
     public JRubyCurrencyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
         super(config, bundleContext, logger, configProperties);
     }
 
     @Override
-    public void startPlugin(final BundleContext context) {
-        super.startPlugin(context);
-
-        final Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put("name", pluginMainClass);
-        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
-        currencyPluginRegistration = context.registerService(CurrencyPluginApi.class.getName(), this, props);
-    }
-
-    @Override
-    public void stopPlugin(final BundleContext context) {
-        if (currencyPluginRegistration != null) {
-            currencyPluginRegistration.unregister();
-        }
-        super.stopPlugin(context);
+    protected ServiceRegistration doRegisterService(final BundleContext context, final Dictionary<String, Object> props) {
+        return context.registerService(CurrencyPluginApi.class.getName(), this, props);
     }
 
     @Override

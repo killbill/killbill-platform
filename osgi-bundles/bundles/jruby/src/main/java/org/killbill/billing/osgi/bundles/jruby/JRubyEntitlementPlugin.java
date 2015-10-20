@@ -18,7 +18,6 @@
 package org.killbill.billing.osgi.bundles.jruby;
 
 import java.util.Dictionary;
-import java.util.Hashtable;
 
 import org.jruby.Ruby;
 import org.killbill.billing.entitlement.plugin.api.EntitlementContext;
@@ -27,7 +26,6 @@ import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApiException
 import org.killbill.billing.entitlement.plugin.api.OnFailureEntitlementResult;
 import org.killbill.billing.entitlement.plugin.api.OnSuccessEntitlementResult;
 import org.killbill.billing.entitlement.plugin.api.PriorEntitlementResult;
-import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
@@ -37,69 +35,42 @@ import org.osgi.service.log.LogService;
 
 public class JRubyEntitlementPlugin extends JRubyNotificationPlugin implements EntitlementPluginApi {
 
-    private volatile ServiceRegistration serviceRegistration;
-
     public JRubyEntitlementPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
         super(config, bundleContext, logger, configProperties);
     }
 
     @Override
-    public void startPlugin(final BundleContext context) {
-        super.startPlugin(context);
-
-        final Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put("name", pluginMainClass);
-        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
-        serviceRegistration = context.registerService(EntitlementPluginApi.class.getName(), this, props);
-    }
-
-    @Override
-    public void stopPlugin(final BundleContext context) {
-        if (serviceRegistration != null) {
-            serviceRegistration.unregister();
-        }
-        super.stopPlugin(context);
+    protected ServiceRegistration doRegisterService(final BundleContext context, final Dictionary<String, Object> props) {
+        return context.registerService(EntitlementPluginApi.class.getName(), this, props);
     }
 
     @Override
     public PriorEntitlementResult priorCall(final EntitlementContext context, final Iterable<PluginProperty> properties) throws EntitlementPluginApiException {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<PriorEntitlementResult, EntitlementPluginApiException>() {
-                @Override
-                public PriorEntitlementResult doCall(final Ruby runtime) throws EntitlementPluginApiException {
-                    return ((EntitlementPluginApi) pluginInstance).priorCall(context, properties);
-                }
-            });
-        } catch (EntitlementPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<PriorEntitlementResult, EntitlementPluginApiException>() {
+            @Override
+            public PriorEntitlementResult doCall(final Ruby runtime) throws EntitlementPluginApiException {
+                return ((EntitlementPluginApi) pluginInstance).priorCall(context, properties);
+            }
+        });
     }
 
     @Override
     public OnSuccessEntitlementResult onSuccessCall(final EntitlementContext context, final Iterable<PluginProperty> properties) throws EntitlementPluginApiException {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<OnSuccessEntitlementResult, EntitlementPluginApiException>() {
-                @Override
-                public OnSuccessEntitlementResult doCall(final Ruby runtime) throws EntitlementPluginApiException {
-                    return ((EntitlementPluginApi) pluginInstance).onSuccessCall(context, properties);
-                }
-            });
-        } catch (EntitlementPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<OnSuccessEntitlementResult, EntitlementPluginApiException>() {
+            @Override
+            public OnSuccessEntitlementResult doCall(final Ruby runtime) throws EntitlementPluginApiException {
+                return ((EntitlementPluginApi) pluginInstance).onSuccessCall(context, properties);
+            }
+        });
     }
 
     @Override
     public OnFailureEntitlementResult onFailureCall(final EntitlementContext context, final Iterable<PluginProperty> properties) throws EntitlementPluginApiException {
-        try {
-            return callWithRuntimeAndChecking(new PluginCallback<OnFailureEntitlementResult, EntitlementPluginApiException>() {
-                @Override
-                public OnFailureEntitlementResult doCall(final Ruby runtime) throws EntitlementPluginApiException {
-                    return ((EntitlementPluginApi) pluginInstance).onFailureCall(context, properties);
-                }
-            });
-        } catch (EntitlementPluginApiException e) {
-            throw new RuntimeException(e);
-        }
+        return callWithRuntimeAndChecking(new PluginCallback<OnFailureEntitlementResult, EntitlementPluginApiException>() {
+            @Override
+            public OnFailureEntitlementResult doCall(final Ruby runtime) throws EntitlementPluginApiException {
+                return ((EntitlementPluginApi) pluginInstance).onFailureCall(context, properties);
+            }
+        });
     }
 }

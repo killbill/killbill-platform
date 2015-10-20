@@ -20,6 +20,7 @@ package org.killbill.billing.osgi.bundles.jruby;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -32,8 +33,8 @@ import org.jruby.embed.LocalContextScope;
 import org.jruby.embed.LocalVariableBehavior;
 import org.jruby.embed.ScriptingContainer;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -70,6 +71,8 @@ public abstract class JRubyPlugin {
 
     protected ScriptingContainer container;
     protected RubyObject pluginInstance;
+
+    protected ServiceRegistration serviceRegistration;
 
     private ServiceRegistration httpServletServiceRegistration = null;
     private String cachedRequireLine = null;
@@ -112,11 +115,13 @@ public abstract class JRubyPlugin {
         pluginInstance.callMethod(START_PLUGIN_RUBY_METHOD_NAME);
         checkPluginIsRunning();
         registerHttpServlet();
+        registerService(context);
     }
 
     public synchronized void stopPlugin(final BundleContext context) {
         checkPluginIsRunning();
         unregisterHttpServlet();
+        unregisterService();
         pluginInstance.callMethod(STOP_PLUGIN_RUBY_METHOD_NAME);
         checkPluginIsStopped();
     }
@@ -141,7 +146,34 @@ public abstract class JRubyPlugin {
 
     private void unregisterHttpServlet() {
         if (httpServletServiceRegistration != null) {
-            httpServletServiceRegistration.unregister();
+            try {
+                httpServletServiceRegistration.unregister();
+            } catch (final IllegalStateException ignored) {
+                // Already stopped?
+                log.warn("Attempting to unregister a service already unregistered", ignored);
+            }
+        }
+    }
+
+    private void registerService(final BundleContext context) {
+        final Dictionary<String, Object> props = new Hashtable<String, Object>();
+        props.put("name", pluginMainClass);
+        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, pluginGemName);
+        serviceRegistration = doRegisterService(context, props);
+    }
+
+    protected ServiceRegistration doRegisterService(final BundleContext context, final Dictionary<String, Object> props) {
+        return null;
+    }
+
+    private void unregisterService() {
+        if (serviceRegistration != null) {
+            try {
+                serviceRegistration.unregister();
+            } catch (final IllegalStateException ignored) {
+                // Already stopped?
+                log.warn("Attempting to unregister a service already unregistered", ignored);
+            }
         }
     }
 
@@ -235,7 +267,7 @@ public abstract class JRubyPlugin {
     }
 
     private ScriptingContainer setupScriptingContainer() {
-        final String propLocalContextScope =  configProperties.getString("org.killbill.jruby.context.scope");
+        final String propLocalContextScope = configProperties.getString("org.killbill.jruby.context.scope");
         final LocalContextScope localContextScope = propLocalContextScope != null ?
                 LocalContextScope.valueOf(propLocalContextScope) : LocalContextScope.SINGLETHREAD;
         log.info("Creating scripting container with localContextScope " + localContextScope);
