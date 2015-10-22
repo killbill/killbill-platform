@@ -1,6 +1,9 @@
+0.11
+    Fix OSGI bundle restart
+    Logging fixes for bundle
+
 0.10
     New BundleRegistry and PluginsInfoApi
-    Fix OSGI bundle restart
 
 0.9
     Improve metrics for registered OSGI services
