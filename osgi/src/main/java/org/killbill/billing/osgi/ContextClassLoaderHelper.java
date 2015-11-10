@@ -77,7 +77,7 @@ public class ContextClassLoaderHelper {
                 final Context timerContext = timer(metricRegistry, serviceName, serviceTypeName, methodName).time();
                 try {
                     Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
-                    final Profiling<Object> prof = new Profiling<Object>();
+                    final Profiling<Object, Throwable> prof = new Profiling<Object,Throwable>();
                     final String profilingId = DOT_JOINER.join(serviceTypeName, methodName);
                     return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
                         @Override
