@@ -128,7 +128,6 @@ public class ContextClassLoaderHelper {
         @Override
         public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
             final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
-            final Meter errors = errorMeter(method);
             final Context timerContext = timer(method).time();
             try {
                 Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
@@ -144,6 +143,7 @@ public class ContextClassLoaderHelper {
                     }
                 });
             } catch (final InvocationTargetException e) {
+                final Meter errors = errorMeter(method);
                 errors.mark();
                 if (e.getCause() != null) {
                     throw e.getCause();
