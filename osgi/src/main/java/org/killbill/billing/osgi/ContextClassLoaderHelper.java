@@ -133,9 +133,9 @@ public class ContextClassLoaderHelper {
                 Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                 final String serviceInterfaceName = serviceInterface.getSimpleName();
                 final String methodName = method.getName();
-                final Profiling<Object> prof = new Profiling<Object>();
-                final String profilingId = DOT_JOINER.join(serviceInterfaceName, methodName);
 
+                final Profiling<Object> prof = new Profiling<Object>();
+                final String profilingId = serviceInterfaceName + "." + methodName;
                 return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
                     @Override
                     public Object execute() throws Throwable {
