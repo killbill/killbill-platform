@@ -109,8 +109,8 @@ public class ContextClassLoaderHelper {
         private final Class<?> serviceClass;
         private final MetricRegistry metricRegistry;
 
-        private LoadingCache<Method, Timer> timerMetricCache;
-        private LoadingCache<Method, Meter> errorMetricCache;
+        private LoadingCache<String, Timer> timerMetricCache;
+        private LoadingCache<String, Meter> errorMetricCache;
 
         public ClassLoaderInvocationHandler(final T service,
                                             final String serviceName,
@@ -157,19 +157,18 @@ public class ContextClassLoaderHelper {
         }
 
         private Timer timer(final Method method) {
-            return timerMetricCache.getUnchecked(method);
+            return timerMetricCache.getUnchecked(method.getName());
         }
 
         private Meter errorMeter(final Method method) {
-            return errorMetricCache.getUnchecked(method);
+            return errorMetricCache.getUnchecked(method.getName());
         }
 
         private void initializeMetricCaches() {
-            timerMetricCache = CacheBuilder.newBuilder().build(new CacheLoader<Method, Timer>() {
+            timerMetricCache = CacheBuilder.newBuilder().build(new CacheLoader<String, Timer>() {
                 @Override
-                public Timer load(final Method method) {
+                public Timer load(final String methodName) {
                     final String serviceInterfaceName = serviceInterface.getSimpleName();
-                    final String methodName = method.getName();
                     final String timerMetricName = DOT_JOINER.join("killbill-service",
                                                                    "kb_plugin_latency",
                                                                    serviceName,
@@ -179,11 +178,10 @@ public class ContextClassLoaderHelper {
                     return metricRegistry.timer(timerMetricName);
                 }
             });
-            errorMetricCache = CacheBuilder.newBuilder().build(new CacheLoader<Method, Meter>() {
+            errorMetricCache = CacheBuilder.newBuilder().build(new CacheLoader<String, Meter>() {
                 @Override
-                public Meter load(final Method method) {
+                public Meter load(final String methodName) {
                     final String serviceInterfaceName = serviceInterface.getSimpleName();
-                    final String methodName = method.getName();
                     final String counterMetricName = DOT_JOINER.join("killbill-service",
                                                                      "kb_plugin_errors",
                                                                      serviceName,
