@@ -37,6 +37,9 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;
 import com.google.common.base.Joiner;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 public class ContextClassLoaderHelper {
 
@@ -66,54 +69,11 @@ public class ContextClassLoaderHelper {
         final List<Class> allServiceInterfaces = getAllInterfaces(serviceClass);
         final Class[] serviceClassInterfaces = allServiceInterfaces.toArray(new Class[allServiceInterfaces.size()]);
 
-        final InvocationHandler handler = new InvocationHandler() {
-            @Override
-            public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-                final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
-
-                final String serviceTypeName = serviceType.getSimpleName();
-                final String methodName = method.getName();
-                final Meter errors = errorMeter(metricRegistry, serviceName, serviceTypeName, methodName);
-                final Context timerContext = timer(metricRegistry, serviceName, serviceTypeName, methodName).time();
-                try {
-                    Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
-                    final Profiling<Object> prof = new Profiling<Object>();
-                    final String profilingId = DOT_JOINER.join(serviceTypeName, methodName);
-                    return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
-                        @Override
-                        public Object execute() throws Throwable {
-                            return method.invoke(service, args);
-                        }
-                    });
-                } catch (final InvocationTargetException e) {
-                    errors.mark();
-                    if (e.getCause() != null) {
-                        throw e.getCause();
-                    } else {
-                        throw new RuntimeException(e);
-                    }
-                } finally {
-                    timerContext.stop();
-                    Thread.currentThread().setContextClassLoader(initialContextClassLoader);
-                }
-            }
-        };
+        final InvocationHandler handler = new ClassLoaderInvocationHandler<T>(service, serviceName, serviceType, metricRegistry);
         final T wrappedService = (T) Proxy.newProxyInstance(serviceClass.getClassLoader(),
                                                             serviceClassInterfaces,
                                                             handler);
         return wrappedService;
-    }
-
-    private static Timer timer(final MetricRegistry metricRegistry, final String... keys) {
-        final String timerMetricName = DOT_JOINER.join("killbill-service", "kb_plugin_latency", DOT_JOINER.join(keys));
-
-        return metricRegistry.timer(timerMetricName);
-    }
-
-    private static Meter errorMeter(final MetricRegistry metricRegistry, final String... keys) {
-        final String counterMetricName = DOT_JOINER.join("killbill-service", "kb_plugin_errors", DOT_JOINER.join(keys));
-
-        return metricRegistry.meter(counterMetricName);
     }
 
     // From apache-commons
@@ -139,5 +99,100 @@ public class ContextClassLoaderHelper {
             cls = cls.getSuperclass();
         }
         return list;
+    }
+
+    private static class ClassLoaderInvocationHandler<T> implements InvocationHandler {
+
+        private final String serviceName;
+        private final T service;
+        private final Class<T> serviceInterface;
+        private final Class<?> serviceClass;
+        private final MetricRegistry metricRegistry;
+
+        private LoadingCache<Method, Timer> timerMetricCache;
+        private LoadingCache<Method, Meter> errorMetricCache;
+
+        public ClassLoaderInvocationHandler(final T service,
+                                            final String serviceName,
+                                            final Class<T> serviceInterface,
+                                            final MetricRegistry metricRegistry) {
+            this.service = service;
+            this.serviceClass = service.getClass();
+            this.serviceName = serviceName;
+            this.serviceInterface = serviceInterface;
+            this.metricRegistry = metricRegistry;
+
+            initializeMetricCaches();
+        }
+
+        @Override
+        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+            final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
+            final Meter errors = errorMeter(method);
+            final Context timerContext = timer(method).time();
+            try {
+                Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
+                final String serviceInterfaceName = serviceInterface.getSimpleName();
+                final String methodName = method.getName();
+                final Profiling<Object> prof = new Profiling<Object>();
+                final String profilingId = DOT_JOINER.join(serviceInterfaceName, methodName);
+
+                return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
+                    @Override
+                    public Object execute() throws Throwable {
+                        return method.invoke(service, args);
+                    }
+                });
+            } catch (final InvocationTargetException e) {
+                errors.mark();
+                if (e.getCause() != null) {
+                    throw e.getCause();
+                } else {
+                    throw new RuntimeException(e);
+                }
+            } finally {
+                timerContext.stop();
+                Thread.currentThread().setContextClassLoader(initialContextClassLoader);
+            }
+        }
+
+        private Timer timer(final Method method) {
+            return timerMetricCache.getUnchecked(method);
+        }
+
+        private Meter errorMeter(final Method method) {
+            return errorMetricCache.getUnchecked(method);
+        }
+
+        private void initializeMetricCaches() {
+            timerMetricCache = CacheBuilder.newBuilder().build(new CacheLoader<Method, Timer>() {
+                @Override
+                public Timer load(final Method method) {
+                    final String serviceInterfaceName = serviceInterface.getSimpleName();
+                    final String methodName = method.getName();
+                    final String timerMetricName = DOT_JOINER.join("killbill-service",
+                                                                   "kb_plugin_latency",
+                                                                   serviceName,
+                                                                   serviceInterfaceName,
+                                                                   methodName);
+
+                    return metricRegistry.timer(timerMetricName);
+                }
+            });
+            errorMetricCache = CacheBuilder.newBuilder().build(new CacheLoader<Method, Meter>() {
+                @Override
+                public Meter load(final Method method) {
+                    final String serviceInterfaceName = serviceInterface.getSimpleName();
+                    final String methodName = method.getName();
+                    final String counterMetricName = DOT_JOINER.join("killbill-service",
+                                                                     "kb_plugin_errors",
+                                                                     serviceName,
+                                                                     serviceInterfaceName,
+                                                                     methodName);
+
+                    return metricRegistry.meter(counterMetricName);
+                }
+            });
+        }
     }
 }
