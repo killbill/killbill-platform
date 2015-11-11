@@ -1,4 +1,5 @@
 
+    Metrics code optimization
     Update transitive metrics dependencies (updated oss pom version with latest commons)
 
 0.11
