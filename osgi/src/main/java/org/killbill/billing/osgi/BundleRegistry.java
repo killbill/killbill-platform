@@ -28,7 +28,7 @@ import javax.inject.Inject;
 
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginServiceInfo;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
-import org.killbill.billing.osgi.api.PluginInfo.PluginServiceInfo;
+import org.killbill.billing.osgi.api.PluginServiceInfo;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.osgi.framework.Bundle;

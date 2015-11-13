@@ -24,7 +24,6 @@ import javax.inject.Inject;
 
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
-import org.killbill.billing.osgi.api.PluginInfo.PluginServiceInfo;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Function;
