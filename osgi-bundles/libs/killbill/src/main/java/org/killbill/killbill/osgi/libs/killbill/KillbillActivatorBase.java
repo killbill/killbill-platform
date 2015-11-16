@@ -91,6 +91,10 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             restartFuture.cancel(true);
         }
 
+        stopAllButRestartMechanism();
+    }
+
+    protected void stopAllButRestartMechanism() throws Exception {
         // Close trackers
         if (killbillAPI != null) {
             killbillAPI.close();
@@ -165,7 +169,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     // The principle is similar to the one in Phusion Passenger:
     // http://www.modrails.com/documentation/Users%20guide%20Apache.html#_redeploying_restarting_the_ruby_on_rails_application
     private void setupRestartMechanism(final PluginConfig pluginConfig, final BundleContext context) {
-        if (tmpDir == null) {
+        if (tmpDir == null || restartFuture != null) {
             return;
         }
 
@@ -183,28 +187,34 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                  final boolean shouldStopPlugin = shouldStopPlugin();
                                                                  if (shouldStopPlugin) {
                                                                      try {
-                                                                         logService.log(LogService.LOG_INFO, "Stopping plugin " + pluginConfig.getPluginName());
-                                                                         stop(context);
+                                                                         logSafely(LogService.LOG_INFO, "Stopping plugin " + pluginConfig.getPluginName());
+                                                                         stopAllButRestartMechanism();
+                                                                     } catch (final IllegalStateException e) {
+                                                                         // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
+                                                                         logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
                                                                      } catch (final Exception e) {
-                                                                         logService.log(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
                                                                      }
                                                                      return;
                                                                  }
 
                                                                  final Long lastRestartTime = lastRestartTime();
                                                                  if (lastRestartTime != null && lastRestartTime > lastRestartMillis) {
-                                                                     logService.log(LogService.LOG_INFO, "Restarting plugin " + pluginConfig.getPluginName());
+                                                                     logSafely(LogService.LOG_INFO, "Restarting plugin " + pluginConfig.getPluginName());
 
                                                                      try {
-                                                                         stop(context);
+                                                                         stopAllButRestartMechanism();
+                                                                     } catch (final IllegalStateException e) {
+                                                                         // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
+                                                                         logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
                                                                      } catch (final Exception e) {
-                                                                         logService.log(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
                                                                      }
 
                                                                      try {
                                                                          start(context);
                                                                      } catch (final Exception e) {
-                                                                         logService.log(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName(), e);
                                                                      }
 
                                                                      lastRestartMillis = lastRestartTime;
@@ -227,6 +237,18 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             return null;
         } else {
             return restartFile.lastModified();
+        }
+    }
+
+    private void logSafely(final int level, final String message) {
+        if (logService != null) {
+            logService.log(level, message);
+        }
+    }
+
+    private void logSafely(final int level, final String message, final Throwable exception) {
+        if (logService != null) {
+            logService.log(level, message, exception);
         }
     }
 
