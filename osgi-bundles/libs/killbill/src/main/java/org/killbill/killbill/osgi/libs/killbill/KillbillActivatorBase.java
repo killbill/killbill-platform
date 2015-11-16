@@ -24,12 +24,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
-import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleActivator;
@@ -194,12 +191,8 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                      return;
                                                                  }
 
-                                                                 final File restartFile = new File(tmpDir + "/" + RESTART_FILE_NAME);
-                                                                 if (!restartFile.isFile()) {
-                                                                     return;
-                                                                 }
-
-                                                                 if (restartFile.lastModified() > lastRestartMillis) {
+                                                                 final Long lastRestartTime = lastRestartTime();
+                                                                 if (lastRestartTime != null && lastRestartTime > lastRestartMillis) {
                                                                      logService.log(LogService.LOG_INFO, "Restarting plugin " + pluginConfig.getPluginName());
 
                                                                      try {
@@ -214,7 +207,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                          logService.log(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName());
                                                                      }
 
-                                                                     lastRestartMillis = restartFile.lastModified();
+                                                                     lastRestartMillis = lastRestartTime;
                                                                  }
                                                              }
                                                          },
@@ -226,6 +219,15 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     protected boolean shouldStopPlugin() {
         final File stopFile = new File(tmpDir + "/" + STOP_FILE_NAME);
         return stopFile.isFile();
+    }
+
+    protected Long lastRestartTime() {
+        final File restartFile = new File(tmpDir + "/" + RESTART_FILE_NAME);
+        if (!restartFile.isFile()) {
+            return null;
+        } else {
+            return restartFile.lastModified();
+        }
     }
 
     private File setupTmpDir(final PluginConfig pluginConfig) {
