@@ -1,7 +1,7 @@
 /*
- * Copyright 2010-2012 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -18,16 +18,13 @@
 
 package org.killbill.billing.osgi.bundles.jruby;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
+import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfig.PluginType;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.commons.concurrent.Executors;
 import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.killbill.osgi.libs.killbill.KillbillServiceListener;
 import org.killbill.killbill.osgi.libs.killbill.KillbillServiceListenerCallback;
@@ -46,13 +43,8 @@ import com.google.common.base.Objects;
 public class JRubyActivator extends KillbillActivatorBase {
 
     private static final String JRUBY_PLUGINS_CONF_DIR = "org.killbill.billing.osgi.bundles.jruby.conf.dir";
-    private static final String JRUBY_PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.jruby.restart.delay.secs";
-
-    private static final String TMP_DIR_NAME = "tmp";
-    private static final String RESTART_FILE_NAME = "restart.txt";
 
     private JRubyPlugin plugin = null;
-    private ScheduledFuture<?> restartFuture = null;
 
     private static final String KILLBILL_PLUGIN_JPAYMENT = "Killbill::Plugin::Api::PaymentPluginApi";
     private static final String KILLBILL_PLUGIN_JNOTIFICATION = "Killbill::Plugin::Api::NotificationPluginApi";
@@ -76,8 +68,7 @@ public class JRubyActivator extends KillbillActivatorBase {
     }
 
     private void startWithContextClassLoader(final BundleContext context) {
-        if (restartFuture != null) {
-            // If the restart future is already configured, the plugin had already started
+        if (shouldStopPlugin()) {
             return;
         }
 
@@ -87,7 +78,7 @@ public class JRubyActivator extends KillbillActivatorBase {
                 logService.log(LogService.LOG_INFO, "JRuby bundle activated");
 
                 // Retrieve the plugin config
-                final PluginRubyConfig rubyConfig = retrievePluginRubyConfig(context);
+                final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
 
                 // Setup JRuby
                 final String pluginMain;
@@ -134,48 +125,10 @@ public class JRubyActivator extends KillbillActivatorBase {
 
         // Start the plugin synchronously
         doStartPlugin(pluginMain, context, killbillServices);
-
-        // Setup the restart mechanism. This is useful for hotswapping plugin code
-        // The principle is similar to the one in Phusion Passenger:
-        // http://www.modrails.com/documentation/Users%20guide%20Apache.html#_redeploying_restarting_the_ruby_on_rails_application
-        final File tmpDirPath = new File(rubyConfig.getPluginVersionRoot().getAbsolutePath() + "/" + TMP_DIR_NAME);
-        if (!tmpDirPath.exists()) {
-            if (!tmpDirPath.mkdir()) {
-                logService.log(LogService.LOG_WARNING, "Unable to create directory " + tmpDirPath + ", the restart mechanism is disabled");
-                return;
-            }
-        }
-        if (!tmpDirPath.isDirectory()) {
-            logService.log(LogService.LOG_WARNING, tmpDirPath + " is not a directory, the restart mechanism is disabled");
-            return;
-        }
-
-        final Integer restart_delay_sec = Integer.parseInt((Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_RESTART_DELAY_SECS), "5")));
-        restartFuture = Executors.newSingleThreadScheduledExecutor("jruby-restarter-" + pluginMain)
-                                 .scheduleWithFixedDelay(new Runnable() {
-                                     long lastRestartMillis = System.currentTimeMillis();
-
-                                     @Override
-                                     public void run() {
-
-                                         final File restartFile = new File(tmpDirPath + "/" + RESTART_FILE_NAME);
-                                         if (!restartFile.isFile()) {
-                                             return;
-                                         }
-
-                                         if (restartFile.lastModified() > lastRestartMillis) {
-                                             logService.log(LogService.LOG_INFO, "Restarting JRuby plugin " + rubyConfig.getRubyMainClass());
-
-                                             doStopPlugin(context);
-                                             doStartPlugin(pluginMain, context, killbillServices);
-
-                                             lastRestartMillis = restartFile.lastModified();
-                                         }
-                                     }
-                                 }, restart_delay_sec, restart_delay_sec, TimeUnit.SECONDS);
     }
 
-    private PluginRubyConfig retrievePluginRubyConfig(final BundleContext context) {
+    @Override
+    protected PluginConfig retrievePluginConfig(final BundleContext context) {
         final PluginConfigServiceApi pluginConfigServiceApi = killbillAPI.getPluginConfigServiceApi();
         return pluginConfigServiceApi.getPluginRubyConfig(context.getBundle().getBundleId());
     }
@@ -184,17 +137,14 @@ public class JRubyActivator extends KillbillActivatorBase {
         withContextClassLoader(new PluginCall() {
             @Override
             public void doCall() {
-                if (restartFuture != null) {
-                    restartFuture.cancel(true);
+                if (plugin != null) {
+                    dispatcher.unregisterEventHandler(plugin);
+                    doStopPlugin(context);
                 }
-
-                dispatcher.unregisterEventHandler(plugin);
-
-                doStopPlugin(context);
-                killbillAPI.close();
-                logService.close();
             }
         }, this.getClass().getClassLoader());
+
+        super.stop(context);
     }
 
     private void doStartPlugin(final String pluginMain, final BundleContext context, final Map<String, Object> killbillServices) {
