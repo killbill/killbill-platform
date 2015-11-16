@@ -204,7 +204,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                      try {
                                                                          start(context);
                                                                      } catch (final Exception e) {
-                                                                         logService.log(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName());
+                                                                         logService.log(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName(), e);
                                                                      }
 
                                                                      lastRestartMillis = lastRestartTime;
