@@ -101,6 +101,7 @@ public class PluginFinder {
             loadPluginsForLanguage(PluginLanguage.JAVA);
 
             // Order for each plugin by versions starting from highest version
+            // See also TestDefaultPluginConfig
             for (final String pluginName : allPlugins.keySet()) {
                 final List<? extends PluginConfig> value = allPlugins.get(pluginName);
                 Collections.sort(value, new Comparator<PluginConfig>() {
