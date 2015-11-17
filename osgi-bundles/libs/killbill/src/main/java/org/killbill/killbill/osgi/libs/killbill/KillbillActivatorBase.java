@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -18,9 +18,15 @@
 
 package org.killbill.killbill.osgi.libs.killbill;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
+import org.killbill.billing.osgi.api.config.PluginConfig;
+import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleActivator;
@@ -29,12 +35,24 @@ import org.osgi.service.log.LogService;
 
 public abstract class KillbillActivatorBase implements BundleActivator {
 
+    @Deprecated
+    private static final String JRUBY_PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.jruby.restart.delay.secs";
+    private static final String PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.restart.delay.secs";
+
+    private static final String TMP_DIR_NAME = "tmp";
+    private static final String RESTART_FILE_NAME = "restart.txt";
+    private static final String STOP_FILE_NAME = "stop.txt";
+
     protected OSGIKillbillAPI killbillAPI;
     protected OSGIKillbillLogService logService;
     protected OSGIKillbillRegistrar registrar;
     protected OSGIKillbillDataSource dataSource;
     protected OSGIKillbillEventDispatcher dispatcher;
     protected OSGIConfigPropertiesService configProperties;
+
+    protected File tmpDir = null;
+
+    private ScheduledFuture<?> restartFuture = null;
 
     @Override
     public void start(final BundleContext context) throws Exception {
@@ -60,10 +78,23 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         if (frameworkEventHandler != null) {
             dispatcher.registerEventHandler(frameworkEventHandler);
         }
+
+        final PluginConfig pluginConfig = retrievePluginConfig(context);
+        tmpDir = setupTmpDir(pluginConfig);
+
+        setupRestartMechanism(pluginConfig, context);
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
+        if (restartFuture != null) {
+            restartFuture.cancel(true);
+        }
+
+        stopAllButRestartMechanism();
+    }
+
+    protected void stopAllButRestartMechanism() throws Exception {
         // Close trackers
         if (killbillAPI != null) {
             killbillAPI.close();
@@ -127,5 +158,112 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         } catch (final IllegalAccessException e) {
             logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
         }
+    }
+
+    protected PluginConfig retrievePluginConfig(final BundleContext context) {
+        final PluginConfigServiceApi pluginConfigServiceApi = killbillAPI.getPluginConfigServiceApi();
+        return pluginConfigServiceApi.getPluginJavaConfig(context.getBundle().getBundleId());
+    }
+
+    // Setup the restart mechanism. This is useful for hotswapping plugin code
+    // The principle is similar to the one in Phusion Passenger:
+    // http://www.modrails.com/documentation/Users%20guide%20Apache.html#_redeploying_restarting_the_ruby_on_rails_application
+    private void setupRestartMechanism(final PluginConfig pluginConfig, final BundleContext context) {
+        if (tmpDir == null || restartFuture != null) {
+            return;
+        }
+
+        String restartDelaySecProperty = configProperties.getString(JRUBY_PLUGINS_RESTART_DELAY_SECS);
+        if (restartDelaySecProperty == null) {
+            restartDelaySecProperty = configProperties.getString(PLUGINS_RESTART_DELAY_SECS);
+        }
+        final Integer restartDelaySecs = restartDelaySecProperty == null ? 5 : Integer.parseInt(restartDelaySecProperty);
+        restartFuture = Executors.newSingleThreadScheduledExecutor()
+                                 .scheduleWithFixedDelay(new Runnable() {
+                                                             long lastRestartMillis = System.currentTimeMillis();
+
+                                                             @Override
+                                                             public void run() {
+                                                                 final boolean shouldStopPlugin = shouldStopPlugin();
+                                                                 if (shouldStopPlugin) {
+                                                                     try {
+                                                                         logSafely(LogService.LOG_INFO, "Stopping plugin " + pluginConfig.getPluginName());
+                                                                         stopAllButRestartMechanism();
+                                                                     } catch (final IllegalStateException e) {
+                                                                         // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
+                                                                         logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                     } catch (final Exception e) {
+                                                                         logSafely(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                     }
+                                                                     return;
+                                                                 }
+
+                                                                 final Long lastRestartTime = lastRestartTime();
+                                                                 if (lastRestartTime != null && lastRestartTime > lastRestartMillis) {
+                                                                     logSafely(LogService.LOG_INFO, "Restarting plugin " + pluginConfig.getPluginName());
+
+                                                                     try {
+                                                                         stopAllButRestartMechanism();
+                                                                     } catch (final IllegalStateException e) {
+                                                                         // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
+                                                                         logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                     } catch (final Exception e) {
+                                                                         logSafely(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                     }
+
+                                                                     try {
+                                                                         start(context);
+                                                                     } catch (final Exception e) {
+                                                                         logSafely(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName(), e);
+                                                                     }
+
+                                                                     lastRestartMillis = lastRestartTime;
+                                                                 }
+                                                             }
+                                                         },
+                                                         restartDelaySecs,
+                                                         restartDelaySecs,
+                                                         TimeUnit.SECONDS);
+    }
+
+    protected boolean shouldStopPlugin() {
+        final File stopFile = new File(tmpDir + "/" + STOP_FILE_NAME);
+        return stopFile.isFile();
+    }
+
+    protected Long lastRestartTime() {
+        final File restartFile = new File(tmpDir + "/" + RESTART_FILE_NAME);
+        if (!restartFile.isFile()) {
+            return null;
+        } else {
+            return restartFile.lastModified();
+        }
+    }
+
+    private void logSafely(final int level, final String message) {
+        if (logService != null) {
+            logService.log(level, message);
+        }
+    }
+
+    private void logSafely(final int level, final String message, final Throwable exception) {
+        if (logService != null) {
+            logService.log(level, message, exception);
+        }
+    }
+
+    private File setupTmpDir(final PluginConfig pluginConfig) {
+        final File tmpDirPath = new File(pluginConfig.getPluginVersionRoot().getAbsolutePath() + "/" + TMP_DIR_NAME);
+        if (!tmpDirPath.exists()) {
+            if (!tmpDirPath.mkdir()) {
+                logService.log(LogService.LOG_WARNING, "Unable to create directory " + tmpDirPath + ", the restart mechanism is disabled");
+                return null;
+            }
+        }
+        if (!tmpDirPath.isDirectory()) {
+            logService.log(LogService.LOG_WARNING, tmpDirPath + " is not a directory, the restart mechanism is disabled");
+            return null;
+        }
+        return tmpDirPath;
     }
 }
