@@ -34,6 +34,8 @@ import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import javax.annotation.Nullable;
+
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
@@ -90,6 +92,25 @@ public class FileInstall {
             logger.error("Error while parsing plugin configurations", e);
         }
         return installedBundles;
+    }
+
+    public BundleWithConfig installNewBundle(final String pluginName, @Nullable final String version, final PluginLanguage pluginLanguage, final Framework framework) {
+        try {
+            pluginFinder.reloadPlugins();
+
+            final List<PluginConfig> configs = pluginFinder.getVersionsForPlugin(pluginName, version);
+            if (configs.isEmpty() || (version != null && configs.size() != 1)) {
+                throw new PluginConfigException("Cannot install plugin " + pluginName + ", version = " + version);
+            }
+
+            final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), pluginLanguage);
+            return new BundleWithConfig(bundle, configs.get(0));
+        } catch (final PluginConfigException e) {
+            logger.error("Error while parsing plugin configurations", e);
+        } catch (final BundleException e) {
+            logger.error("Error while parsing plugin configurations", e);
+        }
+        return null;
     }
 
 
@@ -241,4 +262,5 @@ public class FileInstall {
         final BundleRevision bundleRevision = (BundleRevision) bundle.adapt(BundleRevision.class);
         return bundleRevision != null && (bundleRevision.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0;
     }
+
 }

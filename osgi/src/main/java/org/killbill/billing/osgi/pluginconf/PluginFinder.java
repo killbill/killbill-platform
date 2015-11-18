@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
@@ -61,22 +62,28 @@ public class PluginFinder {
         return getLatestPluginForLanguage(PluginLanguage.RUBY);
     }
 
-    public <T extends PluginConfig> List<T> getVersionsForPlugin(final String lookupName) throws PluginConfigException {
-        loadPluginsIfRequired();
+    public <T extends PluginConfig> List<T> getVersionsForPlugin(final String lookupName, @Nullable String version) throws PluginConfigException {
+        loadPluginsIfRequired(false);
 
         final List<T> result = new LinkedList<T>();
         for (final String pluginName : allPlugins.keySet()) {
             if (pluginName.equals(lookupName)) {
                 for (final PluginConfig cur : allPlugins.get(pluginName)) {
-                    result.add((T) cur);
+                    if (version == null || cur.getVersion().equals(version)) {
+                        result.add((T) cur);
+                    }
                 }
             }
         }
         return result;
     }
 
+    public void reloadPlugins() throws PluginConfigException {
+        loadPluginsIfRequired(true);
+    }
+
     private <T extends PluginConfig> List<T> getLatestPluginForLanguage(final PluginLanguage pluginLanguage) throws PluginConfigException {
-        loadPluginsIfRequired();
+        loadPluginsIfRequired(false);
 
         final List<T> result = new LinkedList<T>();
         for (final String pluginName : allPlugins.keySet()) {
@@ -90,12 +97,14 @@ public class PluginFinder {
         return result;
     }
 
-    private void loadPluginsIfRequired() throws PluginConfigException {
+    private void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException {
         synchronized (allPlugins) {
 
-            if (allPlugins.size() > 0) {
+            if (!reloadPlugins && allPlugins.size() > 0) {
                 return;
             }
+
+            allPlugins.clear();
 
             loadPluginsForLanguage(PluginLanguage.RUBY);
             loadPluginsForLanguage(PluginLanguage.JAVA);

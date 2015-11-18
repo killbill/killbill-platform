@@ -24,6 +24,7 @@ import javax.inject.Inject;
 
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
+import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Function;
@@ -54,6 +55,13 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             }
         });
     }
+
+
+    @Override
+    public void notifyOfStateChanged(final String pluginName, String pluginVersion, PluginLanguage pluginLanguage) {
+        bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
+    }
+
 
     public static final class DefaultPluginInfo implements PluginInfo {
 

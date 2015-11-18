@@ -24,11 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginServiceInfo;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.PluginServiceInfo;
+import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.osgi.framework.Bundle;
@@ -38,6 +40,8 @@ public class BundleRegistry {
 
     private final FileInstall fileInstall;
     private final Map<String, BundleWithMetadata> registry;
+
+    private Framework framework;
 
     // We keep track of those to maintain the ordering on start, but probably we don't need to
     private List<BundleWithConfig> bundleWithConfigs;
@@ -50,11 +54,19 @@ public class BundleRegistry {
     }
 
     public void installBundles(final Framework framework) {
+        // Keep a copy of the framework during initialization phase when we first install all bundles
+        this.framework = framework;
         bundleWithConfigs = fileInstall.installBundles(framework);
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             registry.put(getPluginName(bundleWithConfig), new BundleWithMetadata(bundleWithConfig));
         }
     }
+
+    public void installNewBundle(final String pluginName, @Nullable final String version, final PluginLanguage pluginLanguage) {
+        BundleWithConfig newConfig = fileInstall.installNewBundle(pluginName, version, pluginLanguage, framework);
+        registry.put(getPluginName(newConfig), new BundleWithMetadata(newConfig));
+    }
+
 
     public void startBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
