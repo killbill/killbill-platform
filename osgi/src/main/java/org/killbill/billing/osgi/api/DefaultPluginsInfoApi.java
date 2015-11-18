@@ -25,19 +25,23 @@ import javax.inject.Inject;
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
 import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
     private final BundleRegistry bundleRegistry;
+    private final KillbillNodesApi nodesApi;
 
     @Inject
-    public DefaultPluginsInfoApi(final BundleRegistry bundleRegistry) {
+    public DefaultPluginsInfoApi(final BundleRegistry bundleRegistry, final KillbillNodesApi nodesApi) {
         this.bundleRegistry = bundleRegistry;
+        this.nodesApi = nodesApi;
     }
 
     @Override
@@ -58,8 +62,15 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
 
     @Override
-    public void notifyOfStateChanged(final String pluginName, String pluginVersion, PluginLanguage pluginLanguage) {
-        bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
+    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginName, String pluginVersion, PluginLanguage pluginLanguage) {
+        switch (newState) {
+            case NEW_VERSION:
+                bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
+                nodesApi.notifyPluginChanged(ImmutableList);
+                return;
+            default:
+                throw new IllegalStateException("Invalid PluginStateChange " + newState);
+        }
     }
 
 
