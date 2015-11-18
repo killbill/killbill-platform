@@ -63,14 +63,12 @@ public class FileInstall {
     private final PureOSGIBundleFinder osgiBundleFinder;
     private final PluginFinder pluginFinder;
     private final PluginConfigServiceApi pluginConfigServiceApi;
-    private final String jrubyBundlePath;
     private final AtomicInteger jrubyUniqueIndex;
 
     public FileInstall(final PureOSGIBundleFinder osgiBundleFinder, final PluginFinder pluginFinder, final PluginConfigServiceApi pluginConfigServiceApi) {
         this.osgiBundleFinder = osgiBundleFinder;
         this.pluginFinder = pluginFinder;
         this.pluginConfigServiceApi = pluginConfigServiceApi;
-        this.jrubyBundlePath = findJrubyBundlePath();
         this.jrubyUniqueIndex = new AtomicInteger(0);
     }
 
@@ -81,10 +79,12 @@ public class FileInstall {
 
             final BundleContext context = framework.getBundleContext();
 
+            final String jrubyBundlePath = findJrubyBundlePath();
+
             // Install all bundles and create service mapping
-            installAllJavaBundles(context, installedBundles);
-            installAllJavaPluginBundles(context, installedBundles);
-            installAllJRubyPluginBundles(context, installedBundles);
+            installAllJavaBundles(context, installedBundles, jrubyBundlePath);
+            installAllJavaPluginBundles(context, installedBundles, jrubyBundlePath);
+            installAllJRubyPluginBundles(context, installedBundles, jrubyBundlePath);
 
         } catch (final PluginConfigException e) {
             logger.error("Error while parsing plugin configurations", e);
@@ -102,8 +102,9 @@ public class FileInstall {
             if (configs.isEmpty() || (version != null && configs.size() != 1)) {
                 throw new PluginConfigException("Cannot install plugin " + pluginName + ", version = " + version);
             }
+            final String jrubyBundlePath = findJrubyBundlePath();
 
-            final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), pluginLanguage);
+            final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), pluginLanguage, jrubyBundlePath);
             return new BundleWithConfig(bundle, configs.get(0));
         } catch (final PluginConfigException e) {
             logger.error("Error while parsing plugin configurations", e);
@@ -114,7 +115,7 @@ public class FileInstall {
     }
 
 
-    private void installAllJavaBundles(final BundleContext context, final List<BundleWithConfig> installedBundles) throws PluginConfigException, BundleException {
+    private void installAllJavaBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
         final List<String> bundleJarPaths = osgiBundleFinder.getLatestBundles();
         for (final String cur : bundleJarPaths) {
             // Don't install the jruby.jar bundle
@@ -128,27 +129,27 @@ public class FileInstall {
         }
     }
 
-    private void installAllJavaPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles) throws PluginConfigException, BundleException {
+    private void installAllJavaPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
         final List<PluginJavaConfig> pluginJavaConfigs = pluginFinder.getLatestJavaPlugins();
         for (final PluginJavaConfig cur : pluginJavaConfigs) {
-            final Bundle bundle = installBundle(cur, context, PluginLanguage.JAVA);
+            final Bundle bundle = installBundle(cur, context, PluginLanguage.JAVA, jrubyBundlePath);
             installedBundles.add(new BundleWithConfig(bundle, cur));
         }
     }
 
-    private void installAllJRubyPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles) throws PluginConfigException, BundleException {
+    private void installAllJRubyPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
         if (jrubyBundlePath == null) {
             return;
         }
 
         final List<PluginRubyConfig> pluginRubyConfigs = pluginFinder.getLatestRubyPlugins();
         for (final PluginRubyConfig cur : pluginRubyConfigs) {
-            final Bundle bundle = installBundle(cur, context, PluginLanguage.RUBY);
+            final Bundle bundle = installBundle(cur, context, PluginLanguage.RUBY, jrubyBundlePath);
             installedBundles.add(new BundleWithConfig(bundle, cur));
         }
     }
 
-    private Bundle installBundle(final PluginConfig config, final BundleContext context, final PluginLanguage pluginLanguage) throws BundleException {
+    private Bundle installBundle(final PluginConfig config, final BundleContext context, final PluginLanguage pluginLanguage, final String jrubyBundlePath) throws BundleException {
 
         Bundle bundle;
         switch (pluginLanguage) {
