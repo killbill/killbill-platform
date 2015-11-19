@@ -30,7 +30,6 @@ import org.osgi.framework.Bundle;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
@@ -51,28 +50,30 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             public boolean apply(final BundleWithMetadata input) {
                 return input.getBundle().getSymbolicName() != null;
             }
-        }), new Function<BundleWithMetadata, PluginInfo>() {
+        }), toPluginInfo());
+    }
+
+    public static Function<BundleWithMetadata, PluginInfo> toPluginInfo() {
+        return new Function<BundleWithMetadata, PluginInfo>() {
             @Nullable
             @Override
             public PluginInfo apply(final BundleWithMetadata input) {
                 return new DefaultPluginInfo(input.getBundle().getSymbolicName(), input.getPluginName(), input.getVersion(), input.getBundle().getState() == Bundle.ACTIVE, input.getServiceNames());
             }
-        });
+        };
     }
 
-
-    @Override
+        @Override
     public void notifyOfStateChanged(final PluginStateChange newState, final String pluginName, String pluginVersion, PluginLanguage pluginLanguage) {
         switch (newState) {
             case NEW_VERSION:
                 bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
-                nodesApi.notifyPluginChanged(ImmutableList);
+                nodesApi.notifyPluginChanged(toPluginInfo().apply(bundleRegistry.getBundle(pluginName)));
                 return;
             default:
                 throw new IllegalStateException("Invalid PluginStateChange " + newState);
         }
     }
-
 
     public static final class DefaultPluginInfo implements PluginInfo {
 

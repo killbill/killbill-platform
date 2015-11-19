@@ -79,6 +79,10 @@ public class BundleRegistry {
         return registry.values();
     }
 
+    public BundleWithMetadata getBundle(final String pluginName) {
+        return registry.get(pluginName);
+    }
+
     public String getPluginName(final Bundle bundle) {
         for (final BundleWithMetadata cur : registry.values()) {
             if (bundle.getSymbolicName().equals(cur.getBundle().getSymbolicName())) {

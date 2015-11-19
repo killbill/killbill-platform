@@ -85,6 +85,18 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }
 
+    protected void installOSGIComponents() {
+        bind(OSGIService.class).to(DefaultOSGIService.class).asEagerSingleton();
+        bind(BundleRegistry.class).asEagerSingleton();
+        bind(KillbillActivator.class).asEagerSingleton();
+        bind(PureOSGIBundleFinder.class).asEagerSingleton();
+        bind(PluginFinder.class).asEagerSingleton();
+        bind(PluginConfigServiceApi.class).to(DefaultPluginConfigServiceApi.class).asEagerSingleton();
+        bind(OSGIKillbill.class).to(DefaultOSGIKillbill.class).asEagerSingleton();
+        bind(KillbillEventObservable.class).asEagerSingleton();
+        bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
+    }
+
     protected void installHttpService() {
         bind(HttpService.class).to(DefaultHttpService.class).asEagerSingleton();
     }
@@ -95,15 +107,6 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         installOSGIServlet();
         installHttpService();
         installDataSource();
-
-        bind(OSGIService.class).to(DefaultOSGIService.class).asEagerSingleton();
-        bind(BundleRegistry.class).asEagerSingleton();
-        bind(KillbillActivator.class).asEagerSingleton();
-        bind(PureOSGIBundleFinder.class).asEagerSingleton();
-        bind(PluginFinder.class).asEagerSingleton();
-        bind(PluginConfigServiceApi.class).to(DefaultPluginConfigServiceApi.class).asEagerSingleton();
-        bind(OSGIKillbill.class).to(DefaultOSGIKillbill.class).asEagerSingleton();
-        bind(KillbillEventObservable.class).asEagerSingleton();
-        bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
+        installOSGIComponents();
     }
 }
