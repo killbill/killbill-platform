@@ -107,9 +107,9 @@ public class FileInstall {
             final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), pluginLanguage, jrubyBundlePath);
             return new BundleWithConfig(bundle, configs.get(0));
         } catch (final PluginConfigException e) {
-            logger.error("Error while parsing plugin configurations", e);
+            logger.error("Error while installing plugin " + pluginName, e);
         } catch (final BundleException e) {
-            logger.error("Error while parsing plugin configurations", e);
+            logger.error("Error while installing plugin" + pluginName, e);
         }
         return null;
     }

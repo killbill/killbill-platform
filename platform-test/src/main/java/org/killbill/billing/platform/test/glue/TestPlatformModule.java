@@ -128,13 +128,15 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
         final KillbillNodesApi dummyInstance = new KillbillNodesApi() {
             @Override
             public Iterable<NodeInfo> getNodesInfo() {
-                return null;
+                throw new UnsupportedOperationException("Not implemented");
             }
             @Override
             public void triggerNodeCommand(final NodeCommand nodeCommand) {
+                throw new UnsupportedOperationException("Not implemented");
             }
             @Override
             public void notifyPluginChanged(final PluginInfo pluginInfo) {
+                throw new UnsupportedOperationException("Not implemented");
             }
         };
         bind(KillbillNodesApi.class).toInstance(dummyInstance);

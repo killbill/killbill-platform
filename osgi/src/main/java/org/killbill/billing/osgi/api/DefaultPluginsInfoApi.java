@@ -50,25 +50,21 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             public boolean apply(final BundleWithMetadata input) {
                 return input.getBundle().getSymbolicName() != null;
             }
-        }), toPluginInfo());
-    }
-
-    public static Function<BundleWithMetadata, PluginInfo> toPluginInfo() {
-        return new Function<BundleWithMetadata, PluginInfo>() {
-            @Nullable
+        }), new Function<BundleWithMetadata, PluginInfo>() {
             @Override
             public PluginInfo apply(final BundleWithMetadata input) {
                 return new DefaultPluginInfo(input.getBundle().getSymbolicName(), input.getPluginName(), input.getVersion(), input.getBundle().getState() == Bundle.ACTIVE, input.getServiceNames());
             }
-        };
+        });
     }
 
-        @Override
+    @Override
     public void notifyOfStateChanged(final PluginStateChange newState, final String pluginName, String pluginVersion, PluginLanguage pluginLanguage) {
         switch (newState) {
             case NEW_VERSION:
                 bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
-                nodesApi.notifyPluginChanged(toPluginInfo().apply(bundleRegistry.getBundle(pluginName)));
+                final BundleWithMetadata bundle = bundleRegistry.getBundle(pluginName);
+                nodesApi.notifyPluginChanged(new DefaultPluginInfo(bundle.getBundle().getSymbolicName(), bundle.getPluginName(), bundle.getVersion(), bundle.getBundle().getState() == Bundle.ACTIVE, bundle.getServiceNames()));
                 return;
             default:
                 throw new IllegalStateException("Invalid PluginStateChange " + newState);
