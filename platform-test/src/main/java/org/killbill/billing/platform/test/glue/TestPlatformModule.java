@@ -27,6 +27,7 @@ import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
+import org.killbill.billing.osgi.api.PluginInfo;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
@@ -34,6 +35,9 @@ import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
+import org.killbill.billing.util.nodes.NodeCommand;
+import org.killbill.billing.util.nodes.NodeInfo;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.jdbi.v2.IDBI;
@@ -70,6 +74,8 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
         }
 
         configureJNDI();
+
+        configureKillbillNodesApi();
     }
 
     protected void configureEmbeddedDB() {
@@ -116,5 +122,21 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
 
     protected void configureJNDI() {
         bind(JNDIManager.class).asEagerSingleton();
+    }
+
+    protected void configureKillbillNodesApi() {
+        final KillbillNodesApi dummyInstance = new KillbillNodesApi() {
+            @Override
+            public Iterable<NodeInfo> getNodesInfo() {
+                return null;
+            }
+            @Override
+            public void triggerNodeCommand(final NodeCommand nodeCommand) {
+            }
+            @Override
+            public void notifyPluginChanged(final PluginInfo pluginInfo) {
+            }
+        };
+        bind(KillbillNodesApi.class).toInstance(dummyInstance);
     }
 }
