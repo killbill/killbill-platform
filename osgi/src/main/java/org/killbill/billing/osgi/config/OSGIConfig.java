@@ -68,6 +68,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.tenant.api," +
              "org.killbill.billing.usage.api," +
              "org.killbill.billing.util.api," +
+             "org.killbill.billing.util.nodes," +
              "org.killbill.billing.util.audit," +
              "org.killbill.billing.util.callcontext," +
              "org.killbill.billing.util.customfield," +

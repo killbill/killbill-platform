@@ -26,6 +26,7 @@ import org.killbill.billing.entitlement.api.SubscriptionApi;
 import org.killbill.billing.invoice.api.InvoicePaymentApi;
 import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
+import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.payment.api.PaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
@@ -36,6 +37,7 @@ import org.killbill.billing.util.api.CustomFieldUserApi;
 import org.killbill.billing.util.api.ExportUserApi;
 import org.killbill.billing.util.api.RecordIdApi;
 import org.killbill.billing.util.api.TagUserApi;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -222,6 +224,26 @@ public class OSGIKillbillAPI extends OSGIKillbillLibraryBase implements OSGIKill
             @Override
             public SecurityApi executeWithService(final OSGIKillbill service) {
                 return service.getSecurityApi();
+            }
+        });
+    }
+
+    @Override
+    public PluginsInfoApi getPluginsInfoApi() {
+        return withServiceTracker(killbillTracker, new APICallback<PluginsInfoApi, OSGIKillbill>(KILLBILL_SERVICE_NAME) {
+            @Override
+            public PluginsInfoApi executeWithService(final OSGIKillbill service) {
+                return service.getPluginsInfoApi();
+            }
+        });
+    }
+
+    @Override
+    public KillbillNodesApi getKillbillNodesApi() {
+        return withServiceTracker(killbillTracker, new APICallback<KillbillNodesApi, OSGIKillbill>(KILLBILL_SERVICE_NAME) {
+            @Override
+            public KillbillNodesApi executeWithService(final OSGIKillbill service) {
+                return service.getKillbillNodesApi();
             }
         });
     }

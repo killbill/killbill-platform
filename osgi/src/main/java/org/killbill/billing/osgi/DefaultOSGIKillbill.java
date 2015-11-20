@@ -26,6 +26,7 @@ import org.killbill.billing.entitlement.api.SubscriptionApi;
 import org.killbill.billing.invoice.api.InvoicePaymentApi;
 import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
+import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.payment.api.PaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
@@ -36,6 +37,7 @@ import org.killbill.billing.util.api.CustomFieldUserApi;
 import org.killbill.billing.util.api.ExportUserApi;
 import org.killbill.billing.util.api.RecordIdApi;
 import org.killbill.billing.util.api.TagUserApi;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
 
 import com.google.inject.Inject;
 
@@ -57,6 +59,8 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     private CurrencyConversionApi currencyConversionApi;
     private RecordIdApi recordIdApi;
     private SecurityApi securityApi;
+    private PluginsInfoApi pluginsInfoApi;
+    private KillbillNodesApi killbillNodesApi;
 
     private PluginConfigServiceApi configServiceApi;
 
@@ -145,6 +149,18 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
         this.securityApi = securityApi;
     }
 
+    @Inject(optional = true)
+    public void setPluginsInfoApi(final PluginsInfoApi pluginsInfoApi) {
+        this.pluginsInfoApi = pluginsInfoApi;
+    }
+
+
+    @Inject(optional = true)
+    public void setKillbillNodesApi(final KillbillNodesApi killbillNodesApi) {
+        this.killbillNodesApi = killbillNodesApi;
+    }
+
+
     @Override
     public AccountUserApi getAccountUserApi() {
         return accountUserApi;
@@ -228,5 +244,15 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     @Override
     public SecurityApi getSecurityApi() {
         return securityApi;
+    }
+
+    @Override
+    public PluginsInfoApi getPluginsInfoApi() {
+        return pluginsInfoApi;
+    }
+
+    @Override
+    public KillbillNodesApi getKillbillNodesApi() {
+        return killbillNodesApi;
     }
 }
