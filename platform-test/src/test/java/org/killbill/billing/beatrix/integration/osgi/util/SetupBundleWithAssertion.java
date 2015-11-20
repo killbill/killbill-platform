@@ -33,9 +33,9 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.killbill.billing.osgi.api.config.PluginConfig;
-import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
-import org.killbill.billing.osgi.api.config.PluginConfig.PluginType;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
+import org.killbill.billing.osgi.api.config.PluginLanguage;
+import org.killbill.billing.osgi.api.config.PluginType;
 import org.killbill.billing.osgi.config.OSGIConfig;
 import org.testng.Assert;
 

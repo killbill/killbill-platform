@@ -21,6 +21,7 @@ package org.killbill.billing.osgi.pluginconf;
 import java.io.File;
 import java.util.Properties;
 
+import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 
 public class DefaultPluginRubyConfig extends DefaultPluginConfig implements PluginRubyConfig {

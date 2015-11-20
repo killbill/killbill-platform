@@ -34,8 +34,8 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
-import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
+import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.config.OSGIConfig;
 import org.slf4j.Logger;

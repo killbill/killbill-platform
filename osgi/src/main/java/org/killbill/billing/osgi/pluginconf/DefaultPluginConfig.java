@@ -22,6 +22,8 @@ import java.io.File;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
+import org.killbill.billing.osgi.api.config.PluginLanguage;
+import org.killbill.billing.osgi.api.config.PluginType;
 
 public abstract class DefaultPluginConfig implements PluginConfig {
 

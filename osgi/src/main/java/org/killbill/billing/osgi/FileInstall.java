@@ -37,9 +37,9 @@ import java.util.jar.Manifest;
 import javax.annotation.Nullable;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
-import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
+import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
 import org.killbill.billing.osgi.pluginconf.PluginConfigException;

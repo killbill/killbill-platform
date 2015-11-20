@@ -19,12 +19,11 @@ package org.killbill.billing.osgi.api;
 
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
-import org.killbill.billing.osgi.api.config.PluginConfig.PluginLanguage;
+import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.Bundle;
 

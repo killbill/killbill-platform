@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
-import org.killbill.billing.osgi.api.config.PluginConfig.PluginType;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
+import org.killbill.billing.osgi.api.config.PluginType;
 import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.killbill.osgi.libs.killbill.KillbillServiceListener;
 import org.killbill.killbill.osgi.libs.killbill.KillbillServiceListenerCallback;
