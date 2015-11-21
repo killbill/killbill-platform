@@ -182,6 +182,11 @@ public class SetupBundleWithAssertion {
 
         return new PluginJavaConfig() {
             @Override
+            public int compareTo(final PluginConfig o) {
+                return 0;
+            }
+
+            @Override
             public String getBundleJarPath() {
                 return bundleTestResourcePath;
             }
@@ -221,6 +226,11 @@ public class SetupBundleWithAssertion {
             @Override
             public PluginLanguage getPluginLanguage() {
                 return PluginLanguage.JAVA;
+            }
+
+            @Override
+            public boolean isSelectedForStart() {
+                return true;
             }
         };
     }

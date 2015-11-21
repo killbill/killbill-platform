@@ -25,7 +25,8 @@ import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginType;
 
-public abstract class DefaultPluginConfig implements PluginConfig {
+public abstract class DefaultPluginConfig implements PluginConfig, Comparable<PluginConfig> {
+
 
     private static final String PROP_PLUGIN_TYPE_NAME = "pluginType";
 
@@ -33,11 +34,22 @@ public abstract class DefaultPluginConfig implements PluginConfig {
     private final PluginType pluginType;
     private final String version;
     private final File pluginVersionRoot;
+    private final boolean isSelectedForStart;
 
-    public DefaultPluginConfig(final String pluginName, final String version, final Properties props, final File pluginVersionRoot) {
+    public DefaultPluginConfig(DefaultPluginConfig input, final boolean isSelectedForStart) {
+        this.pluginName = input.getPluginName();
+        this.version = input.getVersion();
+        this.pluginVersionRoot = input.getPluginVersionRoot();
+        this.isSelectedForStart = isSelectedForStart;
+        this.pluginType = input.getPluginType();
+    }
+
+
+    public DefaultPluginConfig(final String pluginName, final String version, final Properties props, final File pluginVersionRoot, final boolean isVersionToStartLinkedToMe) {
         this.pluginName = pluginName;
         this.version = version;
         this.pluginVersionRoot = pluginVersionRoot;
+        this.isSelectedForStart = isVersionToStartLinkedToMe;
         this.pluginType = PluginType.valueOf(props.getProperty(PROP_PLUGIN_TYPE_NAME, PluginType.__UNKNOWN__.toString()));
     }
 
@@ -64,6 +76,11 @@ public abstract class DefaultPluginConfig implements PluginConfig {
     @Override
     public File getPluginVersionRoot() {
         return pluginVersionRoot;
+    }
+
+    @Override
+    public boolean isSelectedForStart() {
+        return isSelectedForStart;
     }
 
     @Override
@@ -94,7 +111,6 @@ public abstract class DefaultPluginConfig implements PluginConfig {
         if (version != null ? !version.equals(that.version) : that.version != null) {
             return false;
         }
-
         return true;
     }
 
@@ -117,5 +133,16 @@ public abstract class DefaultPluginConfig implements PluginConfig {
         sb.append(", pluginVersionRoot=").append(pluginVersionRoot);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public int compareTo(final PluginConfig o) {
+        if (isSelectedForStart) {
+            return -1;
+        } else if (o.isSelectedForStart()) {
+            return 1;
+        } else {
+            return -(getVersion().compareTo(o.getVersion()));
+        }
     }
 }

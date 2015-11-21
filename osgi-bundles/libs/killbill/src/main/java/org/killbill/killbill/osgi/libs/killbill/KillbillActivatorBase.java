@@ -39,9 +39,9 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     private static final String JRUBY_PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.jruby.restart.delay.secs";
     private static final String PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.restart.delay.secs";
 
-    private static final String TMP_DIR_NAME = "tmp";
-    private static final String RESTART_FILE_NAME = "restart.txt";
-    private static final String STOP_FILE_NAME = "stop.txt";
+    public static final String TMP_DIR_NAME = "tmp";
+    public static final String RESTART_FILE_NAME = "restart.txt";
+    public static final String STOP_FILE_NAME = "stop.txt";
 
     protected OSGIKillbillAPI killbillAPI;
     protected OSGIKillbillLogService logService;

@@ -90,6 +90,8 @@ public class FileInstall {
             logger.error("Error while parsing plugin configurations", e);
         } catch (final BundleException e) {
             logger.error("Error while parsing plugin configurations", e);
+        } catch (final IOException e) {
+            logger.error("Error while parsing plugin configurations", e);
         }
         return installedBundles;
     }
@@ -110,6 +112,8 @@ public class FileInstall {
             logger.error("Error while installing plugin " + pluginName, e);
         } catch (final BundleException e) {
             logger.error("Error while installing plugin" + pluginName, e);
+        } catch (final IOException e) {
+            logger.error("Error while installing plugin " + pluginName, e);
         }
         return null;
     }
@@ -129,7 +133,7 @@ public class FileInstall {
         }
     }
 
-    private void installAllJavaPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
+    private void installAllJavaPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException, IOException {
         final List<PluginJavaConfig> pluginJavaConfigs = pluginFinder.getLatestJavaPlugins();
         for (final PluginJavaConfig cur : pluginJavaConfigs) {
             final Bundle bundle = installBundle(cur, context, PluginLanguage.JAVA, jrubyBundlePath);
@@ -137,7 +141,7 @@ public class FileInstall {
         }
     }
 
-    private void installAllJRubyPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
+    private void installAllJRubyPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException, IOException {
         if (jrubyBundlePath == null) {
             return;
         }
@@ -150,6 +154,7 @@ public class FileInstall {
     }
 
     private Bundle installBundle(final PluginConfig config, final BundleContext context, final PluginLanguage pluginLanguage, final String jrubyBundlePath) throws BundleException {
+
 
         Bundle bundle;
         switch (pluginLanguage) {

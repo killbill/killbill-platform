@@ -17,6 +17,9 @@
 
 package org.killbill.billing.osgi.pluginconf;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
@@ -30,31 +33,38 @@ public class TestDefaultPluginConfig {
 
     @Test(groups = "fast")
     public void testVerifyVersionsOrdering() throws PluginConfigException {
-        final PluginConfig javaConfig100 = new DummyJavaConfig("1.0.0");
-        final PluginConfig javaConfig101 = new DummyJavaConfig("1.0.1");
-        final PluginConfig javaConfig200 = new DummyJavaConfig("2.0.0");
-        final PluginConfig javaConfig201 = new DummyJavaConfig("2.0.1");
-        final PluginConfig javaConfigLATEST = new DummyJavaConfig("LATEST");
-        Assert.assertTrue(javaConfig100.getVersion().compareTo(javaConfig101.getVersion()) < 0);
-        Assert.assertTrue(javaConfig100.getVersion().compareTo(javaConfig200.getVersion()) < 0);
-        Assert.assertTrue(javaConfig100.getVersion().compareTo(javaConfig201.getVersion()) < 0);
-        Assert.assertTrue(javaConfig100.getVersion().compareTo(javaConfigLATEST.getVersion()) < 0);
-        Assert.assertTrue(javaConfig101.getVersion().compareTo(javaConfig200.getVersion()) < 0);
-        Assert.assertTrue(javaConfig101.getVersion().compareTo(javaConfig201.getVersion()) < 0);
-        Assert.assertTrue(javaConfig101.getVersion().compareTo(javaConfigLATEST.getVersion()) < 0);
-        Assert.assertTrue(javaConfig200.getVersion().compareTo(javaConfig201.getVersion()) < 0);
-        Assert.assertTrue(javaConfig200.getVersion().compareTo(javaConfigLATEST.getVersion()) < 0);
-        Assert.assertTrue(javaConfig201.getVersion().compareTo(javaConfigLATEST.getVersion()) < 0);
+        final PluginConfig javaConfig100 = new DummyJavaConfig("1.0.0", false);
+        final PluginConfig javaConfig101 = new DummyJavaConfig("1.0.1", true);
+        final PluginConfig javaConfig200 = new DummyJavaConfig("2.0.0", false);
+        final PluginConfig javaConfig201 = new DummyJavaConfig("2.0.1", false);
+
+        List<PluginConfig> configs = new ArrayList<PluginConfig>();
+        configs.add(javaConfig100);
+        configs.add(javaConfig101);
+        configs.add(javaConfig200);
+        configs.add(javaConfig201);
+
+        Collections.sort(configs);
+
+        Assert.assertEquals(configs.get(0), javaConfig101);
+        Assert.assertEquals(configs.get(1), javaConfig201);
+        Assert.assertEquals(configs.get(2), javaConfig200);
+        Assert.assertEquals(configs.get(3), javaConfig100);
     }
 
     private static final class DummyJavaConfig extends DefaultPluginJavaConfig {
 
-        public DummyJavaConfig(final String version) throws PluginConfigException {
-            super("killbill-stripe", version, Files.createTempDir(), new Properties());
+        public DummyJavaConfig(final String version, final boolean isSelectedForStart) throws PluginConfigException {
+            super("killbill-stripe", version, Files.createTempDir(), new Properties(), isSelectedForStart);
         }
 
         @Override
         protected void validate() throws PluginConfigException {
         }
     }
+
 }
+
+
+
+

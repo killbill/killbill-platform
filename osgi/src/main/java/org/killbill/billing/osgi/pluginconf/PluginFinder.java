@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,26 +42,28 @@ import org.slf4j.LoggerFactory;
 
 public class PluginFinder {
 
+    private static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
+
     private final Logger logger = LoggerFactory.getLogger(PluginFinder.class);
 
     private final OSGIConfig osgiConfig;
-    private final Map<String, List<? extends PluginConfig>> allPlugins;
+    private final Map<String, LinkedList<PluginConfig>> allPlugins;
 
     @Inject
     public PluginFinder(final OSGIConfig osgiConfig) {
         this.osgiConfig = osgiConfig;
-        this.allPlugins = new HashMap<String, List<? extends PluginConfig>>();
+        this.allPlugins = new HashMap<String, LinkedList<PluginConfig>>();
     }
 
-    public List<PluginJavaConfig> getLatestJavaPlugins() throws PluginConfigException {
+    public List<PluginJavaConfig> getLatestJavaPlugins() throws PluginConfigException, IOException {
         return getLatestPluginForLanguage(PluginLanguage.JAVA);
     }
 
-    public List<PluginRubyConfig> getLatestRubyPlugins() throws PluginConfigException {
+    public List<PluginRubyConfig> getLatestRubyPlugins() throws PluginConfigException, IOException {
         return getLatestPluginForLanguage(PluginLanguage.RUBY);
     }
 
-    public <T extends PluginConfig> List<T> getVersionsForPlugin(final String lookupName, @Nullable String version) throws PluginConfigException {
+    public <T extends PluginConfig> List<T> getVersionsForPlugin(final String lookupName, @Nullable String version) throws PluginConfigException, IOException {
         loadPluginsIfRequired(false);
 
         final List<T> result = new LinkedList<T>();
@@ -78,11 +79,11 @@ public class PluginFinder {
         return result;
     }
 
-    public void reloadPlugins() throws PluginConfigException {
+    public void reloadPlugins() throws PluginConfigException, IOException {
         loadPluginsIfRequired(true);
     }
 
-    private <T extends PluginConfig> List<T> getLatestPluginForLanguage(final PluginLanguage pluginLanguage) throws PluginConfigException {
+    private <T extends PluginConfig> List<T> getLatestPluginForLanguage(final PluginLanguage pluginLanguage) throws PluginConfigException, IOException {
         loadPluginsIfRequired(false);
 
         final List<T> result = new LinkedList<T>();
@@ -97,7 +98,7 @@ public class PluginFinder {
         return result;
     }
 
-    private void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException {
+    private <T extends PluginConfig> void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException, IOException {
         synchronized (allPlugins) {
 
             if (!reloadPlugins && allPlugins.size() > 0) {
@@ -109,21 +110,30 @@ public class PluginFinder {
             loadPluginsForLanguage(PluginLanguage.RUBY);
             loadPluginsForLanguage(PluginLanguage.JAVA);
 
-            // Order for each plugin by versions starting from highest version
-            // See also TestDefaultPluginConfig
+            // Order for each plugin  based on DefaultPluginConfig sort method:
+            // (order first based on SELECTED_VERSION_LINK_NAME and then decreasing version number)
             for (final String pluginName : allPlugins.keySet()) {
-                final List<? extends PluginConfig> value = allPlugins.get(pluginName);
-                Collections.sort(value, new Comparator<PluginConfig>() {
-                    @Override
-                    public int compare(final PluginConfig o1, final PluginConfig o2) {
-                        return -(o1.getVersion().compareTo(o2.getVersion()));
-                    }
-                });
+                final LinkedList<PluginConfig> versionsForPlugin = allPlugins.get(pluginName);
+                Collections.sort(versionsForPlugin);
+                // Make sure first entry is set with isSelectedForStart = true
+                final PluginConfig firstValue = versionsForPlugin.removeFirst();
+                final PluginConfig newFirstValue = firstValue.getPluginLanguage() == PluginLanguage.RUBY ?
+                                                   new DefaultPluginRubyConfig((DefaultPluginRubyConfig) firstValue, true) :
+                                                   new DefaultPluginJavaConfig((DefaultPluginJavaConfig) firstValue, true);
+                versionsForPlugin.addFirst(newFirstValue);
             }
         }
     }
 
-    private <T extends PluginConfig> void loadPluginsForLanguage(final PluginLanguage pluginLanguage) throws PluginConfigException {
+    private String resolveVersionToStartLink(final File pluginVersionsRoot) throws IOException {
+        final File selectedVersionLink = new File(pluginVersionsRoot + "/" + SELECTED_VERSION_LINK_NAME);
+        if (selectedVersionLink.exists() && selectedVersionLink.isDirectory()) {
+            return selectedVersionLink.getCanonicalFile().getName();
+        }
+        return null;
+    }
+
+    private void loadPluginsForLanguage(final PluginLanguage pluginLanguage) throws PluginConfigException, IOException {
         final String rootDirPath = osgiConfig.getRootInstallationDir() + "/plugins/" + pluginLanguage.toString().toLowerCase();
         final File rootDir = new File(rootDirPath);
         if (!rootDir.exists() || !rootDir.isDirectory()) {
@@ -147,6 +157,9 @@ public class PluginFinder {
             if (filesInDir == null) {
                 continue;
             }
+
+            final String versionToStart = resolveVersionToStartLink(curPlugin);
+
             for (final File curVersion : filesInDir) {
                 // Skip any non directory entry
                 if (!curVersion.isDirectory()) {
@@ -154,17 +167,21 @@ public class PluginFinder {
                     continue;
                 }
                 final String version = curVersion.getName();
+                if (SELECTED_VERSION_LINK_NAME.equals(version)) {
+                    continue;
+                }
+                final boolean isVersionToStartLink = versionToStart != null && versionToStart.equals(version);
 
-                final T plugin;
+                final PluginConfig plugin;
                 try {
-                    plugin = extractPluginConfig(pluginLanguage, pluginName, version, curVersion);
+                    plugin = extractPluginConfig(pluginLanguage, pluginName, version, curVersion, isVersionToStartLink);
                 } catch (final PluginConfigException e) {
                     logger.warn("Skipping plugin {}: {}", pluginName, e.getMessage());
                     continue;
                 }
-                List<T> curPluginVersionlist = (List<T>) allPlugins.get(plugin.getPluginName());
+                LinkedList<PluginConfig> curPluginVersionlist = allPlugins.get(plugin.getPluginName());
                 if (curPluginVersionlist == null) {
-                    curPluginVersionlist = new LinkedList<T>();
+                    curPluginVersionlist = new LinkedList<PluginConfig>();
                     allPlugins.put(plugin.getPluginName(), curPluginVersionlist);
                 }
                 curPluginVersionlist.add(plugin);
@@ -173,7 +190,7 @@ public class PluginFinder {
         }
     }
 
-    private <T extends PluginConfig> T extractPluginConfig(final PluginLanguage pluginLanguage, final String pluginName, final String pluginVersion, final File pluginVersionDir) throws PluginConfigException {
+    private <T extends PluginConfig> T extractPluginConfig(final PluginLanguage pluginLanguage, final String pluginName, final String pluginVersion, final File pluginVersionDir, final boolean isVersionToStartLink) throws PluginConfigException {
         final T result;
         Properties props = null;
         try {
@@ -200,10 +217,10 @@ public class PluginFinder {
         }
         switch (pluginLanguage) {
             case RUBY:
-                result = (T) new DefaultPluginRubyConfig(pluginName, pluginVersion, pluginVersionDir, props);
+                result = (T) new DefaultPluginRubyConfig(pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink);
                 break;
             case JAVA:
-                result = (T) new DefaultPluginJavaConfig(pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props);
+                result = (T) new DefaultPluginJavaConfig(pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink);
                 break;
             default:
                 throw new RuntimeException("Unknown plugin language " + pluginLanguage);
