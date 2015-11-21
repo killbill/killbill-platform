@@ -41,8 +41,8 @@ public class DefaultPluginRubyConfig extends DefaultPluginConfig implements Plug
         this.rubyRequire = input.getRubyRequire();
     }
 
-    public DefaultPluginRubyConfig(final String pluginName, final String version, final File pluginVersionRoot, final Properties props, final boolean isVersionToStartLinkedToMe) throws PluginConfigException {
-        super(pluginName, version, props, pluginVersionRoot, isVersionToStartLinkedToMe);
+    public DefaultPluginRubyConfig(final String pluginName, final String version, final File pluginVersionRoot, final Properties props, final boolean isVersionToStartLinkedToMe, final boolean isDisabled) throws PluginConfigException {
+        super(pluginName, version, props, pluginVersionRoot, isVersionToStartLinkedToMe, isDisabled);
         this.rubyMainClass = props.getProperty(PROP_RUBY_MAIN_CLASS_NAME);
         final File rubyGemsDir = new File(pluginVersionRoot.getAbsoluteFile(), "gems");
         this.rubyLoadDir = rubyGemsDir.isDirectory() ? rubyGemsDir.getAbsolutePath() : null;

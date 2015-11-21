@@ -55,7 +55,7 @@ public class TestDefaultPluginConfig {
     private static final class DummyJavaConfig extends DefaultPluginJavaConfig {
 
         public DummyJavaConfig(final String version, final boolean isSelectedForStart) throws PluginConfigException {
-            super("killbill-stripe", version, Files.createTempDir(), new Properties(), isSelectedForStart);
+            super("killbill-stripe", version, Files.createTempDir(), new Properties(), isSelectedForStart, true);
         }
 
         @Override

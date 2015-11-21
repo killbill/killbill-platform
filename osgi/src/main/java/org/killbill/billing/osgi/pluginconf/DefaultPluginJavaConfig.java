@@ -33,8 +33,8 @@ public class DefaultPluginJavaConfig extends DefaultPluginConfig implements Plug
         this.bundleJarPath = input.getBundleJarPath();
     }
 
-    public DefaultPluginJavaConfig(final String pluginName, final String version, final File pluginVersionRoot, final Properties props, final boolean isVersionTostartLink) throws PluginConfigException {
-        super(pluginName, version, props, pluginVersionRoot, isVersionTostartLink);
+    public DefaultPluginJavaConfig(final String pluginName, final String version, final File pluginVersionRoot, final Properties props, final boolean isVersionTostartLink, final boolean isDisabled) throws PluginConfigException {
+        super(pluginName, version, props, pluginVersionRoot, isVersionTostartLink, isDisabled);
         this.bundleJarPath = extractJarPath(pluginVersionRoot);
         validate();
     }

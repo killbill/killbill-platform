@@ -35,6 +35,7 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
     private final String version;
     private final File pluginVersionRoot;
     private final boolean isSelectedForStart;
+    private final boolean isDisabled;
 
     public DefaultPluginConfig(DefaultPluginConfig input, final boolean isSelectedForStart) {
         this.pluginName = input.getPluginName();
@@ -42,15 +43,17 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
         this.pluginVersionRoot = input.getPluginVersionRoot();
         this.isSelectedForStart = isSelectedForStart;
         this.pluginType = input.getPluginType();
+        this.isDisabled = input.isDisabled();
     }
 
 
-    public DefaultPluginConfig(final String pluginName, final String version, final Properties props, final File pluginVersionRoot, final boolean isVersionToStartLinkedToMe) {
+    public DefaultPluginConfig(final String pluginName, final String version, final Properties props, final File pluginVersionRoot, final boolean isVersionToStartLinkedToMe, final boolean isDisabled) {
         this.pluginName = pluginName;
         this.version = version;
         this.pluginVersionRoot = pluginVersionRoot;
         this.isSelectedForStart = isVersionToStartLinkedToMe;
         this.pluginType = PluginType.valueOf(props.getProperty(PROP_PLUGIN_TYPE_NAME, PluginType.__UNKNOWN__.toString()));
+        this.isDisabled = isDisabled;
     }
 
     @Override
@@ -82,6 +85,12 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
     public boolean isSelectedForStart() {
         return isSelectedForStart;
     }
+
+    @Override
+    public boolean isDisabled() {
+        return isDisabled;
+    }
+
 
     @Override
     public abstract PluginLanguage getPluginLanguage();

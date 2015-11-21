@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.slf4j.LoggerFactory;
 public class PluginFinder {
 
     private static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
+    public static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
 
     private final Logger logger = LoggerFactory.getLogger(PluginFinder.class);
 
@@ -112,8 +114,17 @@ public class PluginFinder {
 
             // Order for each plugin  based on DefaultPluginConfig sort method:
             // (order first based on SELECTED_VERSION_LINK_NAME and then decreasing version number)
-            for (final String pluginName : allPlugins.keySet()) {
+            //
+            final Iterator<String> pluginNamesIterator = allPlugins.keySet().iterator();
+            while (pluginNamesIterator.hasNext()) {
+                final String pluginName = pluginNamesIterator.next();
                 final LinkedList<PluginConfig> versionsForPlugin = allPlugins.get(pluginName);
+                // If all entries were disabled or the SELECTED_VERSION_LINK_NAME was disabled we end up with nothing, it is as if the plugin did not exist
+                if (versionsForPlugin.isEmpty()) {
+                    pluginNamesIterator.remove();
+                    continue;
+                }
+
                 Collections.sort(versionsForPlugin);
                 // Make sure first entry is set with isSelectedForStart = true
                 final PluginConfig firstValue = versionsForPlugin.removeFirst();
@@ -160,6 +171,11 @@ public class PluginFinder {
 
             final String versionToStart = resolveVersionToStartLink(curPlugin);
 
+            LinkedList<PluginConfig> curPluginVersionlist = allPlugins.get(pluginName);
+            if (curPluginVersionlist == null) {
+                curPluginVersionlist = new LinkedList<PluginConfig>();
+                allPlugins.put(pluginName, curPluginVersionlist);
+            }
             for (final File curVersion : filesInDir) {
                 // Skip any non directory entry
                 if (!curVersion.isDirectory()) {
@@ -167,6 +183,7 @@ public class PluginFinder {
                     continue;
                 }
                 final String version = curVersion.getName();
+                // Skip the symlink 'SELECTED_VERSION_LINK_NAME' if exists
                 if (SELECTED_VERSION_LINK_NAME.equals(version)) {
                     continue;
                 }
@@ -179,13 +196,15 @@ public class PluginFinder {
                     logger.warn("Skipping plugin {}: {}", pluginName, e.getMessage());
                     continue;
                 }
-                LinkedList<PluginConfig> curPluginVersionlist = allPlugins.get(plugin.getPluginName());
-                if (curPluginVersionlist == null) {
-                    curPluginVersionlist = new LinkedList<PluginConfig>();
-                    allPlugins.put(plugin.getPluginName(), curPluginVersionlist);
+                // Add the entry if this is not marked as 'disabled'
+                if (!plugin.isDisabled()) {
+                    curPluginVersionlist.add(plugin);
+                    logger.info("Adding plugin {} ", plugin.getPluginVersionnedName());
+                } else if (isVersionToStartLink) {
+                    // Finally check if the versionToStart is disabled, in which case we want don't want to return any entries
+                    curPluginVersionlist.clear();
+                    break;
                 }
-                curPluginVersionlist.add(plugin);
-                logger.info("Adding plugin {} ", plugin.getPluginVersionnedName());
             }
         }
     }
@@ -215,17 +234,23 @@ public class PluginFinder {
         } catch (final IOException e) {
             throw new PluginConfigException("Failed to read property file for " + pluginName + "-" + pluginVersion, e);
         }
+
         switch (pluginLanguage) {
             case RUBY:
-                result = (T) new DefaultPluginRubyConfig(pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink);
+                result = (T) new DefaultPluginRubyConfig(pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
             case JAVA:
-                result = (T) new DefaultPluginJavaConfig(pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink);
+                result = (T) new DefaultPluginJavaConfig(pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
             default:
                 throw new RuntimeException("Unknown plugin language " + pluginLanguage);
         }
         return result;
+    }
+
+    private boolean isPluginDisabled(final File pluginVersionDir) {
+        final File disabledFile = new File(pluginVersionDir + "/" + DISABLED_FILE_NAME);
+        return disabledFile.isFile();
     }
 
     private Properties readPluginConfigurationFile(final File config) throws IOException {

@@ -232,6 +232,11 @@ public class SetupBundleWithAssertion {
             public boolean isSelectedForStart() {
                 return true;
             }
+
+            @Override
+            public boolean isDisabled() {
+                return false;
+            }
         };
     }
 
