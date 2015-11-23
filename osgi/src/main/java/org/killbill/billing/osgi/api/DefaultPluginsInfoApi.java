@@ -17,44 +17,61 @@
 
 package org.killbill.billing.osgi.api;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
+import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginLanguage;
+import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.Bundle;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableSet;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
     private final BundleRegistry bundleRegistry;
     private final KillbillNodesApi nodesApi;
+    private final PluginFinder pluginFinder;
 
     @Inject
-    public DefaultPluginsInfoApi(final BundleRegistry bundleRegistry, final KillbillNodesApi nodesApi) {
+    public DefaultPluginsInfoApi(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final KillbillNodesApi nodesApi) {
         this.bundleRegistry = bundleRegistry;
+        this.pluginFinder = pluginFinder;
         this.nodesApi = nodesApi;
     }
 
     @Override
     public Iterable<PluginInfo> getPluginsInfo() {
-        return Iterables.transform(Iterables.filter(bundleRegistry.getBundles(), new Predicate<BundleWithMetadata>() {
-            @Override
-            public boolean apply(final BundleWithMetadata input) {
-                return input.getBundle().getSymbolicName() != null;
+
+        final List<PluginInfo> result = new ArrayList<PluginInfo>();
+        for (final String pluginName : pluginFinder.getAllPlugins().keySet()) {
+
+            final BundleWithMetadata installedBundleOrNull = bundleRegistry.getBundle(pluginName);
+
+            final LinkedList<PluginConfig> pluginVersions = pluginFinder.getAllPlugins().get(pluginName);
+            for (PluginConfig curVersion : pluginVersions) {
+                final PluginInfo pluginInfo;
+                if (installedBundleOrNull != null && curVersion.getVersion().equals(installedBundleOrNull.getVersion())) {
+                    pluginInfo = new DefaultPluginInfo(installedBundleOrNull.getBundle().getSymbolicName(),
+                                                       installedBundleOrNull.getPluginName(),
+                                                       installedBundleOrNull.getVersion(),
+                                                       toPluginState(installedBundleOrNull),
+                                                       installedBundleOrNull.getServiceNames());
+                } else {
+                    pluginInfo = new DefaultPluginInfo(null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), ImmutableSet.<PluginServiceInfo>of());
+                }
+                result.add(pluginInfo);
             }
-        }), new Function<BundleWithMetadata, PluginInfo>() {
-            @Override
-            public PluginInfo apply(final BundleWithMetadata input) {
-                return new DefaultPluginInfo(input.getBundle().getSymbolicName(), input.getPluginName(), input.getVersion(), input.getBundle().getState() == Bundle.ACTIVE, input.getServiceNames());
-            }
-        });
+        }
+        return result;
     }
 
     @Override
@@ -63,10 +80,18 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             case NEW_VERSION:
                 bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
                 final BundleWithMetadata bundle = bundleRegistry.getBundle(pluginName);
-                nodesApi.notifyPluginChanged(new DefaultPluginInfo(bundle.getBundle().getSymbolicName(), bundle.getPluginName(), bundle.getVersion(), bundle.getBundle().getState() == Bundle.ACTIVE, bundle.getServiceNames()));
+                nodesApi.notifyPluginChanged(new DefaultPluginInfo(bundle.getBundle().getSymbolicName(), bundle.getPluginName(), bundle.getVersion(), toPluginState(bundle), bundle.getServiceNames()));
                 return;
             default:
                 throw new IllegalStateException("Invalid PluginStateChange " + newState);
+        }
+    }
+
+    private static PluginState toPluginState(@Nullable final BundleWithMetadata bundle) {
+        if (bundle == null) {
+            return PluginState.INSTALLED;
+        } else {
+            return bundle.getBundle().getState() == Bundle.ACTIVE ? PluginState.RUNNING : PluginState.STOPPED;
         }
     }
 
@@ -76,13 +101,13 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         private final String pluginSymbolicName;
         private final String version;
         private final Set<PluginServiceInfo> services;
-        private final boolean running;
+        private final PluginState state;
 
-        public DefaultPluginInfo(final String pluginSymbolicName, final String pluginName, final String version, final boolean running, final Set<PluginServiceInfo> services) {
+        public DefaultPluginInfo(final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final Set<PluginServiceInfo> services) {
             this.pluginSymbolicName = pluginSymbolicName;
             this.pluginName = pluginName;
             this.version = version;
-            this.running = running;
+            this.state = state;
             this.services = services;
         }
 
@@ -107,8 +132,8 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         }
 
         @Override
-        public boolean isRunning() {
-            return running;
+        public PluginState getPluginState() {
+            return state;
         }
     }
 

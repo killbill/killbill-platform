@@ -44,7 +44,9 @@ import org.slf4j.LoggerFactory;
 public class PluginFinder {
 
     private static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
-    public static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
+
+    private static final String TMP_DIR_NAME = "tmp";
+    private static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
 
     private final Logger logger = LoggerFactory.getLogger(PluginFinder.class);
 
@@ -79,6 +81,10 @@ public class PluginFinder {
             }
         }
         return result;
+    }
+
+    public Map<String, LinkedList<PluginConfig>> getAllPlugins() {
+        return allPlugins;
     }
 
     public void reloadPlugins() throws PluginConfigException, IOException {
@@ -200,10 +206,6 @@ public class PluginFinder {
                 if (!plugin.isDisabled()) {
                     curPluginVersionlist.add(plugin);
                     logger.info("Adding plugin {} ", plugin.getPluginVersionnedName());
-                } else if (isVersionToStartLink) {
-                    // Finally check if the versionToStart is disabled, in which case we want don't want to return any entries
-                    curPluginVersionlist.clear();
-                    break;
                 }
             }
         }
@@ -249,7 +251,7 @@ public class PluginFinder {
     }
 
     private boolean isPluginDisabled(final File pluginVersionDir) {
-        final File disabledFile = new File(pluginVersionDir + "/" + DISABLED_FILE_NAME);
+        final File disabledFile = new File(pluginVersionDir + "/" + TMP_DIR_NAME + "/" + DISABLED_FILE_NAME);
         return disabledFile.isFile();
     }
 

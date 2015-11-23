@@ -175,7 +175,6 @@ public class SetupBundleWithAssertion {
             }
         }
         return null;
-
     }
 
     private PluginJavaConfig createPluginJavaConfig(final String bundleTestResourcePath) {
