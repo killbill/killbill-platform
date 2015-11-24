@@ -96,17 +96,15 @@ public class FileInstall {
         return installedBundles;
     }
 
-    public BundleWithConfig installNewBundle(final String pluginName, @Nullable final String version, final PluginLanguage pluginLanguage, final Framework framework) {
+    public BundleWithConfig installNewBundle(final String pluginName, @Nullable final String version, final Framework framework) {
         try {
-            pluginFinder.reloadPlugins();
-
             final List<PluginConfig> configs = pluginFinder.getVersionsForPlugin(pluginName, version);
             if (configs.isEmpty() || (version != null && configs.size() != 1)) {
                 throw new PluginConfigException("Cannot install plugin " + pluginName + ", version = " + version);
             }
             final String jrubyBundlePath = findJrubyBundlePath();
 
-            final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), pluginLanguage, jrubyBundlePath);
+            final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), configs.get(0).getPluginLanguage(), jrubyBundlePath);
             return new BundleWithConfig(bundle, configs.get(0));
         } catch (final PluginConfigException e) {
             logger.error("Error while installing plugin " + pluginName, e);
@@ -154,7 +152,6 @@ public class FileInstall {
     }
 
     private Bundle installBundle(final PluginConfig config, final BundleContext context, final PluginLanguage pluginLanguage, final String jrubyBundlePath) throws BundleException {
-
 
         Bundle bundle;
         switch (pluginLanguage) {

@@ -17,6 +17,7 @@
 
 package org.killbill.billing.osgi.api;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,13 +30,19 @@ import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginLanguage;
+import org.killbill.billing.osgi.pluginconf.PluginConfigException;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableSet;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultPluginsInfoApi.class);
 
     private final BundleRegistry bundleRegistry;
     private final KillbillNodesApi nodesApi;
@@ -75,15 +82,37 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     }
 
     @Override
-    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginName, String pluginVersion, PluginLanguage pluginLanguage) {
-        switch (newState) {
-            case NEW_VERSION:
-                bundleRegistry.installNewBundle(pluginName, pluginVersion, pluginLanguage);
-                final BundleWithMetadata bundle = bundleRegistry.getBundle(pluginName);
-                nodesApi.notifyPluginChanged(new DefaultPluginInfo(bundle.getBundle().getSymbolicName(), bundle.getPluginName(), bundle.getVersion(), toPluginState(bundle), bundle.getServiceNames()));
-                return;
-            default:
-                throw new IllegalStateException("Invalid PluginStateChange " + newState);
+    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginName, final String pluginVersion, final PluginLanguage pluginLanguage) {
+        try {
+
+            // Refresh our filesystem view so it shows up/disappears in the list of installed plugin
+            pluginFinder.reloadPlugins();
+
+            switch (newState) {
+                case NEW_VERSION:
+                    // Nothing special to do; we don't try to OSGI 'install' the plugin at this time, this will be done
+                    // when we start it
+                    break;
+
+                case DISABLED:
+                    // If plugin is in the bundleRegistry, we remove it (stopping it if required)
+                    bundleRegistry.stopAndUninstallNewBundle(pluginName, pluginVersion);
+                    break;
+
+                default:
+                    throw new IllegalStateException("Invalid PluginStateChange " + newState);
+            }
+
+            // Notify KillbillNodesService to update the node_infos table
+            final PluginInfo pluginInfo = new DefaultPluginInfo(null, pluginName, pluginVersion, toPluginState(null), ImmutableSet.<PluginServiceInfo>of());
+            nodesApi.notifyPluginChanged(pluginInfo);
+
+        } catch (final PluginConfigException e) {
+            logger.error("Failed to handle notifyOfStateChanged: ", e);
+        } catch (final IOException e) {
+            logger.error("Failed to handle notifyOfStateChanged: ", e);
+        } catch (final BundleException e) {
+            logger.error("Failed to handle notifyOfStateChanged: ", e);
         }
     }
 

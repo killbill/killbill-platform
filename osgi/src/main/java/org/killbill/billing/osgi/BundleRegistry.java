@@ -31,9 +31,9 @@ import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginServiceI
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.PluginServiceInfo;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
-import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 
 public class BundleRegistry {
@@ -62,16 +62,34 @@ public class BundleRegistry {
         }
     }
 
-    public void installNewBundle(final String pluginName, @Nullable final String version, final PluginLanguage pluginLanguage) {
-        BundleWithConfig newConfig = fileInstall.installNewBundle(pluginName, version, pluginLanguage, framework);
-        registry.put(getPluginName(newConfig), new BundleWithMetadata(newConfig));
+    public void installAndStartNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
+
+        final BundleWithMetadata bundle = registry.get(pluginName);
+        if (bundle != null) {
+            // We don't try to be too smart, we let the user first stop existing bundle if needed
+            throw new IllegalStateException(String.format("Plugin %s version %s cannot be started because the version %s already exists in the registry (state = %s)",
+                                                          pluginName, pluginVersion, bundle.getVersion(), bundle.getBundle().getState()));
+        }
+        final BundleWithConfig bundleWithConfig = fileInstall.installNewBundle(pluginName, pluginVersion, framework);
+        registry.put(getPluginName(bundleWithConfig), new BundleWithMetadata(bundleWithConfig));
     }
 
+    public void stopAndUninstallNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
+        final BundleWithMetadata bundle = registry.get(pluginName);
+        if (bundle != null && (pluginVersion == null) || bundle.getVersion().equals(pluginVersion)) {
+            if (bundle.getBundle().getState() == Bundle.ACTIVE) {
+                bundle.getBundle().stop();
+            }
+            if (bundle.getBundle().getState() == Bundle.INSTALLED) {
+                bundle.getBundle().uninstall();
+            }
+            registry.remove(pluginName);
+        }
+    }
 
     public void startBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
-            final boolean started = fileInstall.startBundle(bundleWithConfig.getBundle());
-            final BundleWithMetadata bundleWithMetadata = registry.get(getPluginName(bundleWithConfig));
+            fileInstall.startBundle(bundleWithConfig.getBundle());
         }
     }
 

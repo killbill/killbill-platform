@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.apache.felix.framework.Felix;
 import org.apache.felix.framework.util.FelixConstants;
@@ -33,6 +34,8 @@ import org.killbill.billing.osgi.config.OSGIConfig;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.billing.platform.api.OSGIService;
+import org.killbill.bus.api.PersistentBus;
+import org.killbill.bus.api.PersistentBus.EventBusException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleException;
@@ -52,15 +55,20 @@ public class DefaultOSGIService implements OSGIService {
     private final KillbillActivator killbillActivator;
     private final BundleRegistry bundleRegistry;
     private final List<BundleWithConfig> installedBundles;
+    private final PersistentBus externalBus;
+    private final OSGIListener osgiListener;
 
     private Framework framework;
 
     @Inject
     public DefaultOSGIService(final OSGIConfig osgiConfig, final BundleRegistry bundleRegistry,
-                              final KillbillActivator killbillActivator) {
+                              final KillbillActivator killbillActivator, @Named("externalBus") final PersistentBus externalBus,
+                              final OSGIListener osgiListener) {
         this.osgiConfig = osgiConfig;
         this.killbillActivator = killbillActivator;
         this.bundleRegistry = bundleRegistry;
+        this.externalBus = externalBus;
+        this.osgiListener = osgiListener;
         this.installedBundles = new LinkedList<BundleWithConfig>();
         this.framework = null;
     }
@@ -80,10 +88,13 @@ public class DefaultOSGIService implements OSGIService {
             this.framework = createAndInitFramework();
             framework.start();
             bundleRegistry.installBundles(framework);
+
+            externalBus.register(osgiListener);
         } catch (final BundleException e) {
             logger.error("Failed to initialize Killbill OSGIService", e);
+        } catch (EventBusException e) {
+            logger.error("Failed to initialize Killbill OSGIService", e);
         }
-
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.START_PLUGIN)
@@ -97,6 +108,8 @@ public class DefaultOSGIService implements OSGIService {
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.STOP_PLUGIN)
     public void stop() {
         try {
+            externalBus.unregister(osgiListener);
+
             framework.stop();
             framework.waitForStop(0);
 
@@ -104,6 +117,8 @@ public class DefaultOSGIService implements OSGIService {
         } catch (final BundleException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         } catch (final InterruptedException e) {
+            logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
+        } catch (EventBusException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         }
     }
