@@ -61,36 +61,27 @@ public class OSGIListener {
 
         final BroadcastMetadata metadata = objectMapper.readValue(event.getMetaData(), BroadcastMetadata.class);
         final SystemNodeCommandType commandType = getSystemNodeCommandTypeOrNull(metadata.getCommandType());
-        if (commandType == null) {
+        if (commandType == null || (commandType != SystemNodeCommandType.START_PLUGIN &&
+                                    commandType != SystemNodeCommandType.STOP_PLUGIN &&
+                                    commandType != SystemNodeCommandType.RESTART_PLUGIN)) {
             return;
         }
 
-        //
-        final NodeCommandMetadata nodeCommandMetadata =  deserializeNodeCommand(metadata.getEventJson(), metadata.getCommandType());
-        if (commandType != SystemNodeCommandType.START_PLUGIN &&
-            commandType != SystemNodeCommandType.STOP_PLUGIN &&
-            commandType != SystemNodeCommandType.RESTART_PLUGIN) {
-            return;
-        }
-
-        final PluginNodeCommandMetadata pluginNodeCommandMetadata = (PluginNodeCommandMetadata) nodeCommandMetadata;
+        final PluginNodeCommandMetadata nodeCommandMetadata = (PluginNodeCommandMetadata) deserializeNodeCommand(metadata.getEventJson(), metadata.getCommandType());
         switch(commandType) {
             case STOP_PLUGIN:
-                bundleRegistry.stopAndUninstallNewBundle(pluginNodeCommandMetadata.getPluginName(), pluginNodeCommandMetadata.getPluginVersion());
+                bundleRegistry.stopAndUninstallNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
                 break;
             case START_PLUGIN:
-                bundleRegistry.installAndStartNewBundle(pluginNodeCommandMetadata.getPluginName(), pluginNodeCommandMetadata.getPluginVersion());
+                bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
                 break;
             case RESTART_PLUGIN:
-                bundleRegistry.stopAndUninstallNewBundle(pluginNodeCommandMetadata.getPluginName(), pluginNodeCommandMetadata.getPluginVersion());
-                bundleRegistry.installAndStartNewBundle(pluginNodeCommandMetadata.getPluginName(), pluginNodeCommandMetadata.getPluginVersion());
+                bundleRegistry.stopAndUninstallNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
+                bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
                 break;
             default:
                 throw new IllegalStateException("Unexpected type " + commandType);
         }
-
-
-
     }
 
     private SystemNodeCommandType getSystemNodeCommandTypeOrNull(final String command) {
