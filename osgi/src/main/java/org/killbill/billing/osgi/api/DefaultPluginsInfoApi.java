@@ -134,7 +134,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         }
     }
 
-    private static PluginState toPluginState(@Nullable final BundleWithMetadata bundle) {
+    public static PluginState toPluginState(@Nullable final BundleWithMetadata bundle) {
         if (bundle == null) {
             return PluginState.INSTALLED;
         } else {

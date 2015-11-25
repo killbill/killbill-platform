@@ -62,7 +62,7 @@ public class BundleRegistry {
         }
     }
 
-    public void installAndStartNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
+    public BundleWithMetadata installAndStartNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
 
         final BundleWithMetadata bundle = registry.get(pluginName);
         if (bundle != null) {
@@ -72,10 +72,12 @@ public class BundleRegistry {
         }
         final BundleWithConfig bundleWithConfig = fileInstall.installNewBundle(pluginName, pluginVersion, framework);
         fileInstall.startBundle(bundleWithConfig.getBundle());
-        registry.put(getPluginName(bundleWithConfig), new BundleWithMetadata(bundleWithConfig));
+        final BundleWithMetadata bundleWithMetadata = new BundleWithMetadata(bundleWithConfig);
+        registry.put(getPluginName(bundleWithConfig), bundleWithMetadata);
+        return  bundleWithMetadata;
     }
 
-    public void stopAndUninstallNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
+    public BundleWithMetadata stopAndUninstallNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
         final BundleWithMetadata bundle = registry.get(pluginName);
         if (bundle != null && (pluginVersion == null) || bundle.getVersion().equals(pluginVersion)) {
             if (bundle.getBundle().getState() == Bundle.ACTIVE) {
@@ -86,6 +88,7 @@ public class BundleRegistry {
             }
             registry.remove(pluginName);
         }
+        return bundle;
     }
 
     public void startBundles() {

@@ -24,7 +24,13 @@ import javax.inject.Inject;
 import org.killbill.billing.notification.plugin.api.BroadcastMetadata;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.notification.plugin.api.ExtBusEventType;
+import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
+import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
+import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginInfo;
+import org.killbill.billing.osgi.api.PluginInfo;
+import org.killbill.billing.osgi.api.PluginServiceInfo;
 import org.killbill.billing.util.nodes.DefaultNodeCommandMetadata;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommandMetadata;
 import org.killbill.billing.util.nodes.PluginNodeCommandMetadata;
 import org.killbill.billing.util.nodes.SystemNodeCommandType;
@@ -35,6 +41,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
@@ -43,10 +50,12 @@ public class OSGIListener {
 
     private final ObjectMapper objectMapper;
     private final BundleRegistry bundleRegistry;
+    private final KillbillNodesApi nodesApi;
 
     @Inject
-    public OSGIListener(final BundleRegistry bundleRegistry) {
+    public OSGIListener(final BundleRegistry bundleRegistry, final KillbillNodesApi nodesApi) {
         this.bundleRegistry = bundleRegistry;
+        this.nodesApi = nodesApi;
         this.objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JodaModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -68,20 +77,26 @@ public class OSGIListener {
         }
 
         final PluginNodeCommandMetadata nodeCommandMetadata = (PluginNodeCommandMetadata) deserializeNodeCommand(metadata.getEventJson(), metadata.getCommandType());
+
+        BundleWithMetadata bundleWithMetadata = null;
         switch(commandType) {
             case STOP_PLUGIN:
                 bundleRegistry.stopAndUninstallNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
                 break;
             case START_PLUGIN:
-                bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
+                bundleWithMetadata = bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
                 break;
             case RESTART_PLUGIN:
                 bundleRegistry.stopAndUninstallNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
-                bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
+                bundleWithMetadata = bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
                 break;
             default:
                 throw new IllegalStateException("Unexpected type " + commandType);
         }
+
+        final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
+        final PluginInfo pluginInfo = new DefaultPluginInfo(symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), ImmutableSet.<PluginServiceInfo>of());
+        nodesApi.notifyPluginChanged(pluginInfo);
     }
 
     private SystemNodeCommandType getSystemNodeCommandTypeOrNull(final String command) {
