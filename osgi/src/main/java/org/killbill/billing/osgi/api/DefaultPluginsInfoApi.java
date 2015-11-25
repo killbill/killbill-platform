@@ -38,11 +38,29 @@ import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPluginsInfoApi.class);
+
+    private static final Ordering<PluginInfo> PLUGIN_INFO_ORDERING =  Ordering.natural().onResultOf(new Function<PluginInfo, String>() {
+        @Override
+        public String apply(final PluginInfo input) {
+            return toPluginFullName(input.getPluginName(), input.getVersion());
+        }
+
+        private String toPluginFullName(final String pluginName, final String pluginVersion) {
+            final StringBuilder tmp = new StringBuilder(pluginName);
+            if (pluginVersion != null) {
+                tmp.append(pluginVersion);
+            }
+            return tmp.toString();
+        }
+    });
+
 
     private final BundleRegistry bundleRegistry;
     private final KillbillNodesApi nodesApi;
@@ -78,7 +96,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
                 result.add(pluginInfo);
             }
         }
-        return result;
+        return PLUGIN_INFO_ORDERING.sortedCopy(result);
     }
 
     @Override
