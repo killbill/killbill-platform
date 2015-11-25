@@ -82,7 +82,7 @@ public class FileInstall {
             final String jrubyBundlePath = findJrubyBundlePath();
 
             // Install all bundles and create service mapping
-            installAllJavaBundles(context, installedBundles, jrubyBundlePath);
+            installAllOSGIBundles(context, installedBundles, jrubyBundlePath);
             installAllJavaPluginBundles(context, installedBundles, jrubyBundlePath);
             installAllJRubyPluginBundles(context, installedBundles, jrubyBundlePath);
 
@@ -117,7 +117,7 @@ public class FileInstall {
     }
 
 
-    private void installAllJavaBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
+    private void installAllOSGIBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException {
         final List<String> bundleJarPaths = osgiBundleFinder.getLatestBundles();
         for (final String cur : bundleJarPaths) {
             // Don't install the jruby.jar bundle

@@ -36,6 +36,9 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+
 public class BundleRegistry {
 
     private final FileInstall fileInstall;
@@ -97,8 +100,13 @@ public class BundleRegistry {
         }
     }
 
-    public Collection<BundleWithMetadata> getBundles() {
-        return registry.values();
+    public Iterable<BundleWithMetadata> getPureOSGIBundles() {
+        return Iterables.filter(registry.values(), new Predicate<BundleWithMetadata>() {
+            @Override
+            public boolean apply(final BundleWithMetadata input) {
+                return input.getConfig() == null;
+            }
+        });
     }
 
     public BundleWithMetadata getBundle(final String pluginName) {

@@ -49,6 +49,9 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     private static final Ordering<PluginInfo> PLUGIN_INFO_ORDERING =  Ordering.natural().onResultOf(new Function<PluginInfo, String>() {
         @Override
         public String apply(final PluginInfo input) {
+            if (input.getPluginName() == null) {
+
+            }
             return toPluginFullName(input.getPluginName(), input.getVersion());
         }
 
@@ -96,6 +99,13 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
                 result.add(pluginInfo);
             }
         }
+        for (BundleWithMetadata osgiBundle : bundleRegistry.getPureOSGIBundles()) {
+            if (osgiBundle.getBundle().getSymbolicName() != null) {
+                final PluginInfo pluginInfo = new DefaultPluginInfo(osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), ImmutableSet.<PluginServiceInfo>of());
+                result.add(pluginInfo);
+            }
+        }
+
         return PLUGIN_INFO_ORDERING.sortedCopy(result);
     }
 
