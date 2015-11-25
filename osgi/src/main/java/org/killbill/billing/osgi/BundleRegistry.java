@@ -71,6 +71,7 @@ public class BundleRegistry {
                                                           pluginName, pluginVersion, bundle.getVersion(), bundle.getBundle().getState()));
         }
         final BundleWithConfig bundleWithConfig = fileInstall.installNewBundle(pluginName, pluginVersion, framework);
+        fileInstall.startBundle(bundleWithConfig.getBundle());
         registry.put(getPluginName(bundleWithConfig), new BundleWithMetadata(bundleWithConfig));
     }
 
