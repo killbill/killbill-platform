@@ -145,11 +145,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     }
 
     public static PluginState toPluginState(@Nullable final BundleWithMetadata bundle) {
-        if (bundle == null) {
-            return PluginState.INSTALLED;
-        } else {
-            return bundle.getBundle().getState() == Bundle.ACTIVE ? PluginState.RUNNING : PluginState.STOPPED;
-        }
+        return (bundle != null && bundle.getBundle().getState() == Bundle.ACTIVE) ? PluginState.RUNNING : PluginState.STOPPED;
     }
 
     public static final class DefaultPluginInfo implements PluginInfo {
