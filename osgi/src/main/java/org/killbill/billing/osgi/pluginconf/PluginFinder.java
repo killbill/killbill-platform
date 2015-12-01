@@ -43,10 +43,9 @@ import org.slf4j.LoggerFactory;
 
 public class PluginFinder {
 
-    private static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
-
-    private static final String TMP_DIR_NAME = "tmp";
-    private static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
+    static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
+    static final String TMP_DIR_NAME = "tmp";
+    static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
 
     private final Logger logger = LoggerFactory.getLogger(PluginFinder.class);
 
