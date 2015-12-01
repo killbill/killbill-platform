@@ -19,9 +19,11 @@ package org.killbill.billing.osgi.pluginconf;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.killbill.billing.osgi.api.config.PluginJavaConfig;
 import org.killbill.billing.osgi.config.OSGIConfig;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -29,6 +31,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.io.Files;
+
+import static org.testng.Assert.assertEquals;
 
 public class TestPluginFinder {
 
@@ -44,6 +48,7 @@ public class TestPluginFinder {
     @BeforeMethod(groups = "fast")
     public void beforeMethod() {
         rootInstallationDir = Files.createTempDir();
+
         final OSGIConfig osgiConfig = createOSGIConfig();
         pluginFinder = new PluginFinder(osgiConfig);
 
@@ -61,8 +66,105 @@ public class TestPluginFinder {
         pluginsRuby.mkdir();
     }
 
-    private File createNewJavaPlugin(final String pluginName, final String[] pluginVersions, @Nullable final String defaultVersion) throws IOException {
-        final File newPlugin = new File(pluginsJava, "pluginName");
+
+    private void createSymlinkPriorJava7(final File currentDirectory, final String currentFileName, final String linkFileName) throws IOException, InterruptedException {
+        final Process process = Runtime.getRuntime().exec( new String[] { "ln", "-s", currentFileName, linkFileName }, new String[] {}, currentDirectory );
+        final int error = process.waitFor();
+        assertEquals(error, 0);
+        process.destroy();
+    }
+
+    @Test(groups = "fast")
+    public void testMultipleJavaVersions() throws IOException, InterruptedException, PluginConfigException {
+
+        final File plugin = createNewJavaPlugin("FOO", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, null);
+
+        final List<PluginJavaConfig> javaConfigs = pluginFinder.getLatestJavaPlugins();
+        assertEquals(javaConfigs.size(), 1);
+
+        final PluginJavaConfig javaConfig = javaConfigs.get(0);
+        assertEquals(javaConfig.getPluginName(), "FOO");
+        assertEquals(javaConfig.getVersion(), "2.1");
+        assertEquals(javaConfig.getBundleJarPath(), plugin.getAbsolutePath() + "/2.1" + "/FOO.jar");
+    }
+
+
+    @Test(groups = "fast")
+    public void testMultipleJavaVersionsWithDefault() throws IOException, InterruptedException, PluginConfigException {
+
+        final File plugin = createNewJavaPlugin("BAR", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, "0.5");
+
+        final List<PluginJavaConfig> javaConfigs = pluginFinder.getLatestJavaPlugins();
+        assertEquals(javaConfigs.size(), 1);
+
+        final PluginJavaConfig javaConfig = javaConfigs.get(0);
+        assertEquals(javaConfig.getPluginName(), "BAR");
+        assertEquals(javaConfig.getVersion(), "0.5");
+        assertEquals(javaConfig.getBundleJarPath(), plugin.getAbsolutePath() + "/0.5" + "/BAR.jar");
+    }
+
+    @Test(groups = "fast")
+    public void testJavaPluginWithDisabledHighest() throws IOException, InterruptedException, PluginConfigException {
+
+        final File plugin = createNewJavaPlugin("ZOO", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, null);
+        // In that case the code will default to the second highest known version
+        addDisabledFile(plugin, "2.1");
+
+        final List<PluginJavaConfig> javaConfigs = pluginFinder.getLatestJavaPlugins();
+        assertEquals(javaConfigs.size(), 1);
+
+        final PluginJavaConfig javaConfig = javaConfigs.get(0);
+        assertEquals(javaConfig.getPluginName(), "ZOO");
+        assertEquals(javaConfig.getVersion(), "1.2");
+        assertEquals(javaConfig.getBundleJarPath(), plugin.getAbsolutePath() + "/1.2" + "/ZOO.jar");
+    }
+
+
+    @Test(groups = "fast")
+    public void testJavaPluginWithAllDisabled() throws IOException, InterruptedException, PluginConfigException {
+
+        final File plugin = createNewJavaPlugin("LOL", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, null);
+        addDisabledFile(plugin, "0.5");
+        addDisabledFile(plugin, "0.8");
+        addDisabledFile(plugin, "1.0");
+        addDisabledFile(plugin, "1.2");
+        addDisabledFile(plugin, "2.1");
+
+        final List<PluginJavaConfig> javaConfigs = pluginFinder.getLatestJavaPlugins();
+        assertEquals(javaConfigs.size(), 0);
+    }
+
+
+    @Test(groups = "fast")
+    public void testJavaPluginWithDisabledDefault() throws IOException, InterruptedException, PluginConfigException {
+
+        final File plugin = createNewJavaPlugin("YEAH", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, "1.0");
+
+        // In that case the code will default to the highest known version
+        addDisabledFile(plugin, "1.0");
+
+        final List<PluginJavaConfig> javaConfigs = pluginFinder.getLatestJavaPlugins();
+        assertEquals(javaConfigs.size(), 1);
+
+        final PluginJavaConfig javaConfig = javaConfigs.get(0);
+        assertEquals(javaConfig.getPluginName(), "YEAH");
+        assertEquals(javaConfig.getVersion(), "2.1");
+        assertEquals(javaConfig.getBundleJarPath(), plugin.getAbsolutePath() + "/2.1" + "/YEAH.jar");
+
+    }
+
+    private void addDisabledFile(final File plugin, final String version) throws IOException {
+        final File versionFile = new File(plugin, version);
+
+        final File tmpFile = new File(versionFile, PluginFinder.TMP_DIR_NAME);
+        tmpFile.mkdir();
+
+        final File disabledFile = new File(tmpFile, PluginFinder.DISABLED_FILE_NAME);
+        disabledFile.createNewFile();
+    }
+
+    private File createNewJavaPlugin(final String pluginName, final String[] pluginVersions, @Nullable final String defaultVersion) throws IOException, InterruptedException {
+        final File newPlugin = new File(pluginsJava, pluginName);
         newPlugin.mkdir();
 
         for (final String cur : pluginVersions) {
@@ -73,34 +175,11 @@ public class TestPluginFinder {
             jar.createNewFile();
 
             if (defaultVersion != null && defaultVersion.equals(cur)) {
-
-
-                final File def = new File(newPlugin, PluginFinder.SELECTED_VERSION_LINK_NAME);
-                def.
+                createSymlinkPriorJava7(newPlugin, cur, PluginFinder.SELECTED_VERSION_LINK_NAME);
             }
         }
-
-
+        return newPlugin;
     }
-
-
-    private void createSymlinkPriorJava7(final String currentFileName, final String linkFileName) throws IOException, InterruptedException {
-        final Process process = Runtime.getRuntime().exec( new String[] { "ln", "-s", currentFileName, linkFileName } );
-
-        process.
-        final int error = process.waitFor();
-        Assert.assertEquals(error, 0);
-        process.destroy();
-    }
-
-    @Test(groups = "fast")
-    public void testFoo() {
-
-
-
-        //pluginFinder.
-    }
-
 
     private OSGIConfig createOSGIConfig() {
         return new OSGIConfig() {
