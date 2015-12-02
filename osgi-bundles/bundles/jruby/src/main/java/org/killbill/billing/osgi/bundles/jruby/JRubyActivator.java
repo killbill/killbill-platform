@@ -75,10 +75,11 @@ public class JRubyActivator extends KillbillActivatorBase {
         withContextClassLoader(new PluginCall() {
             @Override
             public void doCall() {
-                logService.log(LogService.LOG_INFO, "JRuby bundle activated");
 
                 // Retrieve the plugin config
                 final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
+
+                logService.log(LogService.LOG_INFO, String.format("JRuby plugin %s activated (symbolicName = %s)", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
 
                 // Setup JRuby
                 final String pluginMain;
@@ -124,7 +125,7 @@ public class JRubyActivator extends KillbillActivatorBase {
         killbillServices.put("conf_dir", Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
 
         // Start the plugin synchronously
-        doStartPlugin(pluginMain, context, killbillServices);
+        doStartPlugin(rubyConfig.getPluginName(), pluginMain, context, killbillServices);
     }
 
     @Override
@@ -147,19 +148,20 @@ public class JRubyActivator extends KillbillActivatorBase {
         super.stop(context);
     }
 
-    private void doStartPlugin(final String pluginMain, final BundleContext context, final Map<String, Object> killbillServices) {
-        logService.log(LogService.LOG_INFO, "Starting JRuby plugin " + pluginMain);
+    private void doStartPlugin(final String pluginName, final String pluginMain, final BundleContext context, final Map<String, Object> killbillServices) {
+        logService.log(LogService.LOG_INFO, String.format("Starting JRuby plugin %s (symbolicName = %s, pluginMain=%s)", pluginName, context.getBundle().getSymbolicName(), pluginMain));
         // Make sure to copy the services map in case the plugin modifies it (we'll need it for restarts)
         plugin.instantiatePlugin(new HashMap<String, Object>(killbillServices), pluginMain);
         plugin.startPlugin(context);
-        logService.log(LogService.LOG_INFO, "JRuby plugin " + pluginMain + " started");
+        logService.log(LogService.LOG_INFO, String.format("JRuby plugin %s (symbolicName = %s) started", pluginName, context.getBundle().getSymbolicName()));
     }
 
     private void doStopPlugin(final BundleContext context) {
-        logService.log(LogService.LOG_INFO, "Stopping JRuby plugin " + context.getBundle().getSymbolicName());
+        final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
+        logService.log(LogService.LOG_INFO, String.format("Stopping JRuby plugin %s (symbolicName = %s)", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
         plugin.stopPlugin(context);
         plugin.unInstantiatePlugin();
-        logService.log(LogService.LOG_INFO, "Stopped JRuby plugin " + context.getBundle().getSymbolicName());
+        logService.log(LogService.LOG_INFO,  String.format("JRuby plugin %s (symbolicName = %s) stopped", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
     }
 
     // We make the explicit registration in the start method by hand as this would be called too early

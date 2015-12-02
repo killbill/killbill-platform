@@ -57,8 +57,11 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     @Override
     public void start(final BundleContext context) throws Exception {
         // Tracked resource
-        killbillAPI = new OSGIKillbillAPI(context);
         logService = new OSGIKillbillLogService(context);
+
+        logSafely(LogService.LOG_INFO, String.format("OSGI bundle = %s recieved START command", context.getBundle().getSymbolicName()));
+
+        killbillAPI = new OSGIKillbillAPI(context);
         configureSLF4JBinding();
         dataSource = new OSGIKillbillDataSource(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
@@ -83,10 +86,15 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         tmpDir = setupTmpDir(pluginConfig);
 
         setupRestartMechanism(pluginConfig, context);
+
+
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
+
+        logSafely(LogService.LOG_INFO, String.format("OSGI bundle = %s received STOP command", context.getBundle().getSymbolicName()));
+
         if (restartFuture != null) {
             restartFuture.cancel(true);
         }
