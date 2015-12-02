@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -20,6 +20,7 @@ package org.killbill.billing.osgi.bundles.logger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
@@ -30,12 +31,15 @@ import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.EvictingQueue;
+
 // Inspired by osgi-over-slf4j
 public class KillbillLogWriter implements LogListener {
 
     private static final String UNKNOWN = "[Unknown]";
 
     private final Map<String, Logger> delegates = new HashMap<String, Logger>();
+    private final Queue<LogEntry> latestEntries = EvictingQueue.<LogEntry>create(500);
 
     // Invoked by the log service implementation for each log entry
     public void logged(final LogEntry entry) {
@@ -56,6 +60,12 @@ public class KillbillLogWriter implements LogListener {
         } else {
             log(delegate, level, message);
         }
+
+        latestEntries.offer(entry);
+    }
+
+    public Queue<LogEntry> getLatestEntries() {
+        return latestEntries;
     }
 
     private Logger getDelegateForBundle(/* @Nullable */ final Bundle bundle) {

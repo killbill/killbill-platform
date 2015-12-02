@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2015 Groupon, Inc
+ * Copyright 2014-2015 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -18,26 +18,34 @@
 
 package org.killbill.billing.osgi.bundles.logger;
 
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.osgi.framework.BundleActivator;
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServlet;
+
+import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
+import org.killbill.billing.osgi.api.OSGIPluginProperties;
+import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Activator implements BundleActivator {
+public class Activator extends KillbillActivatorBase {
 
     private static final Logger logger = LoggerFactory.getLogger(Activator.class);
 
-    private final LogListener killbillLogListener = new KillbillLogWriter();
+    public static final String PLUGIN_NAME = "killbill-osgi-logger";
+
+    private final KillbillLogWriter killbillLogListener = new KillbillLogWriter();
     private final List<LogReaderService> logReaderServices = new LinkedList<LogReaderService>();
 
     private final ServiceListener logReaderServiceListener = new ServiceListener() {
@@ -65,6 +73,9 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(final BundleContext context) throws Exception {
+        // Registrar for bundle
+        registrar = new OSGIKillbillRegistrar();
+
         final String filter = "(objectclass=" + LogReaderService.class.getName() + ")";
         try {
             context.addServiceListener(logReaderServiceListener, filter);
@@ -77,6 +88,9 @@ public class Activator implements BundleActivator {
         for (int i = 0; serviceReferences != null && i < serviceReferences.length; i++) {
             logReaderServiceListener.serviceChanged(new ServiceEvent(ServiceEvent.REGISTERED, serviceReferences[i]));
         }
+
+        final LogsServlet logsServlet = new LogsServlet(killbillLogListener);
+        registerServlet(context, logsServlet);
     }
 
     @Override
@@ -86,6 +100,13 @@ public class Activator implements BundleActivator {
             service.removeLogListener(killbillLogListener);
             iterator.remove();
         }
+
+        super.stop(context);
+    }
+
+    @Override
+    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
+        return null;
     }
 
     private void registerLogReaderService(final LogReaderService service) {
@@ -98,5 +119,11 @@ public class Activator implements BundleActivator {
         logger.info("Unregistering the killbill LogReaderService listener");
         logReaderService.removeLogListener(killbillLogListener);
         logReaderServices.remove(logReaderService);
+    }
+
+    private void registerServlet(final BundleContext context, final HttpServlet servlet) {
+        final Hashtable<String, String> props = new Hashtable<String, String>();
+        props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, PLUGIN_NAME);
+        registrar.registerService(context, Servlet.class, servlet, props);
     }
 }
