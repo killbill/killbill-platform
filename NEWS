@@ -1,4 +1,6 @@
 
+    Add support for start/stop/restart OSGI plugins
+    Handle broadcast events to react to start/stop/restart
     Metrics code optimization
     Update transitive metrics dependencies (updated oss pom version with latest commons)
 
