@@ -118,11 +118,17 @@ public class JRubyActivator extends KillbillActivatorBase {
     }
 
     private void startPlugin(final PluginRubyConfig rubyConfig, final String pluginMain, final BundleContext context) {
-        final Map<String, Object> killbillServices = retrieveKillbillApis(context);
+        final Map<String, Object> killbillServices = new HashMap<String, Object>();
+
+        final Map<String, Object> killbillApis = retrieveKillbillApis(context);
+        killbillServices.put("kb_apis", killbillApis);
         killbillServices.put("root", rubyConfig.getPluginVersionRoot().getAbsolutePath());
         killbillServices.put("logger", logService);
+        killbillServices.put("clock", clock);
         // Default to the plugin root dir if no jruby plugins specific configuration directory was specified
         killbillServices.put("conf_dir", Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
+
+
 
         // Start the plugin synchronously
         doStartPlugin(rubyConfig.getPluginName(), pluginMain, context, killbillServices);

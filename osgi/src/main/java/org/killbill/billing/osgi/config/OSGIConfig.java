@@ -56,6 +56,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.invoice.api," +
              "org.killbill.billing.entitlement.api," +
              "org.killbill.billing," +
+             "org.killbill.clock," +
              "org.killbill.billing.notification.api," +
              "org.killbill.billing.notification.plugin.api," +
              "org.killbill.billing.notification.plugin," +

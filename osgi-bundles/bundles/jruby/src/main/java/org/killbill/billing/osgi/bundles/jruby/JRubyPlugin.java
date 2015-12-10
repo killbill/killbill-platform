@@ -51,7 +51,7 @@ public abstract class JRubyPlugin {
     private static final String KILLBILL_PLUGIN_BASE = "Killbill::Plugin::PluginBase";
 
     // Magic ruby variables
-    private static final String KILLBILL_SERVICES = "java_apis";
+    private static final String KILLBILL_SERVICES = "services";
     private static final String KILLBILL_PLUGIN_CLASS_NAME = "plugin_class_name";
 
     // Methods implemented by Killbill::Plugin::JPlugin
@@ -88,7 +88,7 @@ public abstract class JRubyPlugin {
         this.configProperties = configProperties;
     }
 
-    public void instantiatePlugin(final Map<String, Object> killbillApis, final String pluginMain) {
+    public void instantiatePlugin(final Map<String, Object> killbillServices, final String pluginMain) {
 
         container = setupScriptingContainer();
 
@@ -100,7 +100,7 @@ public abstract class JRubyPlugin {
         checkValidPlugin();
 
         // Register all killbill APIs
-        container.put(KILLBILL_SERVICES, killbillApis);
+        container.put(KILLBILL_SERVICES, killbillServices);
         container.put(KILLBILL_PLUGIN_CLASS_NAME, pluginMainClass);
 
         // Note that the KILLBILL_SERVICES variable will be available once only!

@@ -45,6 +45,7 @@ import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
+import org.killbill.clock.Clock;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
@@ -69,6 +70,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final OSGIKillbill osgiKillbill;
     private final HttpService defaultHttpService;
     private final DataSource dataSource;
+    private final Clock clock;
     private final KillbillEventObservable observable;
     private final OSGIKillbillRegistrar registrar;
     private final OSGIConfigProperties configProperties;
@@ -82,6 +84,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     @Inject
     public KillbillActivator(@Named(DefaultOSGIModule.OSGI_DATA_SOURCE_ID_NAMED) final DataSource dataSource,
                              final OSGIKillbill osgiKillbill,
+                             final Clock clock,
                              final BundleRegistry bundleRegistry,
                              final HttpService defaultHttpService,
                              final KillbillEventObservable observable,
@@ -92,6 +95,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.bundleRegistry = bundleRegistry;
         this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
+        this.clock = clock;
         this.observable = observable;
         this.configProperties = configProperties;
         this.jndiManager = jndiManager;
@@ -151,6 +155,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         registrar.registerService(context, Observable.class, observable, props);
         registrar.registerService(context, DataSource.class, dataSource, props);
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
+        registrar.registerService(context, Clock.class, clock, props);
 
         context.addServiceListener(this);
 

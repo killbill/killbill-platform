@@ -47,6 +47,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     protected OSGIKillbillLogService logService;
     protected OSGIKillbillRegistrar registrar;
     protected OSGIKillbillDataSource dataSource;
+    protected OSGIKillbillClock clock;
     protected OSGIKillbillEventDispatcher dispatcher;
     protected OSGIConfigPropertiesService configProperties;
 
@@ -66,6 +67,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         dataSource = new OSGIKillbillDataSource(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
+        clock = new OSGIKillbillClock(context);
 
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
