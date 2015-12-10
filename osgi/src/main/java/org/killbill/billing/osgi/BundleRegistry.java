@@ -82,7 +82,7 @@ public class BundleRegistry {
 
     public BundleWithMetadata stopAndUninstallNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
         final BundleWithMetadata bundle = registry.get(pluginName);
-        if (bundle != null && (pluginVersion == null) || bundle.getVersion().equals(pluginVersion)) {
+        if (bundle != null && (pluginVersion == null || bundle.getVersion().equals(pluginVersion))) {
             if (bundle.getBundle().getState() == Bundle.ACTIVE) {
                 bundle.getBundle().stop();
             }
