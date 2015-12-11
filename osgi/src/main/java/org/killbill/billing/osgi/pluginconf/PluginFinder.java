@@ -82,6 +82,11 @@ public class PluginFinder {
         return result;
     }
 
+    public String getPluginVersionSelectedForStart(final String pluginName) {
+        final LinkedList<PluginConfig> pluginConfigs = allPlugins.get(pluginName);
+        return pluginConfigs != null && !pluginConfigs.isEmpty() ? pluginConfigs.get(0).getVersion() : null;
+    }
+
     public Map<String, LinkedList<PluginConfig>> getAllPlugins() {
         return allPlugins;
     }

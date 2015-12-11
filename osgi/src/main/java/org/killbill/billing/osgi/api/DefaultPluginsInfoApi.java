@@ -49,9 +49,6 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     private static final Ordering<PluginInfo> PLUGIN_INFO_ORDERING =  Ordering.natural().onResultOf(new Function<PluginInfo, String>() {
         @Override
         public String apply(final PluginInfo input) {
-            if (input.getPluginName() == null) {
-
-            }
             return toPluginFullName(input.getPluginName(), input.getVersion());
         }
 
@@ -85,6 +82,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             final BundleWithMetadata installedBundleOrNull = bundleRegistry.getBundle(pluginName);
 
             final LinkedList<PluginConfig> pluginVersions = pluginFinder.getAllPlugins().get(pluginName);
+            boolean isSelectedForStart = true; // The first one in the list is the one selected for start
             for (PluginConfig curVersion : pluginVersions) {
                 final PluginInfo pluginInfo;
                 if (installedBundleOrNull != null && curVersion.getVersion().equals(installedBundleOrNull.getVersion())) {
@@ -92,16 +90,18 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
                                                        installedBundleOrNull.getPluginName(),
                                                        installedBundleOrNull.getVersion(),
                                                        toPluginState(installedBundleOrNull),
+                                                       isSelectedForStart,
                                                        installedBundleOrNull.getServiceNames());
                 } else {
-                    pluginInfo = new DefaultPluginInfo(null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), ImmutableSet.<PluginServiceInfo>of());
+                    pluginInfo = new DefaultPluginInfo(null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
                 }
+                isSelectedForStart = false;
                 result.add(pluginInfo);
             }
         }
         for (BundleWithMetadata osgiBundle : bundleRegistry.getPureOSGIBundles()) {
             if (osgiBundle.getBundle().getSymbolicName() != null) {
-                final PluginInfo pluginInfo = new DefaultPluginInfo(osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), ImmutableSet.<PluginServiceInfo>of());
+                final PluginInfo pluginInfo = new DefaultPluginInfo(osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), true, ImmutableSet.<PluginServiceInfo>of());
                 result.add(pluginInfo);
             }
         }
@@ -116,6 +116,8 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             // Refresh our filesystem view so it shows up/disappears in the list of installed plugin
             pluginFinder.reloadPlugins();
 
+            final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(pluginName);
+            boolean isSelectedForStart = defaultPluginVersion != null && defaultPluginVersion.equals(pluginVersion);
             switch (newState) {
                 case NEW_VERSION:
                     // Nothing special to do; we don't try to OSGI 'install' the plugin at this time, this will be done
@@ -132,7 +134,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             }
 
             // Notify KillbillNodesService to update the node_infos table
-            final PluginInfo pluginInfo = new DefaultPluginInfo(null, pluginName, pluginVersion, toPluginState(null), ImmutableSet.<PluginServiceInfo>of());
+            final PluginInfo pluginInfo = new DefaultPluginInfo(null, pluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
             nodesApi.notifyPluginChanged(pluginInfo);
 
         } catch (final PluginConfigException e) {
@@ -155,12 +157,14 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         private final String version;
         private final Set<PluginServiceInfo> services;
         private final PluginState state;
+        private final boolean isSelectedForStart;
 
-        public DefaultPluginInfo(final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final Set<PluginServiceInfo> services) {
+        public DefaultPluginInfo(final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final boolean isSelectedForStart, final Set<PluginServiceInfo> services) {
             this.pluginSymbolicName = pluginSymbolicName;
             this.pluginName = pluginName;
             this.version = version;
             this.state = state;
+            this.isSelectedForStart = isSelectedForStart;
             this.services = services;
         }
 
@@ -182,6 +186,11 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         @Override
         public Set<PluginServiceInfo> getServices() {
             return services;
+        }
+
+        @Override
+        public boolean isSelectedForStart() {
+            return isSelectedForStart;
         }
 
         @Override

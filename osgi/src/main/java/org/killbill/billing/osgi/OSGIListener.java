@@ -29,6 +29,7 @@ import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginInfo;
 import org.killbill.billing.osgi.api.PluginInfo;
 import org.killbill.billing.osgi.api.PluginServiceInfo;
+import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.util.nodes.DefaultNodeCommandMetadata;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommandMetadata;
@@ -50,12 +51,15 @@ public class OSGIListener {
 
     private final ObjectMapper objectMapper;
     private final BundleRegistry bundleRegistry;
+
+    private final PluginFinder pluginFinder;
     private final KillbillNodesApi nodesApi;
 
     @Inject
-    public OSGIListener(final BundleRegistry bundleRegistry, final KillbillNodesApi nodesApi) {
+    public OSGIListener(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final KillbillNodesApi nodesApi) {
         this.bundleRegistry = bundleRegistry;
         this.nodesApi = nodesApi;
+        this.pluginFinder = pluginFinder;
         this.objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JodaModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -94,8 +98,11 @@ public class OSGIListener {
                 throw new IllegalStateException("Unexpected type " + commandType);
         }
 
+        final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(nodeCommandMetadata.getPluginName());
+        boolean isSelectedForStart = defaultPluginVersion != null && nodeCommandMetadata.getPluginVersion() != null ? defaultPluginVersion.equals(nodeCommandMetadata.getPluginVersion()) : true; /* this is lie, we don't know */
+
         final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
-        final PluginInfo pluginInfo = new DefaultPluginInfo(symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), ImmutableSet.<PluginServiceInfo>of());
+        final PluginInfo pluginInfo = new DefaultPluginInfo(symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
         nodesApi.notifyPluginChanged(pluginInfo);
     }
 
