@@ -105,22 +105,7 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
-        final DefaultPluginConfig that = (DefaultPluginConfig) o;
-
-        if (pluginName != null ? !pluginName.equals(that.pluginName) : that.pluginName != null) {
-            return false;
-        }
-        if (pluginType != that.pluginType) {
-            return false;
-        }
-        if (pluginVersionRoot != null ? !pluginVersionRoot.equals(that.pluginVersionRoot) : that.pluginVersionRoot != null) {
-            return false;
-        }
-        if (version != null ? !version.equals(that.version) : that.version != null) {
-            return false;
-        }
-        return true;
+        return compareTo((PluginConfig) o) == 0;
     }
 
     @Override
