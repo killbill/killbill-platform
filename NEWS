@@ -1,4 +1,5 @@
 
+    Add new OSGI Clock service
     Add support for start/stop/restart OSGI plugins
     Handle broadcast events to react to start/stop/restart
     Metrics code optimization
