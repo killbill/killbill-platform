@@ -17,7 +17,6 @@
 
 package org.killbill.billing.osgi;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,9 +85,8 @@ public class BundleRegistry {
             if (bundle.getBundle().getState() == Bundle.ACTIVE) {
                 bundle.getBundle().stop();
             }
-            if (bundle.getBundle().getState() == Bundle.INSTALLED) {
-                bundle.getBundle().uninstall();
-            }
+            // The spec says that uninstall should always succeed
+            bundle.getBundle().uninstall();
             registry.remove(pluginName);
         }
         return bundle;
