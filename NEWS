@@ -1,4 +1,5 @@
 
+    Bug fixes in osgi and add new isSelectedForStart field support for PluginInfo
     Add new OSGI Clock service
     Add support for start/stop/restart OSGI plugins
     Handle broadcast events to react to start/stop/restart
