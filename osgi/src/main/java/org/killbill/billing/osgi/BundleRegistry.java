@@ -70,7 +70,7 @@ public class BundleRegistry {
         if (bundle != null) {
             // We don't try to be too smart, we let the user first stop existing bundle if needed
             throw new IllegalStateException(String.format("Plugin %s version %s cannot be started because the version %s already exists in the registry (state = %s)",
-                                                          pluginName, pluginVersion, bundle.getVersion(), bundle.getBundle().getState()));
+                                                          bundle.getPluginName(), pluginVersion, bundle.getVersion(), bundle.getBundle().getState()));
         }
         final BundleWithConfig bundleWithConfig = fileInstall.installNewBundle(pluginName, pluginVersion, framework);
         fileInstall.startBundle(bundleWithConfig.getBundle());
@@ -80,6 +80,7 @@ public class BundleRegistry {
     }
 
     public BundleWithMetadata stopAndUninstallNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {
+
         final BundleWithMetadata bundle = registry.get(pluginName);
         if (bundle != null && (pluginVersion == null || bundle.getVersion().equals(pluginVersion))) {
             if (bundle.getBundle().getState() == Bundle.ACTIVE) {
@@ -87,7 +88,7 @@ public class BundleRegistry {
             }
             // The spec says that uninstall should always succeed
             bundle.getBundle().uninstall();
-            registry.remove(pluginName);
+            registry.remove(bundle.getPluginName());
         }
         return bundle;
     }
@@ -169,4 +170,5 @@ public class BundleRegistry {
             return serviceNames;
         }
     }
+
 }

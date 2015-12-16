@@ -191,6 +191,11 @@ public class SetupBundleWithAssertion {
             }
 
             @Override
+            public String getPluginKey() {
+                return "key";
+            }
+
+            @Override
             public String getPluginName() {
                 return bundleName;
             }

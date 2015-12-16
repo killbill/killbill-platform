@@ -30,6 +30,7 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
 
     private static final String PROP_PLUGIN_TYPE_NAME = "pluginType";
 
+    private final String pluginKey;
     private final String pluginName;
     private final PluginType pluginType;
     private final String version;
@@ -38,6 +39,7 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
     private final boolean isDisabled;
 
     public DefaultPluginConfig(DefaultPluginConfig input, final boolean isSelectedForStart) {
+        this.pluginKey = input.getPluginKey();
         this.pluginName = input.getPluginName();
         this.version = input.getVersion();
         this.pluginVersionRoot = input.getPluginVersionRoot();
@@ -47,13 +49,20 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
     }
 
 
-    public DefaultPluginConfig(final String pluginName, final String version, final Properties props, final File pluginVersionRoot, final boolean isVersionToStartLinkedToMe, final boolean isDisabled) {
+    public DefaultPluginConfig(final String pluginKey, final String pluginName, final String version, final Properties props, final File pluginVersionRoot, final boolean isVersionToStartLinkedToMe, final boolean isDisabled) {
+        this.pluginKey = pluginKey;
         this.pluginName = pluginName;
         this.version = version;
         this.pluginVersionRoot = pluginVersionRoot;
         this.isSelectedForStart = isVersionToStartLinkedToMe;
         this.pluginType = PluginType.valueOf(props.getProperty(PROP_PLUGIN_TYPE_NAME, PluginType.__UNKNOWN__.toString()));
         this.isDisabled = isDisabled;
+    }
+
+
+    @Override
+    public final String getPluginKey() {
+        return pluginKey;
     }
 
     @Override

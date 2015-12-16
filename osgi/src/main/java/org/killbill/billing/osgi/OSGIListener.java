@@ -36,6 +36,8 @@ import org.killbill.billing.util.nodes.NodeCommandMetadata;
 import org.killbill.billing.util.nodes.PluginNodeCommandMetadata;
 import org.killbill.billing.util.nodes.SystemNodeCommandType;
 import org.osgi.framework.BundleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -48,6 +50,8 @@ import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 
 public class OSGIListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(OSGIListener.class);
 
     private final ObjectMapper objectMapper;
     private final BundleRegistry bundleRegistry;
@@ -82,17 +86,25 @@ public class OSGIListener {
 
         final PluginNodeCommandMetadata nodeCommandMetadata = (PluginNodeCommandMetadata) deserializeNodeCommand(metadata.getEventJson(), metadata.getCommandType());
 
+        final String pluginName = nodeCommandMetadata.getPluginName() != null ?
+                                  nodeCommandMetadata.getPluginName() :
+                                  (pluginFinder.resolvePluginKey(nodeCommandMetadata.getPluginKey()) != null ? pluginFinder.resolvePluginKey(nodeCommandMetadata.getPluginKey()).getPluginName() : null);
+        if (pluginName == null) {
+            logger.warn(String.format("Failed to dispatch event %s : Input must have a pluginName or a valid pluginKey specified json=%s", commandType, metadata.getEventJson()));
+            return;
+        }
+
         BundleWithMetadata bundleWithMetadata = null;
         switch(commandType) {
             case STOP_PLUGIN:
-                bundleRegistry.stopAndUninstallNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
+                bundleRegistry.stopAndUninstallNewBundle(pluginName, nodeCommandMetadata.getPluginVersion());
                 break;
             case START_PLUGIN:
-                bundleWithMetadata = bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
+                bundleWithMetadata = bundleRegistry.installAndStartNewBundle(pluginName, nodeCommandMetadata.getPluginVersion());
                 break;
             case RESTART_PLUGIN:
-                bundleRegistry.stopAndUninstallNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
-                bundleWithMetadata = bundleRegistry.installAndStartNewBundle(nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion());
+                bundleRegistry.stopAndUninstallNewBundle(pluginName, nodeCommandMetadata.getPluginVersion());
+                bundleWithMetadata = bundleRegistry.installAndStartNewBundle(pluginName, nodeCommandMetadata.getPluginVersion());
                 break;
             default:
                 throw new IllegalStateException("Unexpected type " + commandType);
@@ -102,7 +114,7 @@ public class OSGIListener {
         boolean isSelectedForStart = defaultPluginVersion != null && nodeCommandMetadata.getPluginVersion() != null ? defaultPluginVersion.equals(nodeCommandMetadata.getPluginVersion()) : true; /* this is lie, we don't know */
 
         final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
-        final PluginInfo pluginInfo = new DefaultPluginInfo(symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+        final PluginInfo pluginInfo = new DefaultPluginInfo(nodeCommandMetadata.getPluginKey(), symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
         nodesApi.notifyPluginChanged(pluginInfo);
     }
 

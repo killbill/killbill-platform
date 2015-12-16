@@ -41,21 +41,29 @@ import org.killbill.billing.osgi.config.OSGIConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class PluginFinder {
 
     static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
     static final String TMP_DIR_NAME = "tmp";
     static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
+    static final String IDENTIFIERS_FILE_NAME = "plugin_identifiers.json";
 
     private final Logger logger = LoggerFactory.getLogger(PluginFinder.class);
 
     private final OSGIConfig osgiConfig;
     private final Map<String, LinkedList<PluginConfig>> allPlugins;
+    private final Map<String, PluginIdentifier> identifiers;
+    private final ObjectMapper mapper;
 
     @Inject
     public PluginFinder(final OSGIConfig osgiConfig) {
         this.osgiConfig = osgiConfig;
+        this.mapper = new ObjectMapper();
         this.allPlugins = new HashMap<String, LinkedList<PluginConfig>>();
+        this.identifiers = new HashMap<String, PluginIdentifier>();
     }
 
     public List<PluginJavaConfig> getLatestJavaPlugins() throws PluginConfigException, IOException {
@@ -95,6 +103,10 @@ public class PluginFinder {
         loadPluginsIfRequired(true);
     }
 
+    public PluginIdentifier resolvePluginKey(final String pluginKey) {
+        return identifiers.get(pluginKey);
+    }
+
     private <T extends PluginConfig> List<T> getLatestPluginForLanguage(final PluginLanguage pluginLanguage) throws PluginConfigException, IOException {
         loadPluginsIfRequired(false);
 
@@ -118,6 +130,8 @@ public class PluginFinder {
             }
 
             allPlugins.clear();
+
+            readPluginIdentifiers();
 
             loadPluginsForLanguage(PluginLanguage.RUBY);
             loadPluginsForLanguage(PluginLanguage.JAVA);
@@ -143,6 +157,25 @@ public class PluginFinder {
                                                    new DefaultPluginJavaConfig((DefaultPluginJavaConfig) firstValue, true);
                 versionsForPlugin.addFirst(newFirstValue);
             }
+        }
+    }
+
+    private void readPluginIdentifiers() {
+
+        final String identifierFileName = osgiConfig.getRootInstallationDir() + "/plugins/" + IDENTIFIERS_FILE_NAME;
+        final File identifierFile = new File(identifierFileName);
+        if (!identifierFile.exists() || !identifierFile.isFile()) {
+            logger.warn("File non existent: Skipping parsing of " + IDENTIFIERS_FILE_NAME);
+            return;
+        }
+
+        try {
+            identifiers.clear();
+            final Map<String, PluginIdentifier> map = mapper.readValue(identifierFile, new TypeReference<Map<String, PluginIdentifier>>() {});
+            identifiers.putAll(map);
+        } catch (final IOException e) {
+            logger.warn("Exception when parsing " + IDENTIFIERS_FILE_NAME + ":", e);
+            return;
         }
     }
 
@@ -215,6 +248,16 @@ public class PluginFinder {
         }
     }
 
+    private String findPluginKey(final String pluginName, final PluginLanguage pluginLanguage) {
+        for (String key : identifiers.keySet()) {
+            PluginIdentifier value = identifiers.get(key);
+            if (value.getPluginName().equals(pluginName) && value.getLanguage().equalsIgnoreCase(pluginLanguage.name())) {
+                return key;
+            }
+        }
+        return null;
+    }
+
     private <T extends PluginConfig> T extractPluginConfig(final PluginLanguage pluginLanguage, final String pluginName, final String pluginVersion, final File pluginVersionDir, final boolean isVersionToStartLink) throws PluginConfigException {
         final T result;
         Properties props = null;
@@ -241,12 +284,13 @@ public class PluginFinder {
             throw new PluginConfigException("Failed to read property file for " + pluginName + "-" + pluginVersion, e);
         }
 
+        final String pluginKey = findPluginKey(pluginName, pluginLanguage);
         switch (pluginLanguage) {
             case RUBY:
-                result = (T) new DefaultPluginRubyConfig(pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
+                result = (T) new DefaultPluginRubyConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
             case JAVA:
-                result = (T) new DefaultPluginJavaConfig(pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
+                result = (T) new DefaultPluginJavaConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
             default:
                 throw new RuntimeException("Unknown plugin language " + pluginLanguage);

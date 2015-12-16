@@ -86,14 +86,15 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             for (PluginConfig curVersion : pluginVersions) {
                 final PluginInfo pluginInfo;
                 if (installedBundleOrNull != null && curVersion.getVersion().equals(installedBundleOrNull.getVersion())) {
-                    pluginInfo = new DefaultPluginInfo(installedBundleOrNull.getBundle().getSymbolicName(),
+                    pluginInfo = new DefaultPluginInfo(curVersion.getPluginKey(),
+                                                       installedBundleOrNull.getBundle().getSymbolicName(),
                                                        installedBundleOrNull.getPluginName(),
                                                        installedBundleOrNull.getVersion(),
                                                        toPluginState(installedBundleOrNull),
                                                        isSelectedForStart,
                                                        installedBundleOrNull.getServiceNames());
                 } else {
-                    pluginInfo = new DefaultPluginInfo(null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+                    pluginInfo = new DefaultPluginInfo(curVersion.getPluginKey(), null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
                 }
                 isSelectedForStart = false;
                 result.add(pluginInfo);
@@ -101,7 +102,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         }
         for (BundleWithMetadata osgiBundle : bundleRegistry.getPureOSGIBundles()) {
             if (osgiBundle.getBundle().getSymbolicName() != null) {
-                final PluginInfo pluginInfo = new DefaultPluginInfo(osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), true, ImmutableSet.<PluginServiceInfo>of());
+                final PluginInfo pluginInfo = new DefaultPluginInfo(null, osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), true, ImmutableSet.<PluginServiceInfo>of());
                 result.add(pluginInfo);
             }
         }
@@ -110,13 +111,18 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     }
 
     @Override
-    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginName, final String pluginVersion, final PluginLanguage pluginLanguage) {
+    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginKey, final String pluginName, final String pluginVersion, final PluginLanguage pluginLanguage) {
         try {
 
             // Refresh our filesystem view so it shows up/disappears in the list of installed plugin
             pluginFinder.reloadPlugins();
 
-            final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(pluginName);
+            // The KPM plugin will actually always pass both so the pluginKey will never be used, but it is good to keep the code generic
+            final String resolvedPluginName = pluginName != null ?
+                                              pluginName :
+                                              (pluginFinder.resolvePluginKey(pluginKey) != null ? pluginFinder.resolvePluginKey(pluginKey).getPluginName() : null);
+
+            final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(resolvedPluginName);
             boolean isSelectedForStart = defaultPluginVersion != null && defaultPluginVersion.equals(pluginVersion);
             switch (newState) {
                 case NEW_VERSION:
@@ -126,7 +132,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
                 case DISABLED:
                     // If plugin is in the bundleRegistry, we remove it (stopping it if required)
-                    bundleRegistry.stopAndUninstallNewBundle(pluginName, pluginVersion);
+                    bundleRegistry.stopAndUninstallNewBundle(resolvedPluginName, pluginVersion);
                     break;
 
                 default:
@@ -134,7 +140,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             }
 
             // Notify KillbillNodesService to update the node_infos table
-            final PluginInfo pluginInfo = new DefaultPluginInfo(null, pluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+            final PluginInfo pluginInfo = new DefaultPluginInfo(pluginKey, null, resolvedPluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
             nodesApi.notifyPluginChanged(pluginInfo);
 
         } catch (final PluginConfigException e) {
@@ -152,6 +158,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
     public static final class DefaultPluginInfo implements PluginInfo {
 
+        private final String pluginKey;
         private final String pluginName;
         private final String pluginSymbolicName;
         private final String version;
@@ -159,13 +166,19 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         private final PluginState state;
         private final boolean isSelectedForStart;
 
-        public DefaultPluginInfo(final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final boolean isSelectedForStart, final Set<PluginServiceInfo> services) {
+        public DefaultPluginInfo(final String pluginKey, final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final boolean isSelectedForStart, final Set<PluginServiceInfo> services) {
+            this.pluginKey = pluginKey;
             this.pluginSymbolicName = pluginSymbolicName;
             this.pluginName = pluginName;
             this.version = version;
             this.state = state;
             this.isSelectedForStart = isSelectedForStart;
             this.services = services;
+        }
+
+        @Override
+        public String getPluginKey() {
+            return pluginKey;
         }
 
         @Override
