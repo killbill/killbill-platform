@@ -41,7 +41,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     public static final String TMP_DIR_NAME = "tmp";
     public static final String RESTART_FILE_NAME = "restart.txt";
-    public static final String STOP_FILE_NAME = "stop.txt";
+    public static final String DISABLED_FILE_NAME = "disabled.txt";
 
     protected OSGIKillbillAPI killbillAPI;
     protected OSGIKillbillLogService logService;
@@ -237,7 +237,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     }
 
     protected boolean shouldStopPlugin() {
-        final File stopFile = new File(tmpDir + "/" + STOP_FILE_NAME);
+        final File stopFile = new File(tmpDir + "/" + DISABLED_FILE_NAME);
         return stopFile.isFile();
     }
 

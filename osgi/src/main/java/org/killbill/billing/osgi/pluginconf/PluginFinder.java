@@ -46,9 +46,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PluginFinder {
 
-    static final String SELECTED_VERSION_LINK_NAME = "ACTIVE";
+    static final String SELECTED_VERSION_LINK_NAME = "SET_DEFAULT";
     static final String TMP_DIR_NAME = "tmp";
-    static final String DISABLED_FILE_NAME = "stop.txt"; // See similar definition in KillbillActivatorBase
+    static final String DISABLED_FILE_NAME = "disabled.txt"; // See similar definition in KillbillActivatorBase
     static final String IDENTIFIERS_FILE_NAME = "plugin_identifiers.json";
 
     private final Logger logger = LoggerFactory.getLogger(PluginFinder.class);
