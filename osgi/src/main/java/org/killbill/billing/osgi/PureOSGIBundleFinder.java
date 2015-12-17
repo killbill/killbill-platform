@@ -20,7 +20,9 @@ package org.killbill.billing.osgi;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -39,9 +41,14 @@ public class PureOSGIBundleFinder {
 
     private final OSGIConfig osgiConfig;
 
+    // Pure OSGI bundle use their OSGI symbolicName as a pluginName. In order to provide a way to restart them
+    // we need to keep a mapping between the pluginName (used for the api call) and the path on the filesystem
+    private final Map<String, String> osgiPluginNameMapping;
+
     @Inject
     public PureOSGIBundleFinder(final OSGIConfig osgiConfig) {
         this.osgiConfig = osgiConfig;
+        this.osgiPluginNameMapping = new HashMap<String, String>();
     }
 
     public List<String> getLatestBundles() throws PluginConfigException {
@@ -65,6 +72,15 @@ public class PureOSGIBundleFinder {
         }
 
         return bundles;
+    }
+
+    public String getOSGIPath(final String pluginName) {
+        return osgiPluginNameMapping.get(pluginName);
+    }
+
+    // Called when the system initialize itself and instantiate the OSGI bundle for the first time.
+    public void recordMappingPluginNameToPath(final String pluginName, final String path) {
+        osgiPluginNameMapping.put(pluginName, path);
     }
 
     public String getPlatformOSGIBundlesRootDir() {

@@ -98,6 +98,14 @@ public class FileInstall {
 
     public BundleWithConfig installNewBundle(final String pluginName, @Nullable final String version, final Framework framework) {
         try {
+            // Handle pure OSGI bundle case
+            final String osgiBundlePath = osgiBundleFinder.getOSGIPath(pluginName);
+            if (osgiBundlePath != null) {
+                final Bundle bundle = installOSGIBundle(framework.getBundleContext(), osgiBundlePath);
+                return new BundleWithConfig(bundle, null);
+            }
+
+            // Kill Bill plugins
             final List<PluginConfig> configs = pluginFinder.getVersionsForPlugin(pluginName, version);
             if (configs.isEmpty() || (version != null && configs.size() != 1)) {
                 throw new PluginConfigException("Cannot install plugin " + pluginName + ", version = " + version);
@@ -125,10 +133,18 @@ public class FileInstall {
                 continue;
             }
 
-            logger.info("Installing Java OSGI bundle from {}", cur);
-            final Bundle bundle = context.installBundle("file:" + cur);
+            final Bundle bundle = installOSGIBundle(context, cur);
             installedBundles.add(new BundleWithConfig(bundle, null));
         }
+    }
+
+    private Bundle installOSGIBundle(final BundleContext context, final String path) throws BundleException {
+
+        logger.info("Installing Java OSGI bundle from {}", path);
+
+        final Bundle bundle = context.installBundle("file:" + path);
+        osgiBundleFinder.recordMappingPluginNameToPath(bundle.getSymbolicName(), path);
+        return bundle;
     }
 
     private void installAllJavaPluginBundles(final BundleContext context, final List<BundleWithConfig> installedBundles, final String jrubyBundlePath) throws PluginConfigException, BundleException, IOException {
