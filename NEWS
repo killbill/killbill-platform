@@ -1,10 +1,23 @@
-
+0.18
     Add support for pluginKey for all plugin commands
+    Rename plugin marker file stop.txt to disabled.txt
+    Rename plugin symlink ACTIVE to SET_DEFAULT
+
+0.17
     Bug fixes in osgi and add new isSelectedForStart field support for PluginInfo
+
+0.16
     Add new OSGI Clock service
+
+0.15
     Add support for start/stop/restart OSGI plugins
     Handle broadcast events to react to start/stop/restart
+    Add /plugins/killbill-osgi-logger endpoint to logger bundle
+
+0.14
     Metrics code optimization
+
+0.12
     Update transitive metrics dependencies (updated oss pom version with latest commons)
 
 0.11
