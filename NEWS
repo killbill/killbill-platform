@@ -1,3 +1,6 @@
+
+    Fix issue when restarting pure OSGI bundle and update base pom
+
 0.18
     Add support for pluginKey for all plugin commands
     Rename plugin marker file stop.txt to disabled.txt
