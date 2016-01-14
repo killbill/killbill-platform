@@ -24,6 +24,7 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.GenericStandaloneDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
+import org.killbill.commons.embeddeddb.postgresql.PostgreSQLStandaloneDB;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 
 // TODO Rename - not always "embedded"
@@ -52,6 +53,8 @@ public class EmbeddedDBFactory {
             return new MySQLStandaloneDB(databaseName, config.getUsername(), config.getPassword(), config.getJdbcUrl());
         } else if ("h2".equals(uri.getScheme()) && ("mem".equals(schemeLocation) || "file".equals(schemeLocation))) {
             return new H2EmbeddedDB(databaseName, config.getUsername(), config.getPassword(), config.getJdbcUrl());
+        } else if ("postgresql".equals(uri.getScheme())) {
+            return new PostgreSQLStandaloneDB(databaseName, config.getUsername(), config.getPassword(), config.getJdbcUrl());
         } else {
             return new GenericStandaloneDB(databaseName, config.getUsername(), config.getPassword(), config.getJdbcUrl());
         }
