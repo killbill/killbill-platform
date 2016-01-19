@@ -1,4 +1,7 @@
+0.20
+    Fix PostgreSQL wiring in EmbeddedDBFactory
 
+0.19
     Fix issue when restarting pure OSGI bundle and update base pom
 
 0.18
