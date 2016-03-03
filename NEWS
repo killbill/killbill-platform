@@ -1,3 +1,6 @@
+0.21
+    Add missing org.killbill.billing.invoice.api.formatters OSGI export
+
 0.20
     Fix PostgreSQL wiring in EmbeddedDBFactory
 
