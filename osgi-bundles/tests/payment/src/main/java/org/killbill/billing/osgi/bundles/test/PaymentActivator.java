@@ -23,8 +23,8 @@ import java.util.Hashtable;
 
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
-import org.killbill.killbill.osgi.libs.killbill.KillbillActivatorBase;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher;
+import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 

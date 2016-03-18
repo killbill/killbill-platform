@@ -35,7 +35,7 @@ import org.jruby.embed.ScriptingContainer;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;

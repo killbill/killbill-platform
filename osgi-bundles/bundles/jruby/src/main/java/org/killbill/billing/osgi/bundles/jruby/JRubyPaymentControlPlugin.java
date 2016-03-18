@@ -28,7 +28,7 @@ import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.control.plugin.api.PriorPaymentControlResult;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.payment.api.PluginProperty;
-import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;

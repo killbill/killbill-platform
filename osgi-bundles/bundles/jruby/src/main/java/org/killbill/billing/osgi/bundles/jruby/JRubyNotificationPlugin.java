@@ -22,8 +22,8 @@ import org.jruby.Ruby;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.notification.plugin.api.NotificationPluginApi;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 

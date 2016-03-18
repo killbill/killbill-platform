@@ -1,7 +1,6 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2016 Groupon, Inc
+ * Copyright 2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -16,7 +15,7 @@
  * under the License.
  */
 
-package org.killbill.killbill.osgi.libs.killbill;
+package org.killbill.billing.osgi.libs.killbill;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -27,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
-import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
@@ -147,7 +146,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     protected void configureSLF4JBinding() {
         try {
-            // KillbillActivatorBase.class.getClassLoader() is the WebAppClassLoader (org.killbill.killbill.osgi.libs.killbill is exported)
+            // KillbillActivatorBase.class.getClassLoader() is the WebAppClassLoader (org.killbill.billing.osgi.libs.killbill is exported)
             // Make sure to use the BundleClassLoader instead
             final Class<?> staticLoggerBinderClass = this.getClass()
                                                          .getClassLoader()

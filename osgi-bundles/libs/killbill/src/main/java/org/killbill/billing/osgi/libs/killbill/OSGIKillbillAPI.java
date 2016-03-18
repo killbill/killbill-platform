@@ -1,7 +1,6 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2016 Groupon, Inc
+ * Copyright 2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -16,7 +15,7 @@
  * under the License.
  */
 
-package org.killbill.killbill.osgi.libs.killbill;
+package org.killbill.billing.osgi.libs.killbill;
 
 import org.killbill.billing.account.api.AccountUserApi;
 import org.killbill.billing.catalog.api.CatalogUserApi;

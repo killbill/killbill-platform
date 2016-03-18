@@ -28,7 +28,7 @@ import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.currency.api.Rate;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
-import org.killbill.killbill.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
