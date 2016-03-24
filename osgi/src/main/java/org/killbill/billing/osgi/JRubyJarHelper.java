@@ -21,9 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Properties;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import org.killbill.billing.util.nodes.KillbillNodesApi;
@@ -33,13 +33,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 
 public class JRubyJarHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(JRubyJarHelper.class);
 
-    private static final String POM = "META-INF/maven/org.kill-bill.billing/killbill-platform-osgi-bundles-jruby/pom.xml";
+    static final String POM_PROPERTIES = "META-INF/maven/org.kill-bill.billing/killbill-platform-osgi-bundles-jruby/pom.properties";
 
     private final KillbillNodesApi nodesApi;
     private final String jrubyJarPath;
@@ -68,8 +67,8 @@ public class JRubyJarHelper {
             }
             final String platformVersion = nodeInfo.getPlatformVersion();
 
-            final String pomContent = readJarEntryContent(jrubyJarPath, POM);
-            final String jrubyJarVersion = extractVersion(pomContent);
+            final Properties properties = getProperties(jrubyJarPath, POM_PROPERTIES);
+            final String jrubyJarVersion = extractVersion(properties);
             if (jrubyJarVersion == null) {
                 logger.warn("Failed to extract jruby.jar version from file {}", jrubyJarPath);
                 return;
@@ -83,17 +82,18 @@ public class JRubyJarHelper {
         }
     }
 
-
-    private String readJarEntryContent(final String jarFileName, final String entryName) throws IOException {
+    private Properties getProperties(final String jarFileName, final String entryName) throws IOException {
 
         InputStream stream = null;
-        InputStreamReader reader = null;
+        Reader reader = null;
         try {
             final JarFile jarFile = new JarFile(jarFileName);
             final ZipEntry entry = jarFile.getEntry(entryName);
             stream = jarFile.getInputStream(entry);
             reader = new InputStreamReader(stream, Charsets.UTF_8);
-            return CharStreams.toString(reader);
+            final Properties props = new Properties();
+            props.load(reader);
+            return props;
         } finally {
             IOException streamIOException = null;
             if (stream != null) {
@@ -113,16 +113,8 @@ public class JRubyJarHelper {
     }
 
     @VisibleForTesting
-    String extractVersion(final String pomContent) {
-        final Pattern versionPattern = Pattern.compile("\\s*<version>((?:\\w|-|.)+)</version>\\s*");
-        final String [] parts = pomContent.split("\\n");
-        for (int i = 0 ; i < parts.length; i++) {
-            final Matcher matcher = versionPattern.matcher(parts[i]);
-            if (matcher.matches()) {
-                return matcher.group(1);
-            }
-        }
-        return null;
+    String extractVersion(final Properties properties) {
+        return (String) properties.get("version");
     }
 
 }
