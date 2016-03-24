@@ -35,6 +35,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
@@ -44,6 +45,7 @@ import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
 import org.killbill.billing.osgi.pluginconf.PluginConfigException;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -64,11 +66,14 @@ public class FileInstall {
     private final PluginFinder pluginFinder;
     private final PluginConfigServiceApi pluginConfigServiceApi;
     private final AtomicInteger jrubyUniqueIndex;
+    private final JRubyJarHelper jRubyJarHelper;
 
-    public FileInstall(final PureOSGIBundleFinder osgiBundleFinder, final PluginFinder pluginFinder, final PluginConfigServiceApi pluginConfigServiceApi) {
+    @Inject
+    public FileInstall(final PureOSGIBundleFinder osgiBundleFinder, final PluginFinder pluginFinder, final KillbillNodesApi nodesApi, final PluginConfigServiceApi pluginConfigServiceApi) {
         this.osgiBundleFinder = osgiBundleFinder;
         this.pluginFinder = pluginFinder;
         this.pluginConfigServiceApi = pluginConfigServiceApi;
+        this.jRubyJarHelper = new JRubyJarHelper(osgiBundleFinder.getPlatformOSGIBundlesRootDir(), nodesApi);
         this.jrubyUniqueIndex = new AtomicInteger(0);
     }
 
@@ -79,7 +84,7 @@ public class FileInstall {
 
             final BundleContext context = framework.getBundleContext();
 
-            final String jrubyBundlePath = findJrubyBundlePath();
+            final String jrubyBundlePath = jRubyJarHelper.getAndValidateJrubyJarPath();
 
             // Install all bundles and create service mapping
             installAllOSGIBundles(context, installedBundles, jrubyBundlePath);
@@ -110,7 +115,7 @@ public class FileInstall {
             if (configs.isEmpty() || (version != null && configs.size() != 1)) {
                 throw new PluginConfigException("Cannot install plugin " + pluginName + ", version = " + version);
             }
-            final String jrubyBundlePath = findJrubyBundlePath();
+            final String jrubyBundlePath = jRubyJarHelper.getAndValidateJrubyJarPath();
 
             final Bundle bundle = installBundle(configs.get(0), framework.getBundleContext(), configs.get(0).getPluginLanguage(), jrubyBundlePath);
             return new BundleWithConfig(bundle, configs.get(0));
@@ -241,16 +246,6 @@ public class FileInstall {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-    private String findJrubyBundlePath() {
-        final String expectedPath = osgiBundleFinder.getPlatformOSGIBundlesRootDir() + "jruby.jar";
-        if (new File(expectedPath).isFile()) {
-            return expectedPath;
-        } else {
-            logger.warn("Unable to find the JRuby bundle at {}, ruby plugins won't be started!", expectedPath);
-            return null;
-        }
-    }
-
     public boolean startBundle(final Bundle bundle) {
         if (bundle.getState() == Bundle.UNINSTALLED) {
             logger.info("Skipping uninstalled bundle {}", bundle.getLocation());
@@ -266,7 +261,6 @@ public class FileInstall {
                 logger.warn("Unable to start bundle", e);
             }
         }
-
         return false;
     }
 

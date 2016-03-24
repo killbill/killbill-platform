@@ -130,6 +130,12 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
             public Iterable<NodeInfo> getNodesInfo() {
                 throw new UnsupportedOperationException("Not implemented");
             }
+
+            @Override
+            public NodeInfo getCurrentNodeInfo() {
+                return null;
+            }
+
             @Override
             public void triggerNodeCommand(final NodeCommand nodeCommandfinal, boolean localNodeOnly) {
                 throw new UnsupportedOperationException("Not implemented");

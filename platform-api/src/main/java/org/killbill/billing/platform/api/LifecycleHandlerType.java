@@ -37,6 +37,11 @@ public @interface LifecycleHandlerType {
     public enum LifecycleLevel {
 
         /**
+         * System is booting
+         */
+        BOOT(Sequence.STARTUP_PRE_EVENT_REGISTRATION),
+
+        /**
          * Load and validate catalog (only for catalog subsytem)
          */
         LOAD_CATALOG(Sequence.STARTUP_PRE_EVENT_REGISTRATION),

@@ -29,8 +29,6 @@ import javax.inject.Inject;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginServiceInfo;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.PluginServiceInfo;
-import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
-import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -49,9 +47,8 @@ public class BundleRegistry {
     private List<BundleWithConfig> bundleWithConfigs;
 
     @Inject
-    public BundleRegistry(final PureOSGIBundleFinder osgiBundleFinder,
-                          final PluginFinder pluginFinder, final PluginConfigServiceApi pluginConfigServiceApi) {
-        this.fileInstall = new FileInstall(osgiBundleFinder, pluginFinder, pluginConfigServiceApi);
+    public BundleRegistry(final FileInstall fileInstall) {
+        this.fileInstall = fileInstall;
         this.registry = new HashMap<String, BundleWithMetadata>();
     }
 
@@ -76,7 +73,7 @@ public class BundleRegistry {
         fileInstall.startBundle(bundleWithConfig.getBundle());
         final BundleWithMetadata bundleWithMetadata = new BundleWithMetadata(bundleWithConfig);
         registry.put(getPluginName(bundleWithConfig), bundleWithMetadata);
-        return  bundleWithMetadata;
+        return bundleWithMetadata;
     }
 
     public BundleWithMetadata stopAndUninstallNewBundle(final String pluginName, @Nullable final String pluginVersion) throws BundleException {

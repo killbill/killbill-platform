@@ -25,6 +25,7 @@ import javax.sql.DataSource;
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.DefaultOSGIKillbill;
 import org.killbill.billing.osgi.DefaultOSGIService;
+import org.killbill.billing.osgi.FileInstall;
 import org.killbill.billing.osgi.KillbillActivator;
 import org.killbill.billing.osgi.KillbillEventObservable;
 import org.killbill.billing.osgi.OSGIListener;
@@ -91,6 +92,7 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(OSGIService.class).to(DefaultOSGIService.class).asEagerSingleton();
         bind(OSGIListener.class).asEagerSingleton();
         bind(BundleRegistry.class).asEagerSingleton();
+        bind(FileInstall.class).asEagerSingleton();
         bind(KillbillActivator.class).asEagerSingleton();
         bind(PureOSGIBundleFinder.class).asEagerSingleton();
         bind(PluginFinder.class).asEagerSingleton();
