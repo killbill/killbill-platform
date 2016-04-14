@@ -1,6 +1,6 @@
 /*
- * Copyright 2015 Groupon, Inc
- * Copyright 2015 The Billing Project, LLC
+ * Copyright 2015-2016 Groupon, Inc
+ * Copyright 2015-2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -29,6 +29,7 @@ import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginInfo;
 import org.killbill.billing.osgi.api.PluginInfo;
 import org.killbill.billing.osgi.api.PluginServiceInfo;
+import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.util.nodes.DefaultNodeCommandMetadata;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
@@ -55,15 +56,16 @@ public class OSGIListener {
 
     private final ObjectMapper objectMapper;
     private final BundleRegistry bundleRegistry;
-
     private final PluginFinder pluginFinder;
+    private final PluginsInfoApi pluginsInfoApi;
     private final KillbillNodesApi nodesApi;
 
     @Inject
-    public OSGIListener(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final KillbillNodesApi nodesApi) {
+    public OSGIListener(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final PluginsInfoApi pluginsInfoApi, final KillbillNodesApi nodesApi) {
         this.bundleRegistry = bundleRegistry;
-        this.nodesApi = nodesApi;
         this.pluginFinder = pluginFinder;
+        this.pluginsInfoApi = pluginsInfoApi;
+        this.nodesApi = nodesApi;
         this.objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JodaModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -115,7 +117,7 @@ public class OSGIListener {
 
         final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
         final PluginInfo pluginInfo = new DefaultPluginInfo(nodeCommandMetadata.getPluginKey(), symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
-        nodesApi.notifyPluginChanged(pluginInfo);
+        nodesApi.notifyPluginChanged(pluginInfo, pluginsInfoApi.getPluginsInfo());
     }
 
     private SystemNodeCommandType getSystemNodeCommandTypeOrNull(final String command) {

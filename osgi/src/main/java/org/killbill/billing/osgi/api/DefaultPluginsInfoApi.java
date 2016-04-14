@@ -141,7 +141,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
             // Notify KillbillNodesService to update the node_infos table
             final PluginInfo pluginInfo = new DefaultPluginInfo(pluginKey, null, resolvedPluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
-            nodesApi.notifyPluginChanged(pluginInfo);
+            nodesApi.notifyPluginChanged(pluginInfo, getPluginsInfo());
 
         } catch (final PluginConfigException e) {
             logger.error("Failed to handle notifyOfStateChanged: ", e);
