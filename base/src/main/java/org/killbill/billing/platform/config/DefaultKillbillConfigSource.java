@@ -37,6 +37,9 @@ import com.google.common.collect.ImmutableMap;
 
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
+    private static final String PROP_USER_TIME_ZONE = "user.timezone";
+    private static final String PROP_SECURITY_EGD = "java.security.egd";
+
     private static final Logger logger = LoggerFactory.getLogger(DefaultKillbillConfigSource.class);
     private static final String PROPERTIES_FILE = "org.killbill.server.properties";
     private static final String GMT_ID = "GMT";
@@ -117,10 +120,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
 
             // Special case to overwrite user.timezone
-            if (propertyName.equals("user.timezone")) {
+            if (propertyName.equals(PROP_USER_TIME_ZONE)) {
                 // If this is set to something different than GMT we log a WARN
                 if (!"GMT".equals(System.getProperty(propertyName))) {
-                    logger.warn("!!!  Naughty overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT !!!",
+                    logger.warn("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT !!!",
                                 System.getProperty(propertyName));
                 }
 
@@ -139,6 +142,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             if (System.getProperty(propertyName) == null) {
                 System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
             }
+        }
+
+        // WARN for missing PROP_SECURITY_EGD
+        if (System.getProperty(PROP_SECURITY_EGD) == null) {
+            logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy", PROP_SECURITY_EGD);
         }
     }
 
