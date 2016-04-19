@@ -123,7 +123,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             if (propertyName.equals(PROP_USER_TIME_ZONE)) {
                 // If this is set to something different than GMT we log a WARN
                 if (!"GMT".equals(System.getProperty(propertyName))) {
-                    logger.warn("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT !!!",
+                    logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
                                 System.getProperty(propertyName));
                 }
 
@@ -146,7 +146,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         // WARN for missing PROP_SECURITY_EGD
         if (System.getProperty(PROP_SECURITY_EGD) == null) {
-            logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy", PROP_SECURITY_EGD);
+            logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
         }
     }
 
