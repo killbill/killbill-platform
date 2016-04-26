@@ -60,7 +60,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         // Tracked resource
         logService = new OSGIKillbillLogService(context);
 
-        logSafely(LogService.LOG_INFO, String.format("OSGI bundle = %s recieved START command", context.getBundle().getSymbolicName()));
+        logSafely(LogService.LOG_INFO, String.format("OSGI bundle = %s received START command", context.getBundle().getSymbolicName()));
 
         killbillAPI = new OSGIKillbillAPI(context);
         configureSLF4JBinding();
@@ -72,13 +72,20 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
 
-        // Killbill events
+        //
+        // WARNING: This code path does not work very well, because the plugin code implementing  KillbillActivatorBase will
+        // call 'super' very early on and does not have a chance to construct the handlers prior entering this method,
+        // so the getOSGIKillbillEventHandler/getOSGIFrameworkEventHandler need to also allocate the handler,
+        // which makes it difficult to ensure the handler is not reallocated at each iteration.
+        //
+        // We suggest to *not* implement getOSGIKillbillEventHandler/getOSGIFrameworkEventHandler and have the plugin
+        // do the registration itself instead through the use of registerEventHandlerWhenPluginStart
+        // (but for backward compatibility registration is also kept at this level)
+        //
         final OSGIKillbillEventHandler handler = getOSGIKillbillEventHandler();
         if (handler != null) {
-            dispatcher.registerEventHandler(handler);
+         dispatcher.registerEventHandler(handler);
         }
-
-        // OSGI Framework events
         final OSGIFrameworkEventHandler frameworkEventHandler = getOSGIFrameworkEventHandler();
         if (frameworkEventHandler != null) {
             dispatcher.registerEventHandler(frameworkEventHandler);
@@ -88,8 +95,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         tmpDir = setupTmpDir(pluginConfig);
 
         setupRestartMechanism(pluginConfig, context);
-
-
     }
 
     @Override
@@ -100,19 +105,32 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         if (restartFuture != null) {
             restartFuture.cancel(true);
         }
-
-        stopAllButRestartMechanism();
+        stopAllButRestartMechanism(context);
     }
 
-    protected void stopAllButRestartMechanism() throws Exception {
-        // Close trackers
+    protected void stopAllButRestartMechanism(final BundleContext context) throws Exception {
+        // Remove provide services to other bundles first
+        if (registrar != null) {
+            registrar.unregisterAll();
+            registrar = null;
+        }
+        // Then, un-register all handlers
+        try {
+            if (dispatcher != null) {
+                dispatcher.unregisterAllHandlers();
+            }
+        } catch (final OSGIServiceNotAvailable ignore) {
+            logSafely(LogService.LOG_WARNING, String.format("OSGI bundle = %s failed to unregister killbill handler", context.getBundle().getSymbolicName()));
+        } finally {
+            if (dispatcher != null) {
+                dispatcher.close();
+                dispatcher = null;
+            }
+        }
+        // Finally close all trackers, ending by logging to make sure bundle can log as far as possible.
         if (killbillAPI != null) {
             killbillAPI.close();
             killbillAPI = null;
-        }
-        if (dispatcher != null) {
-            dispatcher.close();
-            dispatcher = null;
         }
         if (dataSource != null) {
             dataSource.close();
@@ -122,28 +140,26 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             logService.close();
             logService = null;
         }
-
-        try {
-            // Remove Killbill event handler
-            final OSGIKillbillEventHandler handler = getOSGIKillbillEventHandler();
-            if (handler != null && dispatcher != null) {
-                dispatcher.unregisterEventHandler(handler);
-                dispatcher = null;
-            }
-        } catch (final OSGIServiceNotAvailable ignore) {
-            // If the system bundle shut down prior to that bundle, we can' unregister our Observer, which is fine.
-        }
-
-        // Unregister all services from that bundle
-        if (registrar != null) {
-            registrar.unregisterAll();
-            registrar = null;
-        }
     }
 
+    @Deprecated
     public abstract OSGIKillbillEventHandler getOSGIKillbillEventHandler();
 
-    public OSGIFrameworkEventHandler getOSGIFrameworkEventHandler() { return null; }
+    @Deprecated
+    public OSGIFrameworkEventHandler getOSGIFrameworkEventHandler() {
+        return null;
+    }
+
+    // This should be used from the start method of the plugin instead of relying on  getOSGIKillbillEventHandler/getOSGIFrameworkEventHandler
+    protected void registerEventHandlerWhenPluginStart(final OSGIKillbillEventHandler handler) {
+        dispatcher.registerEventHandler(new OSGIFrameworkEventHandler() {
+            @Override
+            public void started() {
+                dispatcher.registerEventHandler(handler);
+            }
+        });
+    }
+
 
     protected void configureSLF4JBinding() {
         try {
@@ -198,7 +214,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                  if (shouldStopPlugin) {
                                                                      try {
                                                                          logSafely(LogService.LOG_INFO, "Stopping plugin " + pluginConfig.getPluginName());
-                                                                         stopAllButRestartMechanism();
+                                                                         stopAllButRestartMechanism(context);
                                                                      } catch (final IllegalStateException e) {
                                                                          // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
                                                                          logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
@@ -213,7 +229,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                      logSafely(LogService.LOG_INFO, "Restarting plugin " + pluginConfig.getPluginName());
 
                                                                      try {
-                                                                         stopAllButRestartMechanism();
+                                                                         stopAllButRestartMechanism(context);
                                                                      } catch (final IllegalStateException e) {
                                                                          // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
                                                                          logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
