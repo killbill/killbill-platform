@@ -60,7 +60,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         // Tracked resource
         logService = new OSGIKillbillLogService(context);
 
-        logSafely(LogService.LOG_INFO, String.format("OSGI bundle = %s received START command", context.getBundle().getSymbolicName()));
+        logSafely(LogService.LOG_INFO, String.format("OSGI bundle='%s' received START command", context.getBundle().getSymbolicName()));
 
         killbillAPI = new OSGIKillbillAPI(context);
         configureSLF4JBinding();
@@ -100,7 +100,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     @Override
     public void stop(final BundleContext context) throws Exception {
 
-        logSafely(LogService.LOG_INFO, String.format("OSGI bundle = %s received STOP command", context.getBundle().getSymbolicName()));
+        logSafely(LogService.LOG_INFO, String.format("OSGI bundle='%s' received STOP command", context.getBundle().getSymbolicName()));
 
         if (restartFuture != null) {
             restartFuture.cancel(true);
@@ -120,7 +120,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                 dispatcher.unregisterAllHandlers();
             }
         } catch (final OSGIServiceNotAvailable ignore) {
-            logSafely(LogService.LOG_WARNING, String.format("OSGI bundle = %s failed to unregister killbill handler", context.getBundle().getSymbolicName()));
+            logSafely(LogService.LOG_WARNING, String.format("OSGI bundle='%s' failed to unregister killbill handler", context.getBundle().getSymbolicName()));
         } finally {
             if (dispatcher != null) {
                 dispatcher.close();
@@ -143,7 +143,9 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     }
 
     @Deprecated
-    public abstract OSGIKillbillEventHandler getOSGIKillbillEventHandler();
+    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
+        return null;
+    }
 
     @Deprecated
     public OSGIFrameworkEventHandler getOSGIFrameworkEventHandler() {
@@ -213,34 +215,34 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                  final boolean shouldStopPlugin = shouldStopPlugin();
                                                                  if (shouldStopPlugin) {
                                                                      try {
-                                                                         logSafely(LogService.LOG_INFO, "Stopping plugin " + pluginConfig.getPluginName());
+                                                                         logSafely(LogService.LOG_INFO, String.format("Stopping plugin='%s' ", pluginConfig.getPluginName()));
                                                                          stopAllButRestartMechanism(context);
                                                                      } catch (final IllegalStateException e) {
                                                                          // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
-                                                                         logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_DEBUG, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
                                                                      } catch (final Exception e) {
-                                                                         logSafely(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_WARNING, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
                                                                      }
                                                                      return;
                                                                  }
 
                                                                  final Long lastRestartTime = lastRestartTime();
                                                                  if (lastRestartTime != null && lastRestartTime > lastRestartMillis) {
-                                                                     logSafely(LogService.LOG_INFO, "Restarting plugin " + pluginConfig.getPluginName());
+                                                                     logSafely(LogService.LOG_INFO, String.format("Restarting plugin='%s'", pluginConfig.getPluginName()));
 
                                                                      try {
                                                                          stopAllButRestartMechanism(context);
                                                                      } catch (final IllegalStateException e) {
                                                                          // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
-                                                                         logSafely(LogService.LOG_DEBUG, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_DEBUG, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
                                                                      } catch (final Exception e) {
-                                                                         logSafely(LogService.LOG_WARNING, "Error stopping plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_WARNING, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
                                                                      }
 
                                                                      try {
                                                                          start(context);
                                                                      } catch (final Exception e) {
-                                                                         logSafely(LogService.LOG_WARNING, "Error starting plugin " + pluginConfig.getPluginName(), e);
+                                                                         logSafely(LogService.LOG_WARNING, String.format("Error starting plugin='%s'", pluginConfig.getPluginName()), e);
                                                                      }
 
                                                                      lastRestartMillis = lastRestartTime;
