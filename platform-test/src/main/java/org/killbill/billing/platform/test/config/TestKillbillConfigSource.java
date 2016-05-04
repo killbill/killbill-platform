@@ -93,12 +93,12 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.persistent.bus.main.sleep", "100");
         properties.put("org.killbill.persistent.bus.main.nbThreads", "1");
         properties.put("org.killbill.persistent.bus.main.claimed", "1");
-        properties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
+        properties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_EVENTS");
 
         properties.put("org.killbill.persistent.bus.external.sleep", "100");
         properties.put("org.killbill.persistent.bus.external.nbThreads", "1");
         properties.put("org.killbill.persistent.bus.external.claimed", "1");
-        properties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
+        properties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_EVENTS");
 
         // Temporary directory for OSGI bundles
         properties.put("org.killbill.osgi.root.dir", Files.createTempDir().getAbsolutePath());
