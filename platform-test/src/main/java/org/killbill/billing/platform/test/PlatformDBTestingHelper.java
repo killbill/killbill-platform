@@ -47,7 +47,11 @@ public class PlatformDBTestingHelper {
     private static final String TEST_DATA_SOURCE_ID = "test";
     private static final String TEST_DB_PROPERTY_PREFIX = "org.killbill.billing.dbi.test.";
 
-    protected EmbeddedDB instance;
+    private final EmbeddedDB instance;
+
+    // Created when we start the instance because our EmbeddedDB does not allow to retrieve DataSource until DB is up
+    private IDBI idbi;
+    private DataSource dataSource;
 
     private static PlatformDBTestingHelper dbTestingHelper = null;
 
@@ -87,33 +91,33 @@ public class PlatformDBTestingHelper {
         }
     }
 
+    // Those 3 getters should only be used for setup until the Guice binding happen
     public EmbeddedDB getInstance() {
         return instance;
     }
 
-    public synchronized IDBI getDBI() throws IOException {
-
-        final DataSource dataSource = getDataSource();
-        return new DBIProvider(null, dataSource, null).get();
+    public IDBI getDBI() {
+        return idbi;
     }
 
-    public DataSource getDataSource() throws IOException {
-        final DataSource realDataSource = instance.getDataSource();
-        return new ReferenceableDataSourceSpy(realDataSource, TEST_DATA_SOURCE_ID);
+    public DataSource getDataSource() {
+        return dataSource;
     }
 
     public synchronized void start() throws IOException {
         instance.initialize();
         instance.start();
 
+        final DataSource realDataSource = instance.getDataSource();
+        dataSource = new ReferenceableDataSourceSpy(realDataSource, TEST_DATA_SOURCE_ID);
+        idbi = new DBIProvider(null, dataSource, null).get();
+
         if (isUsingLocalInstance()) {
             return;
         }
 
         executeEngineSpecificScripts();
-
         executePostStartupScripts();
-
         instance.refreshTableNames();
     }
 
