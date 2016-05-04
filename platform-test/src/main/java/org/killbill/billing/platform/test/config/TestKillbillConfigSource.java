@@ -84,7 +84,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         // Speed up the notification queue
-        properties.put("org.killbill.notificationq.main.sleep", "100");
+        properties.put("org.killbill.notificationq.main.sleep", "300");
         properties.put("org.killbill.notificationq.main.nbThreads", "1");
         properties.put("org.killbill.notificationq.main.claimed", "1");
         properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
