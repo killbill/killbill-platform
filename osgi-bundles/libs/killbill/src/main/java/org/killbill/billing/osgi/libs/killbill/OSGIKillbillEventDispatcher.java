@@ -133,6 +133,27 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
                            });
     }
 
+    public void unregisterAllHandlers() {
+        withServiceTracker(observableTracker,
+                           new APICallback<Void, Observable>(OBSERVABLE_SERVICE_NAME) {
+                               @Override
+                               public Void executeWithService(final Observable service) {
+                                   // Go through all known handlers (OSGIFrameworkEventHandler and OSGIKillbillEventHandler)
+                                   // and remove them from the list of Observers
+                                   for (final Object handler : handlerToObserver.keySet()) {
+                                       final Observer observer = handlerToObserver.get(handler);
+                                       if (observer != null) {
+                                           service.deleteObserver(observer);
+                                       }
+                                   }
+                                   handlerToObserver.clear();
+                                   return null;
+                               }
+                           });
+    }
+
+
+
     public interface OSGIKillbillEventHandler {
 
         public void handleKillbillEvent(final ExtBusEvent killbillEvent);

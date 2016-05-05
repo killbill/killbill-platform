@@ -37,6 +37,7 @@ import com.google.common.collect.EvictingQueue;
 public class KillbillLogWriter implements LogListener {
 
     private static final String UNKNOWN = "[Unknown]";
+    private static final String OSGI_BUNDLES_JRUBY = "org.kill-bill.billing.killbill-platform-osgi-bundles-jruby";
 
     private final Map<String, Logger> delegates = new HashMap<String, Logger>();
     private final Queue<LogEntry> latestEntries = EvictingQueue.<LogEntry>create(500);
@@ -71,12 +72,19 @@ public class KillbillLogWriter implements LogListener {
     private Logger getDelegateForBundle(/* @Nullable */ final Bundle bundle) {
         final String loggerName;
         if (bundle != null) {
-            final String name = bundle.getSymbolicName();
+            String name = bundle.getSymbolicName();
             Version version = bundle.getVersion();
             if (version == null) {
                 version = Version.emptyVersion;
             }
-            loggerName = name + '.' + version;
+
+            // Prettier name for Ruby plugins
+            if (name.startsWith(OSGI_BUNDLES_JRUBY)) {
+                name = "jruby";
+            }
+
+            // Don't use . as a separator (to avoid any truncation by the logging system)
+            loggerName = name + ':' + version.toString().replace(".", "_");
         } else {
             loggerName = KillbillLogWriter.class.getName();
         }
