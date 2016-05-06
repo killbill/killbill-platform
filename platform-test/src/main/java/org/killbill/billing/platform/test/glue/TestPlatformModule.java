@@ -17,11 +17,9 @@
 
 package org.killbill.billing.platform.test.glue;
 
-import java.io.IOException;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.sql.DataSource;
 
 import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
@@ -34,15 +32,9 @@ import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
-import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommand;
 import org.killbill.billing.util.nodes.NodeInfo;
-import org.killbill.commons.embeddeddb.EmbeddedDB;
-import org.killbill.queue.DefaultQueueLifecycle;
-import org.skife.jdbi.v2.IDBI;
-
-import com.google.inject.name.Names;
 
 public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
 
@@ -78,23 +70,7 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
         configureKillbillNodesApi();
     }
 
-    protected void configureEmbeddedDB() {
-        final PlatformDBTestingHelper platformDBTestingHelper = PlatformDBTestingHelper.get();
-        configureEmbeddedDB(platformDBTestingHelper);
-    }
-
-    protected void configureEmbeddedDB(final PlatformDBTestingHelper platformDBTestingHelper) {
-        final EmbeddedDB instance = platformDBTestingHelper.getInstance();
-        bind(EmbeddedDB.class).toInstance(instance);
-
-        try {
-            bind(DataSource.class).toInstance(platformDBTestingHelper.getDataSource());
-            bind(IDBI.class).toInstance(platformDBTestingHelper.getDBI());
-            bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(platformDBTestingHelper.getDBI());
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    protected abstract void configureEmbeddedDB();
 
     protected void configureLifecycle() {
         if (services != null) {

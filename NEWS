@@ -1,4 +1,5 @@
 
+    Refactor platform test base class to allow supporting STICKY_EVENTS queue mode and connection pooling
     OSGI bug fix for registration/unregistration of killbill handlers
 
 0.22

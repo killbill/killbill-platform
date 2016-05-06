@@ -18,17 +18,63 @@
 package org.killbill.billing.platform.test.glue;
 
 import javax.annotation.Nullable;
+import javax.sql.DataSource;
 
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.billing.platform.test.PlatformDBTestingHelper;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi;
+import org.killbill.commons.jdbi.transaction.NotificationTransactionHandler;
+import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
+import org.killbill.queue.DefaultQueueLifecycle;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.IDBI;
+import org.skife.jdbi.v2.tweak.TransactionHandler;
+
+import com.google.inject.name.Names;
 
 public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
 
-    public TestPlatformModuleWithEmbeddedDB(final KillbillConfigSource configSource) {
-        super(configSource, false, null, null);
-    }
+    private final DatabaseTransactionNotificationApi databaseTransactionNotificationApi;
+    private final TransactionHandler transactionHandler;
 
     public TestPlatformModuleWithEmbeddedDB(final KillbillConfigSource configSource, final boolean withOSGI, @Nullable final OSGIConfigProperties osgiConfigProperties) {
         super(configSource, withOSGI, osgiConfigProperties, null);
+        this.databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();
+        final TransactionHandler notificationTransactionHandler = new NotificationTransactionHandler(databaseTransactionNotificationApi);
+        this.transactionHandler = new RestartTransactionRunner(notificationTransactionHandler);
+    }
+
+    @Override
+    protected void configure() {
+        super.configure();
+        bind(DatabaseTransactionNotificationApi.class).toInstance(databaseTransactionNotificationApi);
+        bind(TransactionHandler.class).toInstance(transactionHandler);
+    }
+
+    @Override
+    protected void configureEmbeddedDB() {
+        final PlatformDBTestingHelper platformDBTestingHelper = PlatformDBTestingHelper.get();
+        configureEmbeddedDB(platformDBTestingHelper);
+    }
+
+    protected void configureEmbeddedDB(final PlatformDBTestingHelper platformDBTestingHelper) {
+
+        //
+        // DBI instance is created through the PlatformDBTestingHelper (by calling the DBIProvider directly instead of using injection)
+        // Manually set set the transactionHandler which is required for the STICKY_EVENTS bus mode.
+        //
+        final DBI dbi = (DBI) platformDBTestingHelper.getDBI();
+        dbi.setTransactionHandler(transactionHandler);
+
+        // Bind everything through Guice so they be injected throughout our code.
+        final EmbeddedDB instance = platformDBTestingHelper.getInstance();
+        bind(EmbeddedDB.class).toInstance(instance);
+
+
+        bind(DataSource.class).toInstance(platformDBTestingHelper.getDataSource());
+        bind(IDBI.class).toInstance(dbi);
+        bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(dbi);
     }
 }
