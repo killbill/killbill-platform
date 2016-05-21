@@ -27,6 +27,7 @@ import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.billing.payment.api.AdminPaymentApi;
 import org.killbill.billing.payment.api.PaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
 import org.killbill.billing.tenant.api.TenantUserApi;
@@ -243,6 +244,16 @@ public class OSGIKillbillAPI extends OSGIKillbillLibraryBase implements OSGIKill
             @Override
             public KillbillNodesApi executeWithService(final OSGIKillbill service) {
                 return service.getKillbillNodesApi();
+            }
+        });
+    }
+
+    @Override
+    public AdminPaymentApi getAdminPaymentApi() {
+        return withServiceTracker(killbillTracker, new APICallback<AdminPaymentApi, OSGIKillbill>(KILLBILL_SERVICE_NAME) {
+            @Override
+            public AdminPaymentApi executeWithService(final OSGIKillbill service) {
+                return service.getAdminPaymentApi();
             }
         });
     }

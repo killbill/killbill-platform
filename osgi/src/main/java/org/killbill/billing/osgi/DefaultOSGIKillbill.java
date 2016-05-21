@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2016 Groupon, Inc
+ * Copyright 2014-2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -28,6 +28,7 @@ import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.billing.payment.api.AdminPaymentApi;
 import org.killbill.billing.payment.api.PaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
 import org.killbill.billing.tenant.api.TenantUserApi;
@@ -61,6 +62,7 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     private SecurityApi securityApi;
     private PluginsInfoApi pluginsInfoApi;
     private KillbillNodesApi killbillNodesApi;
+    private AdminPaymentApi adminPaymentApi;
 
     private PluginConfigServiceApi configServiceApi;
 
@@ -154,12 +156,15 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
         this.pluginsInfoApi = pluginsInfoApi;
     }
 
-
     @Inject(optional = true)
     public void setKillbillNodesApi(final KillbillNodesApi killbillNodesApi) {
         this.killbillNodesApi = killbillNodesApi;
     }
 
+    @Inject(optional = true)
+    public void setAdminPaymentApi(final AdminPaymentApi adminPaymentApi) {
+        this.adminPaymentApi = adminPaymentApi;
+    }
 
     @Override
     public AccountUserApi getAccountUserApi() {
@@ -254,5 +259,10 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     @Override
     public KillbillNodesApi getKillbillNodesApi() {
         return killbillNodesApi;
+    }
+
+    @Override
+    public AdminPaymentApi getAdminPaymentApi() {
+        return adminPaymentApi;
     }
 }
