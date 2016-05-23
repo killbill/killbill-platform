@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2014-2016 Groupon, Inc
+ * Copyright 2014-2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -30,6 +30,7 @@ import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.google.common.collect.EvictingQueue;
 
@@ -38,6 +39,7 @@ public class KillbillLogWriter implements LogListener {
 
     private static final String UNKNOWN = "[Unknown]";
     private static final String OSGI_BUNDLES_JRUBY = "org.kill-bill.billing.killbill-platform-osgi-bundles-jruby";
+    private static final String MDC_KEY = "MDC";
 
     private final Map<String, Logger> delegates = new HashMap<String, Logger>();
     private final Queue<LogEntry> latestEntries = EvictingQueue.<LogEntry>create(500);
@@ -52,10 +54,24 @@ public class KillbillLogWriter implements LogListener {
         final String message = entry.getMessage();
         final Throwable exception = entry.getException();
 
-        if (serviceReference != null && exception != null) {
-            log(delegate, serviceReference, level, message, exception);
-        } else if (serviceReference != null) {
-            log(delegate, serviceReference, level, message);
+        if (serviceReference != null) {
+            // A single thread (e.g. org.apache.felix.log.LogListenerThread) should be invoking this, but just to be safe...
+            synchronized (this) {
+                try {
+                    final Object originalMdcMap = serviceReference.getProperty(MDC_KEY);
+                    if (originalMdcMap != null) {
+                        MDC.setContextMap((Map) originalMdcMap);
+                    }
+
+                    if (exception != null) {
+                        log(delegate, serviceReference, level, message, exception);
+                    } else {
+                        log(delegate, serviceReference, level, message);
+                    }
+                } finally {
+                    MDC.clear();
+                }
+            }
         } else if (exception != null) {
             log(delegate, level, message, exception);
         } else {

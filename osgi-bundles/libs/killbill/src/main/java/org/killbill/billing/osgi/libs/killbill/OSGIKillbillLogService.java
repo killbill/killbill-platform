@@ -1,6 +1,7 @@
 /*
- * Copyright 2016 Groupon, Inc
- * Copyright 2016 The Billing Project, LLC
+ * Copyright 2010-2013 Ning, Inc.
+ * Copyright 2014-2016 Groupon, Inc
+ * Copyright 2014-2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -19,10 +20,12 @@ package org.killbill.billing.osgi.libs.killbill;
 
 import javax.annotation.Nullable;
 
+import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillServiceReference;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.MDC;
 
 public class OSGIKillbillLogService extends OSGIKillbillLibraryBase implements LogService {
 
@@ -44,33 +47,33 @@ public class OSGIKillbillLogService extends OSGIKillbillLibraryBase implements L
 
     @Override
     public void log(final int level, final String message) {
-        logInternal(level, message, null);
+        logInternal(null, level, message, null);
     }
 
     @Override
     public void log(final int level, final String message, final Throwable exception) {
-        logInternal(level, message, exception);
+        logInternal(null, level, message, exception);
     }
 
     @Override
     public void log(final ServiceReference sr, final int level, final String message) {
-        throw new UnsupportedOperationException();
+        logInternal(sr, level, message, null);
     }
 
     @Override
     public void log(final ServiceReference sr, final int level, final String message, final Throwable exception) {
-        throw new UnsupportedOperationException();
+        logInternal(sr, level, message, exception);
     }
 
-    private void logInternal(final int level, final String message, @Nullable final Throwable t) {
-
+    private void logInternal(@Nullable final ServiceReference sr, final int level, final String message, @Nullable final Throwable t) {
         withServiceTracker(logTracker, new APICallback<Void, LogService>(LOG_SERVICE_NAME) {
             @Override
             public Void executeWithService(final LogService service) {
+                final ServiceReference killbillServiceReference = new OSGIKillbillServiceReference(sr, MDC.getCopyOfContextMap());
                 if (t == null) {
-                    service.log(level, message);
+                    service.log(killbillServiceReference, level, message);
                 } else {
-                    service.log(level, message, t);
+                    service.log(killbillServiceReference, level, message, t);
                 }
                 return null;
             }

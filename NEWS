@@ -1,5 +1,10 @@
+0.25
+    Add support for MDC in KillbillLogWriter
 
+0.24
     Refactor platform test base class to allow supporting STICKY_EVENTS queue mode and connection pooling
+
+0.23
     OSGI bug fix for registration/unregistration of killbill handlers
 
 0.22
