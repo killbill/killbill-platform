@@ -70,7 +70,7 @@ public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
     // https://github.com/google/guice/commit/6b7e7187bd074d3f2df9b04e17fa01e7592f295c
     @Provides
     @Singleton
-    protected IDBI provideIDBIInAComplicatedWayBecauseOf627(final Injector injector) {
+    protected IDBI provideIDBIInAComplicatedWayBecauseOf627() {
         //
         // DBI instance is created through the PlatformDBTestingHelper (by calling the DBIProvider directly instead of using injection)
         // Manually set set the transactionHandler which is required for the STICKY_EVENTS bus mode.
