@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2016 Groupon, Inc
+ * Copyright 2014-2016 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -32,7 +32,10 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
 
-import com.google.inject.name.Names;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
 
@@ -55,26 +58,39 @@ public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
 
     @Override
     protected void configureEmbeddedDB() {
-        final PlatformDBTestingHelper platformDBTestingHelper = PlatformDBTestingHelper.get();
-        configureEmbeddedDB(platformDBTestingHelper);
+        final PlatformDBTestingHelper platformDBTestingHelper = getPlatformDBTestingHelper();
+        final EmbeddedDB instance = platformDBTestingHelper.getInstance();
+        bind(EmbeddedDB.class).toInstance(instance);
+
+        bind(DataSource.class).toInstance(platformDBTestingHelper.getDataSource());
     }
 
-    protected void configureEmbeddedDB(final PlatformDBTestingHelper platformDBTestingHelper) {
-
+    // https://code.google.com/p/google-guice/issues/detail?id=627
+    // https://github.com/google/guice/issues/627
+    // https://github.com/google/guice/commit/6b7e7187bd074d3f2df9b04e17fa01e7592f295c
+    @Provides
+    @Singleton
+    protected IDBI provideIDBIInAComplicatedWayBecauseOf627() {
         //
         // DBI instance is created through the PlatformDBTestingHelper (by calling the DBIProvider directly instead of using injection)
         // Manually set set the transactionHandler which is required for the STICKY_EVENTS bus mode.
         //
-        final DBI dbi = (DBI) platformDBTestingHelper.getDBI();
+        final DBI dbi = (DBI) getPlatformDBTestingHelper().getDBI();
         dbi.setTransactionHandler(transactionHandler);
+        return dbi;
+    }
 
-        // Bind everything through Guice so they be injected throughout our code.
-        final EmbeddedDB instance = platformDBTestingHelper.getInstance();
-        bind(EmbeddedDB.class).toInstance(instance);
+    // https://code.google.com/p/google-guice/issues/detail?id=627
+    // https://github.com/google/guice/issues/627
+    // https://github.com/google/guice/commit/6b7e7187bd074d3f2df9b04e17fa01e7592f295c
+    @Provides
+    @Singleton
+    @Named(DefaultQueueLifecycle.QUEUE_NAME)
+    protected IDBI provideIDBIInAComplicatedWayBecauseOf627(final IDBI idbi) {
+        return idbi;
+    }
 
-
-        bind(DataSource.class).toInstance(platformDBTestingHelper.getDataSource());
-        bind(IDBI.class).toInstance(dbi);
-        bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toInstance(dbi);
+    protected PlatformDBTestingHelper getPlatformDBTestingHelper() {
+        return PlatformDBTestingHelper.get();
     }
 }
