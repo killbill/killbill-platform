@@ -1,3 +1,6 @@
+0.26
+    Add work-around for Guice bug (tests only)
+
 0.25
     Add support for MDC in KillbillLogWriter
 
