@@ -1,6 +1,13 @@
-
+0.27
     Update platform to 0.27 for KB release 0.17.0
     Update platform to 0.27 for KB release 0.17
+
+0.26.1
+    jruby: import org.postgresql
+    Update killbill-oss-parent to 0.94.2
+
+0.26
+    Add work-around for Guice bug (tests only)
 
 0.25
     Add support for MDC in KillbillLogWriter

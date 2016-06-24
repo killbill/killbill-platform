@@ -189,6 +189,7 @@
                             org.killbill.billing.util.template;
                             org.killbill.billing.util.template.translation;resolution:=optional,
                             org.joda.time.format;resolution:=optional,
+                            org.postgresql;resolution:=optional,
                             sun.misc;
                             sun.misc.*;
                             sun.misc.unsafe;
