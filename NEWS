@@ -1,6 +1,6 @@
 0.27
-    Update platform to 0.27 for KB release 0.17.0
-    Update platform to 0.27 for KB release 0.17
+    Rename org.killbill.killbill.osgi to org.killbill.billing.osgi
+    New jruby.jar detection
 
 0.26.1
     jruby: import org.postgresql
