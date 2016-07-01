@@ -1,5 +1,6 @@
 0.28
     0.26.1 merge for 0.17.x
+    Update killbill-oss-parent to 0.103
 
 0.27
     Rename org.killbill.killbill.osgi to org.killbill.billing.osgi
