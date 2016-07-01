@@ -92,7 +92,7 @@ public class UpdateChecker {
             }
         }
         if (updates.length() > 0) {
-            log.info("New update(s) found: " + updates.toString() + ". Please check http://kill-bill.org for the latest version.");
+            log.info("New update(s) found: " + updates.toString() + ". Please check http://killbill.io for the latest version.");
         }
 
         // Send anonymous data
