@@ -1,3 +1,18 @@
+0.28
+    0.26.1 merge for 0.17.x
+    Update killbill-oss-parent to 0.103
+
+0.27
+    Rename org.killbill.killbill.osgi to org.killbill.billing.osgi
+    New jruby.jar detection
+
+0.26.1
+    jruby: import org.postgresql
+    Update killbill-oss-parent to 0.94.2
+
+0.26
+    Add work-around for Guice bug (tests only)
+
 0.25
     Add support for MDC in KillbillLogWriter
 
