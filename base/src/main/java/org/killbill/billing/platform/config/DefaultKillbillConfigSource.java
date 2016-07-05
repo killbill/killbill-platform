@@ -44,6 +44,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static final String PROPERTIES_FILE = "org.killbill.server.properties";
     private static final String GMT_ID = "GMT";
 
+    private static final int NOT_SHOWN = 0;
+    private static final int SHOWN = 1;
+
+    private static volatile int GMT_WARNING = NOT_SHOWN;
+    private static volatile int ENTROPY_WARNING = NOT_SHOWN;
+
     private final Properties properties;
 
     public DefaultKillbillConfigSource() throws IOException, URISyntaxException {
@@ -121,10 +127,16 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
             // Special case to overwrite user.timezone
             if (propertyName.equals(PROP_USER_TIME_ZONE)) {
-                // If this is set to something different than GMT we log a WARN
                 if (!"GMT".equals(System.getProperty(propertyName))) {
-                    logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
-                                System.getProperty(propertyName));
+                    if (GMT_WARNING == NOT_SHOWN) {
+                        synchronized (DefaultKillbillConfigSource.class) {
+                            if (GMT_WARNING == NOT_SHOWN) {
+                                GMT_WARNING = SHOWN;
+                                logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
+                                            System.getProperty(propertyName));
+                            }
+                        }
+                    }
                 }
 
                 //
@@ -146,7 +158,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         // WARN for missing PROP_SECURITY_EGD
         if (System.getProperty(PROP_SECURITY_EGD) == null) {
-            logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
+            if (ENTROPY_WARNING == NOT_SHOWN) {
+                synchronized (DefaultKillbillConfigSource.class) {
+                    if (ENTROPY_WARNING == NOT_SHOWN) {
+                        ENTROPY_WARNING = SHOWN;
+                        logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
+                    }
+                }
+            }
         }
     }
 
