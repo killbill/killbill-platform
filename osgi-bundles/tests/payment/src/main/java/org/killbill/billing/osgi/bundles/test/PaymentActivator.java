@@ -52,11 +52,6 @@ public class PaymentActivator extends KillbillActivatorBase {
         super.stop(context);
     }
 
-    @Override
-    public OSGIKillbillEventDispatcher.OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
-        return null;
-    }
-
     private void registerPaymentApi(final BundleContext context) {
         final Dictionary props = new Hashtable();
         // Same name the beatrix tests expect when using that payment plugin

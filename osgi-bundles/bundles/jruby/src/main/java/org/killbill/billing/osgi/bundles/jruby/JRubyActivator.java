@@ -112,7 +112,7 @@ public class JRubyActivator extends KillbillActivatorBase {
                 startPlugin(rubyConfig, pluginMain, context);
 
                 // All plugin types can now receive event notifications (register the handler only after the plugin has started)
-                dispatcher.registerEventHandler((OSGIKillbillEventHandler) plugin);
+                dispatcher.registerEventHandlers((OSGIKillbillEventHandler) plugin);
             }
         }, this.getClass().getClassLoader());
     }
@@ -145,7 +145,7 @@ public class JRubyActivator extends KillbillActivatorBase {
             @Override
             public void doCall() {
                 if (plugin != null) {
-                    dispatcher.unregisterEventHandler(plugin);
+                    dispatcher.unregisterEventHandler((OSGIKillbillEventHandler) plugin);
                     doStopPlugin(context);
                 }
             }
@@ -170,12 +170,6 @@ public class JRubyActivator extends KillbillActivatorBase {
         logService.log(LogService.LOG_INFO,  String.format("JRuby plugin %s (symbolicName = %s) stopped", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
     }
 
-    // We make the explicit registration in the start method by hand as this would be called too early
-    // (see OSGIKillbillEventDispatcher)
-    @Override
-    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
-        return null;
-    }
 
     private Map<String, Object> retrieveKillbillApis(final BundleContext context) {
         final Map<String, Object> killbillUserApis = new HashMap<String, Object>();

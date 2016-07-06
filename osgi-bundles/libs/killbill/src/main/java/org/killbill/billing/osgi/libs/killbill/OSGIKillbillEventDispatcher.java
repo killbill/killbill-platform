@@ -52,61 +52,64 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
         handlerToObserver.clear();
     }
 
-    public void registerEventHandler(final OSGIKillbillEventHandler handler) {
+    public void registerEventHandlers(final OSGIHandlerMarker...handlerOfSomeTypes) {
+        for (final OSGIHandlerMarker handlerOfSomeType : handlerOfSomeTypes) {
+            registerEventHandler(handlerOfSomeType);
+        }
+    }
+
+
+        //
+    // We provide one registration method for both KillBill events and OSGI framework event since
+    // the underlying mechanism is the same (classloader magic, and registerEventHandler call).
+    //
+    // The only difference is the handler method along with its events that needs to be called which are
+    // implemented in the private methods handleKillbillEvent and handleOSGIStartEvent below
+    //
+    private void registerEventHandler(final OSGIHandlerMarker handlerOfSomeType) {
         final Observer observer = new Observer() {
+
             @Override
             public void update(final Observable o, final Object arg) {
-                if (!(arg instanceof ExtBusEvent)) {
-                    logger.debug("OSGIKillbillEventDispatcher unexpected event type " + (arg != null ? arg.getClass() : "null"));
-                    return;
-                }
 
-                //
-                // This is similar to what we did for API calls through ContextClassLoaderHelper, where we ensure that
-                // plugin is called with a ContextClassLoader correctly initialized with the one from the bundle
-                //
                 final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
-                Thread.currentThread().setContextClassLoader(handler.getClass().getClassLoader());
+                Thread.currentThread().setContextClassLoader(handlerOfSomeType.getClass().getClassLoader());
                 try {
-                    handler.handleKillbillEvent((ExtBusEvent) arg);
+                    if (handlerOfSomeType instanceof OSGIKillbillEventHandler) {
+                        handleKillbillEvent((OSGIKillbillEventHandler) handlerOfSomeType, arg);
+                    } else if (handlerOfSomeType instanceof OSGIFrameworkEventHandler) {
+                        handleOSGIStartEvent((OSGIFrameworkEventHandler) handlerOfSomeType, arg);
+                    }
                 } finally {
                     Thread.currentThread().setContextClassLoader(initialContextClassLoader);
                 }
             }
-        };
-        registerEventHandler(handler, observer);
-    }
 
-    public void registerEventHandler(final OSGIFrameworkEventHandler handler) {
-        final Observer observer = new Observer() {
-            @Override
-            public void update(final Observable o, final Object arg) {
+            private void handleKillbillEvent(final OSGIKillbillEventHandler handler, final Object arg) {
+                if (!(arg instanceof ExtBusEvent)) {
+                    logger.debug("OSGIKillbillEventDispatcher unexpected event type " + (arg != null ? arg.getClass() : "null"));
+                    return;
+                }
+                handler.handleKillbillEvent((ExtBusEvent) arg);
+            }
+
+            private void handleOSGIStartEvent(final OSGIFrameworkEventHandler handler, final Object arg) {
                 if (!(arg instanceof Event)) {
                     logger.debug("OSGIFrameworkEventHandler unexpected event type " + (arg != null ? arg.getClass() : "null"));
                     return;
                 }
 
                 final String topic = ((Event) arg).getTopic();
-
-                //
-                // This is similar to what we did for API calls through ContextClassLoaderHelper, where we ensure that
-                // plugin is called with a ContextClassLoader correctly initialized with the one from the bundle
-                //
-                final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
-                Thread.currentThread().setContextClassLoader(handler.getClass().getClassLoader());
-                try {
-                    if ("org/killbill/billing/osgi/lifecycle/STARTED".equals(topic)) {
-                        handler.started();
-                    }
-                } finally {
-                    Thread.currentThread().setContextClassLoader(initialContextClassLoader);
+                if ("org/killbill/billing/osgi/lifecycle/STARTED".equals(topic)) {
+                    handler.started();
                 }
             }
         };
-        registerEventHandler(handler, observer);
+        registerEventHandler(handlerOfSomeType, observer);
     }
 
-    public void registerEventHandler(final Object handler, final Observer observer) {
+
+    public void registerEventHandler(final OSGIHandlerMarker handler, final Observer observer) {
         withServiceTracker(observableTracker,
                            new APICallback<Void, Observable>(OBSERVABLE_SERVICE_NAME) {
                                @Override
@@ -118,7 +121,7 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
                            });
     }
 
-    public void unregisterEventHandler(final Object handler) {
+    public void unregisterEventHandler(final OSGIHandlerMarker handler) {
         withServiceTracker(observableTracker,
                            new APICallback<Void, Observable>(OBSERVABLE_SERVICE_NAME) {
                                @Override
@@ -153,14 +156,14 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
     }
 
 
+    public interface OSGIHandlerMarker {
+    }
 
-    public interface OSGIKillbillEventHandler {
-
+    public interface OSGIKillbillEventHandler extends OSGIHandlerMarker {
         public void handleKillbillEvent(final ExtBusEvent killbillEvent);
     }
 
-    public interface OSGIFrameworkEventHandler {
-
+    public interface OSGIFrameworkEventHandler extends OSGIHandlerMarker {
         public void started();
     }
 }

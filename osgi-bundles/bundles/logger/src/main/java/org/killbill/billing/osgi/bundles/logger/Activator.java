@@ -104,11 +104,6 @@ public class Activator extends KillbillActivatorBase {
         super.stop(context);
     }
 
-    @Override
-    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
-        return null;
-    }
-
     private void registerLogReaderService(final LogReaderService service) {
         logger.info("Registering the killbill LogReaderService listener");
         logReaderServices.add(service);

@@ -27,6 +27,7 @@ import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIHandlerMarker;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -70,25 +71,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
-
-        //
-        // WARNING: This code path does not work very well, because the plugin code implementing  KillbillActivatorBase will
-        // call 'super' very early on and does not have a chance to construct the handlers prior entering this method,
-        // so the getOSGIKillbillEventHandler/getOSGIFrameworkEventHandler need to also allocate the handler,
-        // which makes it difficult to ensure the handler is not reallocated at each iteration.
-        //
-        // We suggest to *not* implement getOSGIKillbillEventHandler/getOSGIFrameworkEventHandler and have the plugin
-        // do the registration itself instead through the use of registerEventHandlerWhenPluginStart
-        // (but for backward compatibility registration is also kept at this level)
-        //
-        final OSGIKillbillEventHandler handler = getOSGIKillbillEventHandler();
-        if (handler != null) {
-         dispatcher.registerEventHandler(handler);
-        }
-        final OSGIFrameworkEventHandler frameworkEventHandler = getOSGIFrameworkEventHandler();
-        if (frameworkEventHandler != null) {
-            dispatcher.registerEventHandler(frameworkEventHandler);
-        }
 
         final PluginConfig pluginConfig = retrievePluginConfig(context);
         tmpDir = setupTmpDir(pluginConfig);
@@ -140,27 +122,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             logService = null;
         }
     }
-
-    @Deprecated
-    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
-        return null;
-    }
-
-    @Deprecated
-    public OSGIFrameworkEventHandler getOSGIFrameworkEventHandler() {
-        return null;
-    }
-
-    // This should be used from the start method of the plugin instead of relying on  getOSGIKillbillEventHandler/getOSGIFrameworkEventHandler
-    protected void registerEventHandlerWhenPluginStart(final OSGIKillbillEventHandler handler) {
-        dispatcher.registerEventHandler(new OSGIFrameworkEventHandler() {
-            @Override
-            public void started() {
-                dispatcher.registerEventHandler(handler);
-            }
-        });
-    }
-
 
     protected void configureSLF4JBinding() {
         try {

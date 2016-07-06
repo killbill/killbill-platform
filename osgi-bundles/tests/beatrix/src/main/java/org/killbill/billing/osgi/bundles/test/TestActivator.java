@@ -58,6 +58,7 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
         testDao.createTable();
         testDao.insertStarted();
         registerPaymentApi(context, testDao);
+        dispatcher.registerEventHandlers(this);
     }
 
     @Override
@@ -65,11 +66,6 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
         logService.log(LogService.LOG_INFO, "TestActivator: stopping bundle");
 
         super.stop(context);
-    }
-
-    @Override
-    public OSGIKillbillEventHandler getOSGIKillbillEventHandler() {
-        return this;
     }
 
     private void registerPaymentApi(final BundleContext context, final TestDao dao) {
