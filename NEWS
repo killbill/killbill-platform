@@ -1,4 +1,5 @@
 
+    osgi: Remove deprecated methods getOSGIKillbillEventHandler and getOSGIFrameworkEventHandler
     Marge with HA feature branch
 
 0.28
