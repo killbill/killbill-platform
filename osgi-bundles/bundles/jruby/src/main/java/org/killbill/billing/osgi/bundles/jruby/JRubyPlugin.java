@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServlet;
 
+import org.jruby.CompatVersion;
 import org.jruby.Ruby;
 import org.jruby.RubyObject;
 import org.jruby.embed.EvalFailedException;
@@ -272,6 +273,10 @@ public abstract class JRubyPlugin {
                 LocalContextScope.valueOf(propLocalContextScope) : LocalContextScope.SINGLETHREAD;
         log.info("Creating scripting container with localContextScope " + localContextScope);
         final ScriptingContainer scriptingContainer = new ScriptingContainer(localContextScope, LocalVariableBehavior.TRANSIENT, true);
+
+        final String propCompatVersion = configProperties.getString("org.killbill.jruby.context.version");
+        final CompatVersion compatVersion = propCompatVersion != null ? CompatVersion.valueOf(propCompatVersion) : CompatVersion.RUBY1_9;
+        scriptingContainer.setCompatVersion(compatVersion);
 
         // Set the load paths instead of adding, to avoid looking at the filesystem
         if ( pluginLibdir != null ) {
