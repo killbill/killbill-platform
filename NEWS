@@ -1,6 +1,13 @@
+0.31
+    jruby: add Ruby 2.0 support
+    Update killbill-oss-parent to 0.113
 
-    osgi: Remove deprecated methods getOSGIKillbillEventHandler and getOSGIFrameworkEventHandler
-    Marge with HA feature branch
+0.30
+    osgi: remove deprecated methods getOSGIKillbillEventHandler and getOSGIFrameworkEventHandler
+    Improve config logging
+
+0.29
+    Merge with HA feature branch
 
 0.28
     0.26.1 merge for 0.17.x

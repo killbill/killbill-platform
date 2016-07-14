@@ -66,6 +66,7 @@
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi-bundles-lib-slf4j-osgi</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
@@ -94,10 +95,6 @@
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-catalog</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kill-bill.commons</groupId>
-            <artifactId>killbill-concurrent</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
