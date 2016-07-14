@@ -27,6 +27,7 @@ import org.killbill.billing.notification.plugin.api.ExtBusEventType;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginInfo;
+import org.killbill.billing.osgi.api.KillbillNodesApiHolder;
 import org.killbill.billing.osgi.api.PluginInfo;
 import org.killbill.billing.osgi.api.PluginServiceInfo;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
@@ -61,11 +62,11 @@ public class OSGIListener {
     private final KillbillNodesApi nodesApi;
 
     @Inject
-    public OSGIListener(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final PluginsInfoApi pluginsInfoApi, final KillbillNodesApi nodesApi) {
+    public OSGIListener(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final PluginsInfoApi pluginsInfoApi, final KillbillNodesApiHolder nodesApiHolder) {
         this.bundleRegistry = bundleRegistry;
         this.pluginFinder = pluginFinder;
         this.pluginsInfoApi = pluginsInfoApi;
-        this.nodesApi = nodesApi;
+        this.nodesApi = nodesApiHolder.getNodesApi();
         this.objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JodaModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);

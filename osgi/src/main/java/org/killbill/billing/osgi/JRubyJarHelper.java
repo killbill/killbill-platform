@@ -26,6 +26,8 @@ import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
+import javax.annotation.Nullable;
+
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeInfo;
 import org.slf4j.Logger;
@@ -43,7 +45,7 @@ public class JRubyJarHelper {
     private final KillbillNodesApi nodesApi;
     private final String jrubyJarPath;
 
-    public JRubyJarHelper(final String platformOSGIBundlesRootDir, final KillbillNodesApi nodesApi) {
+    public JRubyJarHelper(final String platformOSGIBundlesRootDir, @Nullable final KillbillNodesApi nodesApi) {
         this.jrubyJarPath = platformOSGIBundlesRootDir + "jruby.jar";
         this.nodesApi = nodesApi;
     }
@@ -60,7 +62,7 @@ public class JRubyJarHelper {
 
     private void logIfVersionMismatch() {
         try {
-            final NodeInfo nodeInfo = nodesApi.getCurrentNodeInfo();
+            final NodeInfo nodeInfo = nodesApi == null ? null : nodesApi.getCurrentNodeInfo();
             if (nodeInfo == null) {
                 logger.warn("Failed to get current NodeInfo to validate jruby.jar {}", jrubyJarPath);
                 return;

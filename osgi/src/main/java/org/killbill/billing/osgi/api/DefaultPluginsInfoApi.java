@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
@@ -41,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
+import com.google.inject.Inject;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
@@ -61,16 +61,15 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         }
     });
 
-
     private final BundleRegistry bundleRegistry;
-    private final KillbillNodesApi nodesApi;
     private final PluginFinder pluginFinder;
+    private final KillbillNodesApi nodesApi;
 
     @Inject
-    public DefaultPluginsInfoApi(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final KillbillNodesApi nodesApi) {
+    public DefaultPluginsInfoApi(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final KillbillNodesApiHolder nodesApiHolder) {
         this.bundleRegistry = bundleRegistry;
         this.pluginFinder = pluginFinder;
-        this.nodesApi = nodesApi;
+        this.nodesApi = nodesApiHolder.getNodesApi();
     }
 
     @Override
@@ -140,9 +139,10 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             }
 
             // Notify KillbillNodesService to update the node_infos table
-            final PluginInfo pluginInfo = new DefaultPluginInfo(pluginKey, null, resolvedPluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
-            nodesApi.notifyPluginChanged(pluginInfo, getPluginsInfo());
-
+            if (nodesApi != null) {
+                final PluginInfo pluginInfo = new DefaultPluginInfo(pluginKey, null, resolvedPluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+                nodesApi.notifyPluginChanged(pluginInfo, getPluginsInfo());
+            }
         } catch (final PluginConfigException e) {
             logger.error("Failed to handle notifyOfStateChanged: ", e);
         } catch (final IOException e) {

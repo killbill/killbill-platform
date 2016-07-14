@@ -37,6 +37,7 @@ import java.util.jar.Manifest;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import org.killbill.billing.osgi.api.KillbillNodesApiHolder;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
@@ -69,11 +70,11 @@ public class FileInstall {
     private final JRubyJarHelper jRubyJarHelper;
 
     @Inject
-    public FileInstall(final PureOSGIBundleFinder osgiBundleFinder, final PluginFinder pluginFinder, final KillbillNodesApi nodesApi, final PluginConfigServiceApi pluginConfigServiceApi) {
+    public FileInstall(final PureOSGIBundleFinder osgiBundleFinder, final PluginFinder pluginFinder, final KillbillNodesApiHolder nodesApiHolder, final PluginConfigServiceApi pluginConfigServiceApi) {
         this.osgiBundleFinder = osgiBundleFinder;
         this.pluginFinder = pluginFinder;
         this.pluginConfigServiceApi = pluginConfigServiceApi;
-        this.jRubyJarHelper = new JRubyJarHelper(osgiBundleFinder.getPlatformOSGIBundlesRootDir(), nodesApi);
+        this.jRubyJarHelper = new JRubyJarHelper(osgiBundleFinder.getPlatformOSGIBundlesRootDir(), nodesApiHolder.getNodesApi());
         this.jrubyUniqueIndex = new AtomicInteger(0);
     }
 
