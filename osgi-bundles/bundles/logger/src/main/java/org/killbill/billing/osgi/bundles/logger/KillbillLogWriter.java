@@ -217,10 +217,27 @@ public class KillbillLogWriter implements LogListener {
      */
     private String createMessage(final ServiceReference sr, final String message) {
         final StringBuilder output = new StringBuilder();
+
+        final String prefix;
         if (sr != null) {
-            output.append('[').append(sr.toString()).append(']');
+            if ("org.killbill.killbill.osgi.libs.killbill.OSGIKillbillServiceReference".equals(sr.getClass().getName())) {
+                // Not interesting (OSGIKillbillLogService wrapper)
+                prefix = null;
+            } else {
+                final String srObjectClass = sr.toString();
+                if (srObjectClass != null && srObjectClass.startsWith("[")) {
+                    // Felix already appends these, see ServiceRegistrationImpl
+                    prefix = srObjectClass;
+                } else {
+                    prefix = "[" + srObjectClass + "]";
+                }
+            }
         } else {
-            output.append(UNKNOWN);
+            prefix = UNKNOWN;
+        }
+
+        if (prefix != null) {
+            output.append(prefix).append(' ');
         }
         output.append(message);
 
