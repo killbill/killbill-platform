@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.35-SNAPSHOT</version>
+        <version>0.35</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-server</artifactId>
