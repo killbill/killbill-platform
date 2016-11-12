@@ -1,4 +1,6 @@
 
+    use UUID for KillBill session id
+    storage_engine is deprecated in mysql 5.7.5+
     Update oss pom.xml to pull correct plugin-api
     osgi-bundles: prettify OSGI log output
 
