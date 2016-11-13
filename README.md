@@ -13,10 +13,10 @@ The platform is billing and payment agnostic, and can be used to create other se
 Kill Bill compatibility
 -----------------------
 
-| API version | Kill Bill version |
-| ----------: | ----------------: |
-| 0.26.y      | 0.16.z            |
-| 0.36.y      | 0.18.z            |
+| Platform version | Kill Bill version |
+| ---------------: | ----------------: |
+| 0.26.y           | 0.16.z            |
+| 0.36.y           | 0.18.z            |
 
 ## License
 
