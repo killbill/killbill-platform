@@ -189,6 +189,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.annotation," +
              "javax.management," +
              "javax.naming," +
+             "javax.naming.ldap," +
              "javax.net," +
              "javax.net.ssl," +
              "javax.crypto," +

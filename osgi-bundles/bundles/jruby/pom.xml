@@ -201,6 +201,8 @@
                             javax.management.*;
                             javax.naming;
                             javax.naming.*;
+                            javax.naming.ldap;
+                            javax.naming.ldap.*;
                             javax.sql;
                             javax.sql.*;
                             javax.sql.rowset;
