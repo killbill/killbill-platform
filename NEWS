@@ -1,8 +1,17 @@
+0.36.1
+    Fix import/export for javax.naming.ldap
 
+0.36
     Update oss released version
-    use UUID for KillBill session id
+
+0.35
+    Use UUID for KillBill session id
     storage_engine is deprecated in mysql 5.7.5+
+
+0.34
     Update oss pom.xml to pull correct plugin-api
+
+0.33
     osgi-bundles: prettify OSGI log output
 
 0.32
