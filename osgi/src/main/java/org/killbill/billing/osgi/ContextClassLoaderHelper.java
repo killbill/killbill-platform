@@ -40,6 +40,7 @@ import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.reflect.AbstractInvocationHandler;
 
 public class ContextClassLoaderHelper {
 
@@ -101,7 +102,7 @@ public class ContextClassLoaderHelper {
         return list;
     }
 
-    private static class ClassLoaderInvocationHandler<T> implements InvocationHandler {
+    private static class ClassLoaderInvocationHandler<T> extends AbstractInvocationHandler {
 
         private final String serviceName;
         private final T service;
@@ -127,7 +128,7 @@ public class ContextClassLoaderHelper {
         }
 
         @Override
-        public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+        protected Object handleInvocation(final Object proxy, final Method method, final Object[] args) throws Throwable {
             final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
             final Context timerContext = timer(method).time();
             try {
