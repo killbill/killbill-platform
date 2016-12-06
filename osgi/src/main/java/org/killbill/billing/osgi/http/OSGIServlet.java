@@ -31,14 +31,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.common.annotations.VisibleForTesting;
+
 @Singleton
 public class OSGIServlet extends HttpServlet {
 
-    private final Vector<Servlet> initializedServlets = new Vector<Servlet>();
+    @VisibleForTesting
+    final Vector<Servlet> initializedServlets = new Vector<Servlet>();
     private final Object servletsMonitor = new Object();
 
     @Inject
-    private DefaultServletRouter servletRouter;
+    @VisibleForTesting
+    DefaultServletRouter servletRouter;
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
