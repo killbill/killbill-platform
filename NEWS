@@ -1,5 +1,6 @@
 0.36.2
     Fix ClassLoaderInvocationHandler#equals implementation
+    Update killbill-oss-parent to 0.140.4
 
 0.36.1
     Fix import/export for javax.naming.ldap
