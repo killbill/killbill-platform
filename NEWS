@@ -36,6 +36,9 @@
     Rename org.killbill.killbill.osgi to org.killbill.billing.osgi
     New jruby.jar detection
 
+0.26.2
+    Fix ClassLoaderInvocationHandler#equals implementation
+
 0.26.1
     jruby: import org.postgresql
     Update killbill-oss-parent to 0.94.2
