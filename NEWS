@@ -1,3 +1,7 @@
+0.36.3
+    add indexes for historical queries
+    Update parent OSS pom.xml
+
 0.36.2
     Fix ClassLoaderInvocationHandler#equals implementation
     Update killbill-oss-parent to 0.140.4
