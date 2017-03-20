@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -76,8 +76,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.servlet.ServletModule;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.management.ManagementService;
 
 public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
@@ -245,11 +243,8 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void registerEhcacheMBeans() {
-        final CacheManager cacheManager = injector.getInstance(CacheManager.class);
-        if (cacheManager != null) {
-            final MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            ManagementService.registerMBeans(cacheManager, mBeanServer, false, true, true, true);
-        }
+        // Ehcache 3.x does not have any MBean integration for now.
+        // See https://groups.google.com/d/msg/ehcache-users/UFRXilVykyE/ENEFyvpxAgAJ
     }
 
     protected void startLifecycle() {
