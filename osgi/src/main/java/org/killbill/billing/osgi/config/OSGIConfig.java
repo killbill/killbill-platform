@@ -88,7 +88,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              //
              // We also add the dependencies from own set of APIs and some osgi compendium thingies...
              //
-             "org.joda.time;org.joda.time.format;version=2.3," +
+             "org.joda.time;org.joda.time.format;version=2.9," +
              // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.slf4j)(version>=1.7.0)(!(version>=2.0.0)))
              "org.slf4j;version=1.7.2," +
              "org.osgi.service.log;version=1.3," +
