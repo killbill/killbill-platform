@@ -28,6 +28,7 @@ import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.billing.overdue.api.OverdueApi;
 import org.killbill.billing.payment.api.AdminPaymentApi;
 import org.killbill.billing.payment.api.PaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
@@ -63,6 +64,7 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     private PluginsInfoApi pluginsInfoApi;
     private KillbillNodesApi killbillNodesApi;
     private AdminPaymentApi adminPaymentApi;
+    private OverdueApi overdueApi;
 
     private PluginConfigServiceApi configServiceApi;
 
@@ -166,6 +168,12 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
         this.adminPaymentApi = adminPaymentApi;
     }
 
+    @Inject(optional = true)
+    public void setOverdueApi(final OverdueApi overdueApi) {
+        this.overdueApi = overdueApi;
+    }
+
+
     @Override
     public AccountUserApi getAccountUserApi() {
         return accountUserApi;
@@ -264,5 +272,10 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
     @Override
     public AdminPaymentApi getAdminPaymentApi() {
         return adminPaymentApi;
+    }
+
+    @Override
+    public OverdueApi getOverdueApi() {
+        return overdueApi;
     }
 }

@@ -27,6 +27,7 @@ import org.killbill.billing.invoice.api.InvoiceUserApi;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.billing.overdue.api.OverdueApi;
 import org.killbill.billing.payment.api.AdminPaymentApi;
 import org.killbill.billing.payment.api.PaymentApi;
 import org.killbill.billing.security.api.SecurityApi;
@@ -204,6 +205,16 @@ public class OSGIKillbillAPI extends OSGIKillbillLibraryBase implements OSGIKill
             @Override
             public CurrencyConversionApi executeWithService(final OSGIKillbill service) {
                 return service.getCurrencyConversionApi();
+            }
+        });
+    }
+
+    @Override
+    public OverdueApi getOverdueApi() {
+        return withServiceTracker(killbillTracker, new APICallback<OverdueApi, OSGIKillbill>(KILLBILL_SERVICE_NAME) {
+            @Override
+            public OverdueApi executeWithService(final OSGIKillbill service) {
+                return service.getOverdueApi();
             }
         });
     }
