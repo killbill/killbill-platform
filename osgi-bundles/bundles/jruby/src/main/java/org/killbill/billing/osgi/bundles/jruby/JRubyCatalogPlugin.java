@@ -43,8 +43,13 @@ public class JRubyCatalogPlugin extends JRubyNotificationPlugin implements Catal
     }
 
     @Override
-    public DateTime getLatestCatalogVersion(final Iterable<PluginProperty> iterable, final TenantContext tenantContext) {
-        return null;
+    public DateTime getLatestCatalogVersion(final Iterable<PluginProperty> pluginProperties, final TenantContext tenantContext) {
+        return callWithRuntimeAndChecking(new PluginCallback<DateTime, RuntimeException>() {
+            @Override
+            public DateTime doCall(final Ruby runtime) throws RuntimeException {
+                return ((CatalogPluginApi) pluginInstance).getLatestCatalogVersion(pluginProperties, tenantContext);
+            }
+        });
     }
 
     @Override
