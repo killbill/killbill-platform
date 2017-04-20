@@ -51,7 +51,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import com.google.inject.name.Named;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class TestOSGIBase {

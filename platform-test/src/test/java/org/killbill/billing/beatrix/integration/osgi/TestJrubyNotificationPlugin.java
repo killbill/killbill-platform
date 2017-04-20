@@ -40,7 +40,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.base.Charsets;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 public class TestJrubyNotificationPlugin extends TestOSGIBase {
 

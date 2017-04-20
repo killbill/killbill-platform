@@ -45,7 +45,7 @@ import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 
 /**
  * Basic OSGI test that relies on the 'test' bundle (org.killbill.billing.osgi.bundles.test.TestActivator)
