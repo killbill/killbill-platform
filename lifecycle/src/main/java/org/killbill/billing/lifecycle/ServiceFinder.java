@@ -70,6 +70,7 @@ public class ServiceFinder {
      *  Code originally from Kris Dover <krisdover@hotmail.com> and adapted for my purpose.
      *
      */
+    @SuppressWarnings("unchecked")
     private static Set<Class<? extends KillbillService>> findClasses(final ClassLoader classLoader,
                                                                      final String interfaceFilter,
                                                                      final String jarFilter,

@@ -41,8 +41,8 @@ public abstract class OSGIKillbillLibraryBase {
         }
     }
 
-    protected <API, T> API withServiceTracker(final ServiceTracker t, final APICallback<API, T> cb) {
-        final T service = (T) t.getService();
+    protected <API, T> API withServiceTracker(final ServiceTracker<?, T> t, final APICallback<API, T> cb) {
+        final T service = t.getService();
         if (service == null) {
             return cb.executeWithNoService();
         }

@@ -45,6 +45,7 @@ public class KillbillLogWriter implements LogListener {
     private final Queue<LogEntry> latestEntries = EvictingQueue.<LogEntry>create(500);
 
     // Invoked by the log service implementation for each log entry
+    @SuppressWarnings("unchecked")
     public void logged(final LogEntry entry) {
         final Bundle bundle = entry.getBundle();
         final Logger delegate = getDelegateForBundle(bundle);

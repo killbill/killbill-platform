@@ -84,6 +84,7 @@ public class TestJNDIManager {
         Assert.assertNotNull(retrievedJdbcDataSource2.getConnection());
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T testForDataSource(final JNDIManager jndiManager, final DataSource dataSource, final Class<T> klass) {
         final String name = "a/b/c";
         jndiManager.export(name, dataSource);

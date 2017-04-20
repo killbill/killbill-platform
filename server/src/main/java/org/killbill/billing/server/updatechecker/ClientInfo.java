@@ -24,7 +24,7 @@ import javax.servlet.ServletContext;
 
 import org.skife.config.ConfigSource;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
 
@@ -154,7 +154,7 @@ public class ClientInfo {
     }
 
     private String getProperty(final StandardSystemProperty standardKey) {
-        return getSanitizedString(Objects.firstNonNull(props.getString(standardKey.key()), UNKNOWN));
+        return getSanitizedString(MoreObjects.firstNonNull(props.getString(standardKey.key()), UNKNOWN));
     }
 
     private String getSanitizedString(final String string) {

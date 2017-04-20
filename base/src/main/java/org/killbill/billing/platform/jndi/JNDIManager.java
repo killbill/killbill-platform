@@ -126,7 +126,7 @@ public class JNDIManager {
     }
 
     private Context getContext() throws NamingException {
-        final Hashtable environment = new Hashtable();
+        final Hashtable<String, String> environment = new Hashtable<String, String>();
         environment.put(Context.PROVIDER_URL, "rmi://127.0.0.1:" + port);
         environment.put(Context.INITIAL_CONTEXT_FACTORY, RegistryContextFactory.class.getName());
 

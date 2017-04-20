@@ -26,10 +26,10 @@ public class OSGIKillbillDataSource extends OSGIKillbillLibraryBase {
 
     private static final String DATASOURCE_SERVICE_NAME = "javax.sql.DataSource";
 
-    private final ServiceTracker dataSourceTracker;
+    private final ServiceTracker<DataSource, DataSource> dataSourceTracker;
 
     public OSGIKillbillDataSource(final BundleContext context) {
-        dataSourceTracker = new ServiceTracker(context, DATASOURCE_SERVICE_NAME, null);
+        dataSourceTracker = new ServiceTracker<DataSource, DataSource>(context, DATASOURCE_SERVICE_NAME, null);
         dataSourceTracker.open();
     }
 
@@ -43,7 +43,7 @@ public class OSGIKillbillDataSource extends OSGIKillbillLibraryBase {
         return withServiceTracker(dataSourceTracker, new APICallback<DataSource, DataSource>(DATASOURCE_SERVICE_NAME) {
             @Override
             public DataSource executeWithService(final DataSource service) {
-                return (DataSource) dataSourceTracker.getService();
+                return dataSourceTracker.getService();
             }
         });
     }

@@ -86,6 +86,7 @@ public class KillbillEventObservable extends Observable {
     //
     // Ugly hack to access private field 'obs'
     //
+    @SuppressWarnings("unchecked")
     private <T> T getDeclaredField(final String fieldName) {
         try {
             final Field f = Observable.class.getDeclaredField(fieldName);

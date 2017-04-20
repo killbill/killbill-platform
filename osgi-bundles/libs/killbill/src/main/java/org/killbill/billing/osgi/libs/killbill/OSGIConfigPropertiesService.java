@@ -25,10 +25,10 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class OSGIConfigPropertiesService extends OSGIKillbillLibraryBase implements OSGIConfigProperties {
 
-    private final ServiceTracker killbillTracker;
+    private final ServiceTracker<OSGIConfigProperties, OSGIConfigProperties> killbillTracker;
 
     public OSGIConfigPropertiesService(final BundleContext context) {
-        killbillTracker = new ServiceTracker(context, OSGIConfigProperties.class.getName(), null);
+        killbillTracker = new ServiceTracker<OSGIConfigProperties, OSGIConfigProperties>(context, OSGIConfigProperties.class.getName(), null);
         killbillTracker.open();
     }
 

@@ -50,7 +50,7 @@ public class KillbillServiceListener implements ServiceListener {
 
     @Override
     public void serviceChanged(final ServiceEvent event) {
-        final ServiceReference serviceReference = event.getServiceReference();
+        final ServiceReference<?> serviceReference = event.getServiceReference();
         if (serviceReference == null || serviceReference.getBundle() == null) {
             return;
         }
