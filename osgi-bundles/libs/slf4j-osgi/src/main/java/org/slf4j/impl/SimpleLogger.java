@@ -159,7 +159,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
         try {
             prop = System.getProperty(name);
         } catch (final SecurityException e) {
-            ; // Ignore
+            // Ignore
         }
         return (prop == null) ? SIMPLE_LOGGER_PROPS.getProperty(name) : prop;
     }

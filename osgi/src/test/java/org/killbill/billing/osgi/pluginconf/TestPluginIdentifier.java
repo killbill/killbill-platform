@@ -43,7 +43,7 @@ public class TestPluginIdentifier {
         final Map<String, PluginIdentifier> output = mapper.readValue(input, new TypeReference<Map<String, PluginIdentifier>>() {});
         Assert.assertEquals(output.size(), 3);
 
-        PluginIdentifier expectedValue = new PluginIdentifier("analytics-plugin", "org.kill-bill.billing.plugin.java", "analytics-plugin", "jar", null, "0.7.1", "java");
+        final PluginIdentifier expectedValue = new PluginIdentifier("analytics-plugin", "org.kill-bill.billing.plugin.java", "analytics-plugin", "jar", null, "0.7.1", "java");
         Assert.assertEquals(output.get("analytics"), expectedValue);
     }
 }

@@ -289,7 +289,9 @@ public abstract class JRubyPlugin {
 
     private static CharSequence escape(final String path, final char esc) {
         int i = path.indexOf(esc);
-        if ( i == -1 ) return path;
+        if ( i == -1 ) {
+            return path;
+        }
 
         final StringBuilder escaped = new StringBuilder(path.length() + 4);
         int s = 0;
@@ -297,7 +299,9 @@ public abstract class JRubyPlugin {
             escaped.append(path, s, i);
             escaped.append('\\').append(esc); // ' -> \'
             s = i + 1;
-            if ( s >= path.length() ) break;
+            if ( s >= path.length() ) {
+                break;
+            }
             i = path.indexOf(esc, s);
             if ( i == -1 ) {
                 escaped.append(path, s, path.length());

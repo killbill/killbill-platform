@@ -25,8 +25,6 @@ import javax.annotation.Nullable;
 
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
 import org.killbill.billing.osgi.config.OSGIConfig;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

@@ -37,7 +37,7 @@ import com.codahale.metrics.MetricRegistry;
 
 public class PersistentBusProvider implements Provider<PersistentBus> {
 
-    private final static Logger logger = LoggerFactory.getLogger(PersistentBusProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(PersistentBusProvider.class);
 
     private final PersistentBusConfig busConfig;
 

@@ -74,7 +74,7 @@ public class PluginFinder {
         return getLatestPluginForLanguage(PluginLanguage.RUBY);
     }
 
-    public List<PluginConfig> getVersionsForPlugin(final String lookupName, @Nullable String version) throws PluginConfigException, IOException {
+    public List<PluginConfig> getVersionsForPlugin(final String lookupName, @Nullable final String version) throws PluginConfigException, IOException {
         loadPluginsIfRequired(false);
 
         final List<PluginConfig> result = new LinkedList<PluginConfig>();
@@ -125,7 +125,7 @@ public class PluginFinder {
     private <T extends PluginConfig> void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException, IOException {
         synchronized (allPlugins) {
 
-            if (!reloadPlugins && allPlugins.size() > 0) {
+            if (!reloadPlugins && !allPlugins.isEmpty()) {
                 return;
             }
 
@@ -249,8 +249,8 @@ public class PluginFinder {
     }
 
     private String findPluginKey(final String pluginName, final PluginLanguage pluginLanguage) {
-        for (String key : identifiers.keySet()) {
-            PluginIdentifier value = identifiers.get(key);
+        for (final String key : identifiers.keySet()) {
+            final PluginIdentifier value = identifiers.get(key);
             if (value.getPluginName().equals(pluginName) && value.getLanguage().equalsIgnoreCase(pluginLanguage.name())) {
                 return key;
             }

@@ -19,9 +19,7 @@
 package org.killbill.billing.osgi.http;
 
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,7 +31,6 @@ import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
-import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
 
 @Singleton

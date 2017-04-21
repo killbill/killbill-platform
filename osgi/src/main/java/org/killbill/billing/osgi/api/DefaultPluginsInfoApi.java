@@ -82,7 +82,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
             final LinkedList<PluginConfig> pluginVersions = pluginFinder.getAllPlugins().get(pluginName);
             boolean isSelectedForStart = true; // The first one in the list is the one selected for start
-            for (PluginConfig curVersion : pluginVersions) {
+            for (final PluginConfig curVersion : pluginVersions) {
                 final PluginInfo pluginInfo;
                 if (installedBundleOrNull != null && curVersion.getVersion().equals(installedBundleOrNull.getVersion())) {
                     pluginInfo = new DefaultPluginInfo(curVersion.getPluginKey(),
@@ -99,7 +99,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
                 result.add(pluginInfo);
             }
         }
-        for (BundleWithMetadata osgiBundle : bundleRegistry.getPureOSGIBundles()) {
+        for (final BundleWithMetadata osgiBundle : bundleRegistry.getPureOSGIBundles()) {
             if (osgiBundle.getBundle().getSymbolicName() != null) {
                 final PluginInfo pluginInfo = new DefaultPluginInfo(null, osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), true, ImmutableSet.<PluginServiceInfo>of());
                 result.add(pluginInfo);
@@ -122,7 +122,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
                                               (pluginFinder.resolvePluginKey(pluginKey) != null ? pluginFinder.resolvePluginKey(pluginKey).getPluginName() : null);
 
             final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(resolvedPluginName);
-            boolean isSelectedForStart = defaultPluginVersion != null && defaultPluginVersion.equals(pluginVersion);
+            final boolean isSelectedForStart = defaultPluginVersion != null && defaultPluginVersion.equals(pluginVersion);
             switch (newState) {
                 case NEW_VERSION:
                     // Nothing special to do; we don't try to OSGI 'install' the plugin at this time, this will be done

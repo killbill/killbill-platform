@@ -231,7 +231,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         return true;
     }
 
-    private final boolean checkSanityPluginRegistrationName(final String pluginName) {
+    private boolean checkSanityPluginRegistrationName(final String pluginName) {
         final Matcher m = PLUGIN_NAME_PATTERN.matcher(pluginName);
         if (!m.matches()) {
             logger.warn("Invalid plugin name {} : should be of the form {}", pluginName, PLUGIN_NAME_PATTERN.toString());

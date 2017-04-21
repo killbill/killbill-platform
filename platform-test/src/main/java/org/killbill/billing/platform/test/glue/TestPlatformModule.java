@@ -113,7 +113,7 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
             }
 
             @Override
-            public void triggerNodeCommand(final NodeCommand nodeCommandfinal, boolean localNodeOnly) {
+            public void triggerNodeCommand(final NodeCommand nodeCommandfinal, final boolean localNodeOnly) {
                 throw new UnsupportedOperationException("Not implemented");
             }
             @Override

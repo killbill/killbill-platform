@@ -38,7 +38,7 @@ public class TestDefaultPluginConfig {
         final PluginConfig javaConfig200 = new DummyJavaConfig("2.0.0", false);
         final PluginConfig javaConfig201 = new DummyJavaConfig("2.0.1", false);
 
-        List<PluginConfig> configs = new ArrayList<PluginConfig>();
+        final List<PluginConfig> configs = new ArrayList<PluginConfig>();
         configs.add(javaConfig100);
         configs.add(javaConfig101);
         configs.add(javaConfig200);

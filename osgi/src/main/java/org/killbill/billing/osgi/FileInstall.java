@@ -46,7 +46,6 @@ import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
 import org.killbill.billing.osgi.pluginconf.PluginConfigException;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
-import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -273,7 +272,7 @@ public class FileInstall {
      */
     private boolean isFragment(final Bundle bundle) {
         // Necessary cast on jdk7
-        final BundleRevision bundleRevision = (BundleRevision) bundle.adapt(BundleRevision.class);
+        final BundleRevision bundleRevision = bundle.adapt(BundleRevision.class);
         return bundleRevision != null && (bundleRevision.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0;
     }
 

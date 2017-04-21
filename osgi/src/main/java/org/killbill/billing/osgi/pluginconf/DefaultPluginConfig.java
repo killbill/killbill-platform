@@ -38,7 +38,7 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
     private final boolean isSelectedForStart;
     private final boolean isDisabled;
 
-    public DefaultPluginConfig(DefaultPluginConfig input, final boolean isSelectedForStart) {
+    public DefaultPluginConfig(final DefaultPluginConfig input, final boolean isSelectedForStart) {
         this.pluginKey = input.getPluginKey();
         this.pluginName = input.getPluginName();
         this.version = input.getVersion();

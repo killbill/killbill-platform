@@ -86,14 +86,14 @@ public class ContextClassLoaderHelper {
         final List<Class> list = new ArrayList<Class>();
         while (cls != null) {
             final Class[] interfaces = cls.getInterfaces();
-            for (int i = 0; i < interfaces.length; i++) {
-                if (list.contains(interfaces[i]) == false) {
-                    list.add(interfaces[i]);
+            for (final Class anInterface : interfaces) {
+                if (!list.contains(anInterface)) {
+                    list.add(anInterface);
                 }
-                final List superInterfaces = getAllInterfaces(interfaces[i]);
-                for (final Iterator it = superInterfaces.iterator(); it.hasNext(); ) {
-                    final Class intface = (Class) it.next();
-                    if (list.contains(intface) == false) {
+                final List superInterfaces = getAllInterfaces(anInterface);
+                for (final Object superInterface : superInterfaces) {
+                    final Class intface = (Class) superInterface;
+                    if (!list.contains(intface)) {
                         list.add(intface);
                     }
                 }
