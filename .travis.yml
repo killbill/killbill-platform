@@ -27,12 +27,12 @@ env:
 
 matrix:
   include:
-    - env: PHASE="-Ptravis-nodb,jdk16" JDK=oraclejdk8
-    - env: PHASE="-Ptravis-nodb,jdk16" JDK=openjdk8
-    - env: PHASE="-Ptravis-nodb,jdk17" JDK=oraclejdk8
-    - env: PHASE="-Ptravis-nodb,jdk17" JDK=openjdk8
-    - env: PHASE="-Ptravis-nodb,jdk18" JDK=oraclejdk8
-    - env: PHASE="-Ptravis-nodb,jdk18" JDK=openjdk8
+    - env: PHASE="-Ptravis,jdk16" JDK=oraclejdk8
+    - env: PHASE="-Ptravis,jdk16" JDK=openjdk8
+    - env: PHASE="-Ptravis,jdk17" JDK=oraclejdk8
+    - env: PHASE="-Ptravis,jdk17" JDK=openjdk8
+    - env: PHASE="-Ptravis,jdk18" JDK=oraclejdk8
+    - env: PHASE="-Ptravis,jdk18" JDK=openjdk8
   fast_finish: true
 
 after_success:
