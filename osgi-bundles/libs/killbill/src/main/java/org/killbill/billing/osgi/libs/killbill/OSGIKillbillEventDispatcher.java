@@ -35,13 +35,13 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
 
     private static final String OBSERVABLE_SERVICE_NAME = "java.util.Observable";
 
-    private final ServiceTracker observableTracker;
+    private final ServiceTracker<Observable, Observable> observableTracker;
 
     private final Map<Object, Observer> handlerToObserver;
 
     public OSGIKillbillEventDispatcher(final BundleContext context) {
         handlerToObserver = new HashMap<Object, Observer>();
-        observableTracker = new ServiceTracker(context, OBSERVABLE_SERVICE_NAME, null);
+        observableTracker = new ServiceTracker<Observable, Observable>(context, OBSERVABLE_SERVICE_NAME, null);
         observableTracker.open();
     }
 

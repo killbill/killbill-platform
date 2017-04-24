@@ -70,6 +70,7 @@ public class ServiceFinder {
      *  Code originally from Kris Dover <krisdover@hotmail.com> and adapted for my purpose.
      *
      */
+    @SuppressWarnings("unchecked")
     private static Set<Class<? extends KillbillService>> findClasses(final ClassLoader classLoader,
                                                                      final String interfaceFilter,
                                                                      final String jarFilter,
@@ -85,18 +86,18 @@ public class ServiceFinder {
             classPaths = System.getProperty("java.class.path", "").split(File.pathSeparator);
         }
 
-        for (int h = 0; h < classPaths.length; h++) {
+        for (final Object classPath1 : classPaths) {
             Enumeration<?> files = null;
             JarFile module = null;
 
             final String protocol;
             final File classPath;
-            if ((URL.class).isInstance(classPaths[h])) {
-                final URL urlClassPath = (URL) classPaths[h];
+            if ((URL.class).isInstance(classPath1)) {
+                final URL urlClassPath = (URL) classPath1;
                 classPath = new File(urlClassPath.getFile());
                 protocol = urlClassPath.getProtocol();
             } else {
-                classPath = new File(classPaths[h].toString());
+                classPath = new File(classPath1.toString());
                 protocol = "file";
             }
 
@@ -139,9 +140,8 @@ public class ServiceFinder {
                     final String className = fileName.replaceAll("/", ".").substring(0, fileName.length() - 6);
                     if (packageFilter != null) {
                         boolean skip = true;
-                        final Iterator<String> it = packageFilter.iterator();
-                        while (it.hasNext()) {
-                            final String filter = it.next() + ".";
+                        for (final String aPackageFilter : packageFilter) {
+                            final String filter = aPackageFilter + ".";
                             if (className.startsWith(filter)) {
                                 skip = false;
                                 break;
@@ -162,9 +162,9 @@ public class ServiceFinder {
                     }
                     final Class<?>[] classInterfaces = getAllInterfaces(theClass);
                     String interfaceName = null;
-                    for (int i = 0; i < classInterfaces.length; i++) {
+                    for (final Class<?> classInterface : classInterfaces) {
 
-                        interfaceName = classInterfaces[i].getName();
+                        interfaceName = classInterface.getName();
                         if (!interfaceFilter.equals(interfaceName)) {
                             continue;
                         }

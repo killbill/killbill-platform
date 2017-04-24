@@ -114,7 +114,7 @@ public class OSGIListener {
         }
 
         final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(nodeCommandMetadata.getPluginName());
-        boolean isSelectedForStart = defaultPluginVersion != null && nodeCommandMetadata.getPluginVersion() != null ? defaultPluginVersion.equals(nodeCommandMetadata.getPluginVersion()) : true; /* this is lie, we don't know */
+        final boolean isSelectedForStart = defaultPluginVersion != null && nodeCommandMetadata.getPluginVersion() != null ? defaultPluginVersion.equals(nodeCommandMetadata.getPluginVersion()) : true; /* this is lie, we don't know */
 
         final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
         final PluginInfo pluginInfo = new DefaultPluginInfo(nodeCommandMetadata.getPluginKey(), symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());

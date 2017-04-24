@@ -64,6 +64,7 @@ public class ContextClassLoaderHelper {
 
     */
 
+    @SuppressWarnings("unchecked")
     public static <T> T getWrappedServiceWithCorrectContextClassLoader(final T service, final Class<T> serviceType, final String serviceName, @Nullable final MetricRegistry metricRegistry) {
 
         final Class<T> serviceClass = (Class<T>) service.getClass();
@@ -78,21 +79,21 @@ public class ContextClassLoaderHelper {
     }
 
     // From apache-commons
-    private static List getAllInterfaces(Class cls) {
+    private static List<Class> getAllInterfaces(Class cls) {
         if (cls == null) {
             return null;
         }
-        final List list = new ArrayList();
+        final List<Class> list = new ArrayList<Class>();
         while (cls != null) {
             final Class[] interfaces = cls.getInterfaces();
-            for (int i = 0; i < interfaces.length; i++) {
-                if (list.contains(interfaces[i]) == false) {
-                    list.add(interfaces[i]);
+            for (final Class anInterface : interfaces) {
+                if (!list.contains(anInterface)) {
+                    list.add(anInterface);
                 }
-                final List superInterfaces = getAllInterfaces(interfaces[i]);
-                for (final Iterator it = superInterfaces.iterator(); it.hasNext(); ) {
-                    final Class intface = (Class) it.next();
-                    if (list.contains(intface) == false) {
+                final List superInterfaces = getAllInterfaces(anInterface);
+                for (final Object superInterface : superInterfaces) {
+                    final Class intface = (Class) superInterface;
+                    if (!list.contains(intface)) {
                         list.add(intface);
                     }
                 }
@@ -137,7 +138,7 @@ public class ContextClassLoaderHelper {
 
                 final Profiling<Object, Throwable> prof = new Profiling<Object, Throwable>();
                 final String profilingId = serviceInterfaceName + "." + methodName;
-                return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback() {
+                return prof.executeWithProfiling(ProfilingFeatureType.PLUGIN, profilingId, new WithProfilingCallback<Object, Throwable>() {
                     @Override
                     public Object execute() throws Throwable {
                         return method.invoke(service, args);

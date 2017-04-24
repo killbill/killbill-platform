@@ -74,15 +74,15 @@ public class PluginFinder {
         return getLatestPluginForLanguage(PluginLanguage.RUBY);
     }
 
-    public <T extends PluginConfig> List<T> getVersionsForPlugin(final String lookupName, @Nullable String version) throws PluginConfigException, IOException {
+    public List<PluginConfig> getVersionsForPlugin(final String lookupName, @Nullable final String version) throws PluginConfigException, IOException {
         loadPluginsIfRequired(false);
 
-        final List<T> result = new LinkedList<T>();
+        final List<PluginConfig> result = new LinkedList<PluginConfig>();
         for (final String pluginName : allPlugins.keySet()) {
             if (pluginName.equals(lookupName)) {
                 for (final PluginConfig cur : allPlugins.get(pluginName)) {
                     if (version == null || cur.getVersion().equals(version)) {
-                        result.add((T) cur);
+                        result.add(cur);
                     }
                 }
             }
@@ -112,7 +112,7 @@ public class PluginFinder {
 
         final List<T> result = new LinkedList<T>();
         for (final String pluginName : allPlugins.keySet()) {
-            final T plugin = (T) allPlugins.get(pluginName).get(0);
+            @SuppressWarnings("unchecked") final T plugin = (T) allPlugins.get(pluginName).get(0);
             if (pluginLanguage != plugin.getPluginLanguage()) {
                 continue;
             }
@@ -125,7 +125,7 @@ public class PluginFinder {
     private <T extends PluginConfig> void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException, IOException {
         synchronized (allPlugins) {
 
-            if (!reloadPlugins && allPlugins.size() > 0) {
+            if (!reloadPlugins && !allPlugins.isEmpty()) {
                 return;
             }
 
@@ -249,8 +249,8 @@ public class PluginFinder {
     }
 
     private String findPluginKey(final String pluginName, final PluginLanguage pluginLanguage) {
-        for (String key : identifiers.keySet()) {
-            PluginIdentifier value = identifiers.get(key);
+        for (final String key : identifiers.keySet()) {
+            final PluginIdentifier value = identifiers.get(key);
             if (value.getPluginName().equals(pluginName) && value.getLanguage().equalsIgnoreCase(pluginLanguage.name())) {
                 return key;
             }
@@ -258,8 +258,8 @@ public class PluginFinder {
         return null;
     }
 
-    private <T extends PluginConfig> T extractPluginConfig(final PluginLanguage pluginLanguage, final String pluginName, final String pluginVersion, final File pluginVersionDir, final boolean isVersionToStartLink) throws PluginConfigException {
-        final T result;
+    private PluginConfig extractPluginConfig(final PluginLanguage pluginLanguage, final String pluginName, final String pluginVersion, final File pluginVersionDir, final boolean isVersionToStartLink) throws PluginConfigException {
+        final PluginConfig result;
         Properties props = null;
         try {
             final File[] files = pluginVersionDir.listFiles();
@@ -287,10 +287,10 @@ public class PluginFinder {
         final String pluginKey = findPluginKey(pluginName, pluginLanguage);
         switch (pluginLanguage) {
             case RUBY:
-                result = (T) new DefaultPluginRubyConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
+                result = new DefaultPluginRubyConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
             case JAVA:
-                result = (T) new DefaultPluginJavaConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
+                result = new DefaultPluginJavaConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
             default:
                 throw new RuntimeException("Unknown plugin language " + pluginLanguage);

@@ -159,7 +159,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
         try {
             prop = System.getProperty(name);
         } catch (final SecurityException e) {
-            ; // Ignore
+            // Ignore
         }
         return (prop == null) ? SIMPLE_LOGGER_PROPS.getProperty(name) : prop;
     }
@@ -226,7 +226,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     private static void loadProperties() {
         // Add props from the resource simplelogger.properties
         final InputStream in = (InputStream) AccessController.doPrivileged(
-                new PrivilegedAction() {
+                new PrivilegedAction<Object>() {
                     public Object run() {
                         final ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
                         if (threadCL != null) {

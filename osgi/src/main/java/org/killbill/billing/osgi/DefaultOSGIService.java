@@ -29,14 +29,11 @@ import javax.inject.Named;
 
 import org.apache.felix.framework.Felix;
 import org.apache.felix.framework.util.FelixConstants;
-import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.config.OSGIConfig;
-import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.billing.platform.api.OSGIService;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.bus.api.PersistentBus.EventBusException;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -92,7 +89,7 @@ public class DefaultOSGIService implements OSGIService {
             externalBus.register(osgiListener);
         } catch (final BundleException e) {
             logger.error("Failed to initialize Killbill OSGIService", e);
-        } catch (EventBusException e) {
+        } catch (final EventBusException e) {
             logger.error("Failed to initialize Killbill OSGIService", e);
         }
     }
@@ -118,7 +115,7 @@ public class DefaultOSGIService implements OSGIService {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         } catch (final InterruptedException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
-        } catch (EventBusException e) {
+        } catch (final EventBusException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         }
     }
@@ -128,7 +125,7 @@ public class DefaultOSGIService implements OSGIService {
     }
 
     private Framework createAndInitFramework() throws BundleException {
-        final StringBuffer systemExtraPackages = new StringBuffer(osgiConfig.getSystemBundleExportPackagesApi());
+        final StringBuilder systemExtraPackages = new StringBuilder(osgiConfig.getSystemBundleExportPackagesApi());
         if (!osgiConfig.getSystemBundleExportPackagesJava().isEmpty()) {
             systemExtraPackages
                     .append(",")

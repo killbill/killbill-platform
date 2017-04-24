@@ -32,7 +32,7 @@ import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIK
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * Nomenclature:
@@ -126,7 +126,7 @@ public class JRubyActivator extends KillbillActivatorBase {
         killbillServices.put("logger", logService);
         killbillServices.put("clock", clock);
         // Default to the plugin root dir if no jruby plugins specific configuration directory was specified
-        killbillServices.put("conf_dir", Objects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
+        killbillServices.put("conf_dir", MoreObjects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
 
 
 

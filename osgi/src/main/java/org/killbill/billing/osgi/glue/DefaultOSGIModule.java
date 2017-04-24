@@ -46,7 +46,6 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.OSGIService;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
-import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.osgi.service.http.HttpService;
 import org.skife.config.ConfigurationObjectFactory;

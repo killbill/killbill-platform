@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
-import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
@@ -53,7 +52,7 @@ public class PaymentActivator extends KillbillActivatorBase {
     }
 
     private void registerPaymentApi(final BundleContext context) {
-        final Dictionary props = new Hashtable();
+        final Dictionary<String, String> props = new Hashtable<String, String>();
         // Same name the beatrix tests expect when using that payment plugin
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, TEST_PLUGIN_NAME);
         registrar.registerService(context, PaymentPluginApi.class, new TestPaymentPluginApi(), props);

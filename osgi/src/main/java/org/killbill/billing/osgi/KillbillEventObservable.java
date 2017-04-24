@@ -63,7 +63,7 @@ public class KillbillEventObservable extends Observable {
     // and can lead to losing events.
     //
     @Override
-    public void notifyObservers(Object arg) {
+    public void notifyObservers(final Object arg) {
         final Vector obsCopy = getDeclaredField("obs");
         final Object[] arrLocal = obsCopy.toArray();
         for (int i = arrLocal.length - 1; i >= 0; i--) {
@@ -86,14 +86,15 @@ public class KillbillEventObservable extends Observable {
     //
     // Ugly hack to access private field 'obs'
     //
+    @SuppressWarnings("unchecked")
     private <T> T getDeclaredField(final String fieldName) {
         try {
             final Field f = Observable.class.getDeclaredField(fieldName);
             f.setAccessible(true);
             return (T) f.get(this);
-        } catch (NoSuchFieldException e) {
+        } catch (final NoSuchFieldException e) {
             throw new RuntimeException("Failed to retrieve private field from Observable class " + fieldName, e);
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             throw new RuntimeException("Failed to retrieve private field from Observable class " + fieldName, e);
         }
     }

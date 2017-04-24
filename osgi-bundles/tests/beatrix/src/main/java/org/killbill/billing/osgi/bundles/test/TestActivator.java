@@ -69,7 +69,7 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
     }
 
     private void registerPaymentApi(final BundleContext context, final TestDao dao) {
-        final Dictionary props = new Hashtable();
+        final Dictionary<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, TEST_PLUGIN_NAME);
         registrar.registerService(context, PaymentPluginApi.class, new TestPaymentPluginApi(dao), props);
     }

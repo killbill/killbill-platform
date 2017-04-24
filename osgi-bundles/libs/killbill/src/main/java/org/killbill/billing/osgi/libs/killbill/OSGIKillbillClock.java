@@ -25,10 +25,10 @@ public class OSGIKillbillClock extends OSGIKillbillLibraryBase {
 
     private static final String CLOCK_SERVICE_NAME = "org.killbill.clock.Clock";
 
-    private final ServiceTracker clockTracker;
+    private final ServiceTracker<Clock, Clock> clockTracker;
 
     public OSGIKillbillClock(final BundleContext context) {
-        clockTracker = new ServiceTracker(context, CLOCK_SERVICE_NAME, null);
+        clockTracker = new ServiceTracker<Clock, Clock>(context, CLOCK_SERVICE_NAME, null);
         clockTracker.open();
     }
 
@@ -42,7 +42,7 @@ public class OSGIKillbillClock extends OSGIKillbillLibraryBase {
         return withServiceTracker(clockTracker, new APICallback<Clock, Clock>(CLOCK_SERVICE_NAME) {
             @Override
             public Clock executeWithService(final Clock service) {
-                return (Clock) clockTracker.getService();
+                return clockTracker.getService();
             }
         });
     }

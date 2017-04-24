@@ -46,10 +46,10 @@ public class OSGIKillbillAPI extends OSGIKillbillLibraryBase implements OSGIKill
 
     private static final String KILLBILL_SERVICE_NAME = "org.killbill.billing.osgi.api.OSGIKillbill";
 
-    private final ServiceTracker killbillTracker;
+    private final ServiceTracker<OSGIKillbill, OSGIKillbill> killbillTracker;
 
     public OSGIKillbillAPI(final BundleContext context) {
-        killbillTracker = new ServiceTracker(context, KILLBILL_SERVICE_NAME, null);
+        killbillTracker = new ServiceTracker<OSGIKillbill, OSGIKillbill>(context, KILLBILL_SERVICE_NAME, null);
         killbillTracker.open();
     }
 

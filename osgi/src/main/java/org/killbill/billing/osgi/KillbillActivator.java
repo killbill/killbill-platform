@@ -145,7 +145,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     public void start(final BundleContext context) throws Exception {
 
         this.context = context;
-        final Dictionary props = new Hashtable();
+        final Dictionary<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, "killbill");
 
         observable.register();
@@ -172,13 +172,14 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         registrar.unregisterAll();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void serviceChanged(final ServiceEvent event) {
         if (context == null || (event.getType() != ServiceEvent.REGISTERED && event.getType() != ServiceEvent.UNREGISTERING)) {
             // We are not initialized or uninterested
             return;
         }
-        final ServiceReference serviceReference = event.getServiceReference();
+        final ServiceReference<?> serviceReference = event.getServiceReference();
         for (final OSGIServiceRegistration cur : allRegistrationHandlers) {
             if (listenForServiceType(serviceReference, event.getType(), cur.getServiceType(), cur)) {
                 break;
@@ -195,7 +196,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         return allRegistrationHandlers;
     }
 
-    private <T> boolean listenForServiceType(final ServiceReference serviceReference, final int eventType, final Class<T> claz, final OSGIServiceRegistration<T> registration) {
+    private <T> boolean listenForServiceType(final ServiceReference<?> serviceReference, final int eventType, final Class<T> claz, final OSGIServiceRegistration<T> registration) {
         // Make sure we can retrieve the plugin name
         final String serviceName = (String) serviceReference.getProperty(OSGIPluginProperties.PLUGIN_NAME_PROP);
         if (serviceName == null || !checkSanityPluginRegistrationName(serviceName)) {
@@ -209,7 +210,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         if (theServiceObject == null || !claz.isAssignableFrom(theServiceObject.getClass())) {
             return false;
         }
-        final T theService = (T) theServiceObject;
+        @SuppressWarnings("unchecked") final T theService = (T) theServiceObject;
 
         final OSGIServiceDescriptor desc = new DefaultOSGIServiceDescriptor(serviceReference.getBundle().getSymbolicName(),
                                                                             bundleRegistry.getPluginName(serviceReference.getBundle()),
@@ -230,7 +231,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         return true;
     }
 
-    private final boolean checkSanityPluginRegistrationName(final String pluginName) {
+    private boolean checkSanityPluginRegistrationName(final String pluginName) {
         final Matcher m = PLUGIN_NAME_PATTERN.matcher(pluginName);
         if (!m.matches()) {
             logger.warn("Invalid plugin name {} : should be of the form {}", pluginName, PLUGIN_NAME_PATTERN.toString());
