@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -52,7 +52,7 @@ public class DefaultLifecycle implements Lifecycle {
     @Inject
     public DefaultLifecycle(final Injector injector) {
         this();
-        final ServiceFinder serviceFinder = new ServiceFinder(DefaultLifecycle.class.getClassLoader());
+        final ServiceFinder<KillbillService> serviceFinder = new ServiceFinder<KillbillService>(DefaultLifecycle.class.getClassLoader(), KillbillService.class.getName());
         init(serviceFinder, injector);
     }
 
@@ -116,7 +116,7 @@ public class DefaultLifecycle implements Lifecycle {
         return result;
     }
 
-    private void init(final ServiceFinder serviceFinder, final Injector injector) {
+    private void init(final ServiceFinder<KillbillService> serviceFinder, final Injector injector) {
         init(serviceFinder.getServices(), injector);
     }
 
