@@ -28,6 +28,7 @@ import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi
 import org.killbill.commons.jdbi.transaction.NotificationTransactionHandler;
 import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
 import org.killbill.queue.DefaultQueueLifecycle;
+import org.killbill.queue.InTransaction;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
@@ -76,6 +77,10 @@ public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
         //
         final DBI dbi = (DBI) getPlatformDBTestingHelper().getDBI();
         dbi.setTransactionHandler(transactionHandler);
+
+        // Configure mappers and binders
+        InTransaction.setupDBI(dbi);
+
         return dbi;
     }
 
@@ -86,6 +91,9 @@ public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
     @Singleton
     @Named(DefaultQueueLifecycle.QUEUE_NAME)
     protected IDBI provideIDBIInAComplicatedWayBecauseOf627(final IDBI idbi) {
+        // Configure mappers and binders
+        InTransaction.setupDBI((DBI) idbi);
+
         return idbi;
     }
 
