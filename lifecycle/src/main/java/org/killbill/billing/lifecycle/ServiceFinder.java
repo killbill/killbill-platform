@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -26,41 +26,41 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
 
-import org.killbill.billing.platform.api.KillbillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServiceFinder {
+public class ServiceFinder<T> {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceFinder.class);
 
     private final ClassLoader loader;
-    private final Set<Class<? extends KillbillService>> servicesTypes;
+    private final String interfaceFilter;
+    private final Set<Class<? extends T>> servicesTypes;
 
-    public ServiceFinder(final ClassLoader loader) {
+    public ServiceFinder(final ClassLoader loader, final String interfaceFilter) {
         this.loader = loader;
+        this.interfaceFilter = interfaceFilter;
         this.servicesTypes = initialize();
-        for (final Class<? extends KillbillService> svc : servicesTypes) {
-            log.debug("Found KillbillService class {}", svc.getName());
+        for (final Class<? extends T> svc : servicesTypes) {
+            log.debug("Found service class {}", svc.getName());
         }
     }
 
-    public Set<Class<? extends KillbillService>> getServices() {
+    public Set<Class<? extends T>> getServices() {
         return servicesTypes;
     }
 
-    private Set<Class<? extends KillbillService>> initialize() {
+    private Set<Class<? extends T>> initialize() {
         try {
 
             final Set<String> packageFilter = new HashSet<String>();
             packageFilter.add("org.killbill.billing");
             final String jarFilter = "killbill";
-            return findClasses(loader, KillbillService.class.getName(), jarFilter, packageFilter);
+            return findClasses(loader, interfaceFilter, jarFilter, packageFilter);
         } catch (final ClassNotFoundException nfe) {
             throw new RuntimeException("Failed to initialize ClassFinder", nfe);
         }
@@ -71,13 +71,13 @@ public class ServiceFinder {
      *
      */
     @SuppressWarnings("unchecked")
-    private static Set<Class<? extends KillbillService>> findClasses(final ClassLoader classLoader,
-                                                                     final String interfaceFilter,
-                                                                     final String jarFilter,
-                                                                     final Set<String> packageFilter)
-            throws ClassNotFoundException {
+    private Set<Class<? extends T>> findClasses(final ClassLoader classLoader,
+                                             final String interfaceFilter,
+                                             final String jarFilter,
+                                             final Set<String> packageFilter)
+    throws ClassNotFoundException {
 
-        final Set<Class<? extends KillbillService>> result = new HashSet<Class<? extends KillbillService>>();
+        final Set<Class<? extends T>> result = new HashSet<Class<? extends T>>();
 
         Object[] classPaths;
         try {
@@ -168,7 +168,7 @@ public class ServiceFinder {
                         if (!interfaceFilter.equals(interfaceName)) {
                             continue;
                         }
-                        result.add((Class<? extends KillbillService>) theClass);
+                        result.add((Class<? extends T>) theClass);
                         break;
                     }
 
