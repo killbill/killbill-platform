@@ -20,13 +20,14 @@ package org.killbill.billing.platform.glue;
 import javax.sql.DataSource;
 
 import org.killbill.billing.platform.jndi.ReferenceableDataSourceSpy;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.killbill.commons.jdbi.guice.DataSourceProvider;
 
 public class ReferenceableDataSourceSpyProvider extends DataSourceProvider {
 
-    public ReferenceableDataSourceSpyProvider(final DaoConfig config, final String poolName) {
-        super(config, poolName);
+    public ReferenceableDataSourceSpyProvider(final DaoConfig config, EmbeddedDB embeddedDB, final String poolName) {
+        super(config, embeddedDB, poolName);
     }
 
     @Override

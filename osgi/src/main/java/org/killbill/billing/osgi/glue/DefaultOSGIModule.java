@@ -46,6 +46,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.OSGIService;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.osgi.service.http.HttpService;
 import org.skife.config.ConfigurationObjectFactory;
@@ -60,9 +61,19 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
     private final OSGIConfigProperties osgiConfigProperties;
 
-    public DefaultOSGIModule(final KillbillConfigSource configSource, final OSGIConfigProperties osgiConfigProperties) {
+    private final OSGIDataSourceConfig osgiDataSourceConfig;
+
+    private final EmbeddedDB embeddedDB;
+
+    public DefaultOSGIModule(
+            final KillbillConfigSource configSource,
+            final OSGIConfigProperties osgiConfigProperties,
+            final OSGIDataSourceConfig osgiDataSourceConfig,
+            final EmbeddedDB embeddedDB) {
         super(configSource);
         this.osgiConfigProperties = osgiConfigProperties;
+        this.osgiDataSourceConfig = osgiDataSourceConfig;
+        this.embeddedDB = embeddedDB;
     }
 
     protected void installConfig() {
@@ -78,11 +89,12 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
     }
 
     protected void installDataSource() {
-        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        // final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiDataSourceConfig);
+        // bind(EmbeddedDB.class).toInstance(embeddedDB);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, OSGI_DATA_SOURCE_ID_NAMED);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, embeddedDB, OSGI_DATA_SOURCE_ID_NAMED);
         requestInjection(dataSourceSpyProvider);
         bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }

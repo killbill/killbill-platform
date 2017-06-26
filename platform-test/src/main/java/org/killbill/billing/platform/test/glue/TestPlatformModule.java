@@ -27,14 +27,18 @@ import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.PluginInfo;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
+import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
+import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommand;
 import org.killbill.billing.util.nodes.NodeInfo;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.skife.config.ConfigurationObjectFactory;
 
 public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
 
@@ -93,7 +97,10 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        install(new DefaultOSGIModule(configSource, osgiConfigProperties));
+        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        final PlatformDBTestingHelper platformDBTestingHelper = PlatformDBTestingHelper.get();
+        final EmbeddedDB instance = platformDBTestingHelper.getInstance();
+        install(new DefaultOSGIModule(configSource, osgiConfigProperties, osgiDataSourceConfig, instance));
     }
 
     protected void configureJNDI() {

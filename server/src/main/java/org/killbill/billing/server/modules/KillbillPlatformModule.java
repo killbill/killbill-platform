@@ -24,6 +24,7 @@ import javax.sql.DataSource;
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.lifecycle.glue.LifecycleModule;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
+import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
@@ -112,7 +113,8 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Provides
     @Singleton
     protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, MAIN_DATA_SOURCE_ID);
+        EmbeddedDB embeddedDB = new EmbeddedDBProvider(daoConfig).get();
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, MAIN_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
     }
@@ -121,7 +123,8 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Named(SHIRO_DATA_SOURCE_ID_NAMED)
     @Singleton
     protected DataSource provideShiroDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, SHIRO_DATA_SOURCE_ID);
+        EmbeddedDB embeddedDB = new EmbeddedDBProvider(daoConfig).get();
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, SHIRO_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
     }
@@ -156,7 +159,9 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource));
+        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        EmbeddedDB embeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
+        install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, embeddedDB));
     }
 
     protected void configureJNDI() {
