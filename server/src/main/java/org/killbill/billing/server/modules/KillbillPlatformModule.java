@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -64,6 +64,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     protected final KillbillServerConfig serverConfig;
 
     protected DaoConfig daoConfig;
+    protected EmbeddedDB embeddedDB;
 
     public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
         super(configSource);
@@ -113,7 +114,6 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Provides
     @Singleton
     protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        EmbeddedDB embeddedDB = new EmbeddedDBProvider(daoConfig).get();
         final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, MAIN_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
@@ -123,7 +123,6 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Named(SHIRO_DATA_SOURCE_ID_NAMED)
     @Singleton
     protected DataSource provideShiroDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        EmbeddedDB embeddedDB = new EmbeddedDBProvider(daoConfig).get();
         final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, SHIRO_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
@@ -142,7 +141,8 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureEmbeddedDB() {
-        bind(EmbeddedDB.class).toProvider(EmbeddedDBProvider.class).asEagerSingleton();
+        embeddedDB = new EmbeddedDBProvider(daoConfig).get();
+        bind(EmbeddedDB.class).toInstance(embeddedDB);
     }
 
     protected void configureLifecycle() {
@@ -159,9 +159,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
-        EmbeddedDB embeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
-        install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, embeddedDB));
+        install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, embeddedDB));
     }
 
     protected void configureJNDI() {

@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -61,18 +61,13 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
     private final OSGIConfigProperties osgiConfigProperties;
 
-    private final OSGIDataSourceConfig osgiDataSourceConfig;
-
     private final EmbeddedDB embeddedDB;
 
-    public DefaultOSGIModule(
-            final KillbillConfigSource configSource,
-            final OSGIConfigProperties osgiConfigProperties,
-            final OSGIDataSourceConfig osgiDataSourceConfig,
-            final EmbeddedDB embeddedDB) {
+    public DefaultOSGIModule(final KillbillConfigSource configSource,
+                             final OSGIConfigProperties osgiConfigProperties,
+                             final EmbeddedDB embeddedDB) {
         super(configSource);
         this.osgiConfigProperties = osgiConfigProperties;
-        this.osgiDataSourceConfig = osgiDataSourceConfig;
         this.embeddedDB = embeddedDB;
     }
 
@@ -89,10 +84,9 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
     }
 
     protected void installDataSource() {
-        // final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiDataSourceConfig);
-        // bind(EmbeddedDB.class).toInstance(embeddedDB);
 
         final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, embeddedDB, OSGI_DATA_SOURCE_ID_NAMED);
         requestInjection(dataSourceSpyProvider);
