@@ -159,7 +159,9 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, embeddedDB));
+        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        final EmbeddedDB osgiEmbeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
+        install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, osgiEmbeddedDB));
     }
 
     protected void configureJNDI() {

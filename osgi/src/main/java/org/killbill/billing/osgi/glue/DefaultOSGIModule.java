@@ -60,15 +60,18 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
     public static final String OSGI_NAMED = "osgi";
 
     private final OSGIConfigProperties osgiConfigProperties;
+    private final OSGIDataSourceConfig osgiDataSourceConfig;
 
-    private final EmbeddedDB embeddedDB;
+    private final EmbeddedDB osgiEmbeddedDB;
 
     public DefaultOSGIModule(final KillbillConfigSource configSource,
                              final OSGIConfigProperties osgiConfigProperties,
-                             final EmbeddedDB embeddedDB) {
+                             final OSGIDataSourceConfig osgiDataSourceConfig,
+                             final EmbeddedDB osgiEmbeddedDB) {
         super(configSource);
         this.osgiConfigProperties = osgiConfigProperties;
-        this.embeddedDB = embeddedDB;
+        this.osgiDataSourceConfig = osgiDataSourceConfig;
+        this.osgiEmbeddedDB = osgiEmbeddedDB;
     }
 
     protected void installConfig() {
@@ -84,11 +87,10 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
     }
 
     protected void installDataSource() {
-        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiDataSourceConfig);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, embeddedDB, OSGI_DATA_SOURCE_ID_NAMED);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID_NAMED);
         requestInjection(dataSourceSpyProvider);
         bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }
