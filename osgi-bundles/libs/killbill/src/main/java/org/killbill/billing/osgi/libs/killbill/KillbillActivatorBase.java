@@ -20,6 +20,7 @@ package org.killbill.billing.osgi.libs.killbill;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +32,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
 public abstract class KillbillActivatorBase implements BundleActivator {
+
+    private ScheduledExecutorService restartMechanismExecutorService = null;
 
     @Deprecated
     private static final String JRUBY_PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.jruby.restart.delay.secs";
@@ -77,12 +80,16 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-
         logSafely(LogService.LOG_INFO, String.format("OSGI bundle='%s' received STOP command", context.getBundle().getSymbolicName()));
 
         if (restartFuture != null) {
             restartFuture.cancel(true);
         }
+
+        if (restartMechanismExecutorService != null) {
+            restartMechanismExecutorService.shutdownNow();
+        }
+
         stopAllButRestartMechanism(context);
     }
 
@@ -163,7 +170,9 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             restartDelaySecProperty = configProperties.getString(PLUGINS_RESTART_DELAY_SECS);
         }
         final Integer restartDelaySecs = restartDelaySecProperty == null ? 5 : Integer.parseInt(restartDelaySecProperty);
-        restartFuture = Executors.newSingleThreadScheduledExecutor()
+
+        restartMechanismExecutorService = Executors.newSingleThreadScheduledExecutor();
+        restartFuture = restartMechanismExecutorService
                                  .scheduleWithFixedDelay(new Runnable() {
                                                              long lastRestartMillis = System.currentTimeMillis();
 

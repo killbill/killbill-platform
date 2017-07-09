@@ -111,6 +111,11 @@ public class DefaultOSGIService implements OSGIService {
             framework.waitForStop(0);
 
             installedBundles.clear();
+
+            // This will call the stop() method for the bundles
+            bundleRegistry.stopBundles();
+            // Tell the plugins all bundles have stopped
+            killbillActivator.sendEvent("org/killbill/billing/osgi/lifecycle/STOPPED", new HashMap<String, String>());
         } catch (final BundleException e) {
             logger.error("Failed to Stop Killbill OSGIService " + e.getMessage());
         } catch (final InterruptedException e) {

@@ -32,11 +32,15 @@ import org.killbill.billing.osgi.api.PluginServiceInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 public class BundleRegistry {
+
+    private static final Logger log = LoggerFactory.getLogger(BundleRegistry.class);
 
     private final FileInstall fileInstall;
     private final Map<String, BundleWithMetadata> registry;
@@ -80,19 +84,33 @@ public class BundleRegistry {
 
         final BundleWithMetadata bundle = registry.get(pluginName);
         if (bundle != null && (pluginVersion == null || bundle.getVersion().equals(pluginVersion))) {
-            if (bundle.getBundle().getState() == Bundle.ACTIVE) {
-                bundle.getBundle().stop();
-            }
-            // The spec says that uninstall should always succeed
-            bundle.getBundle().uninstall();
-            registry.remove(bundle.getPluginName());
+            stopAndUninstallBundle(bundle.getBundle(), pluginName);
         }
         return bundle;
+    }
+
+    private void stopAndUninstallBundle(final Bundle bundle, final String pluginName) throws BundleException {
+        if (bundle.getState() == Bundle.ACTIVE) {
+            bundle.stop();
+        }
+        // The spec says that uninstall should always succeed
+        bundle.uninstall();
+        registry.remove(pluginName);
     }
 
     public void startBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             fileInstall.startBundle(bundleWithConfig.getBundle());
+        }
+    }
+
+    public void stopBundles() {
+        for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
+            try {
+                stopAndUninstallBundle(bundleWithConfig.getBundle(), bundleWithConfig.getConfig().getPluginName());
+            } catch (final BundleException e) {
+                log.warn("Unable to stop bundle", e);
+            }
         }
     }
 
