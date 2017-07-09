@@ -90,4 +90,13 @@ public class Tracker {
         log.debug("Tracking {}: {}={}", category, key, sanitizedValue);
         tracker.trackEvent(category, key, sanitizedValue);
     }
+
+    public void close() {
+        try {
+            // We are in a background thread, hence the generous delay
+            JGoogleAnalyticsTracker.completeBackgroundTasks(30000);
+        } finally {
+            JGoogleAnalyticsTracker.stopBackgroundThread(0);
+        }
+    }
 }

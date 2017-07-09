@@ -97,7 +97,11 @@ public class UpdateChecker {
 
         // Send anonymous data
         final Tracker tracker = new Tracker(configSource, productInfo, servletContext);
-        tracker.track();
+        try {
+            tracker.track();
+        } finally {
+            tracker.close();
+        }
     }
 
     private boolean shouldSkipUpdateCheck() {
