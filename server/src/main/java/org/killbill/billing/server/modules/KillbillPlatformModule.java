@@ -64,7 +64,8 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     protected final KillbillServerConfig serverConfig;
 
     protected DaoConfig daoConfig;
-    protected EmbeddedDB embeddedDB;
+    protected EmbeddedDB mainEmbeddedDB;
+    protected EmbeddedDB shiroEmbeddedDB;
 
     public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
         super(configSource);
@@ -77,7 +78,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
         configureClock();
         configureDao();
         configureConfig();
-        configureEmbeddedDB();
+        configureEmbeddedDBs();
         configureLifecycle();
         configureBuses();
         configureNotificationQ();
@@ -114,7 +115,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Provides
     @Singleton
     protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, MAIN_DATA_SOURCE_ID);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, mainEmbeddedDB, MAIN_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
     }
@@ -123,7 +124,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Named(SHIRO_DATA_SOURCE_ID_NAMED)
     @Singleton
     protected DataSource provideShiroDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, SHIRO_DATA_SOURCE_ID);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, shiroEmbeddedDB, SHIRO_DATA_SOURCE_ID);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
     }
@@ -140,9 +141,13 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
         bind(KillbillServerConfig.class).toInstance(serverConfig);
     }
 
-    protected void configureEmbeddedDB() {
-        embeddedDB = new EmbeddedDBProvider(daoConfig).get();
-        bind(EmbeddedDB.class).toInstance(embeddedDB);
+    protected void configureEmbeddedDBs() {
+        mainEmbeddedDB = new EmbeddedDBProvider(daoConfig).get();
+        bind(EmbeddedDB.class).toInstance(mainEmbeddedDB);
+
+        // Same database, but different pool: clone the object so the shutdown sequence cleans the pool properly
+        shiroEmbeddedDB = new EmbeddedDBProvider(daoConfig).get();
+        bind(EmbeddedDB.class).annotatedWith(Names.named(SHIRO_DATA_SOURCE_ID_NAMED)).toInstance(shiroEmbeddedDB);
     }
 
     protected void configureLifecycle() {
@@ -161,6 +166,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     protected void configureOSGI() {
         final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         final EmbeddedDB osgiEmbeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
+        bind(EmbeddedDB.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiEmbeddedDB);
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, osgiEmbeddedDB));
     }
 

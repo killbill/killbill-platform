@@ -33,6 +33,7 @@ import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.config.MetricsGraphiteConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
@@ -74,7 +75,9 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.name.Names;
 import com.google.inject.servlet.ServletModule;
 
 public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
@@ -89,7 +92,9 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected Injector injector;
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
-    protected EmbeddedDB embeddedDB;
+    protected EmbeddedDB mainEmbeddedDB;
+    protected EmbeddedDB shiroEmbeddedDB;
+    protected EmbeddedDB osgiEmbeddedDB;
     protected JmxReporter metricsJMXReporter;
 
     @Override
@@ -121,7 +126,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         stopLifecycle();
 
-        stopEmbeddedDB();
+        stopEmbeddedDBs();
 
         stopMetrics();
     }
@@ -160,7 +165,9 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         event.getServletContext().setAttribute(Injector.class.getName(), injector);
 
         // Already started at this point - we just need the instance for shutdown
-        embeddedDB = injector.getInstance(EmbeddedDB.class);
+        mainEmbeddedDB = injector.getInstance(EmbeddedDB.class);
+        shiroEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.SHIRO_DATA_SOURCE_ID_NAMED)));
+        osgiEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.OSGI_DATA_SOURCE_ID_NAMED)));
 
         killbillLifecycle = injector.getInstance(Lifecycle.class);
         killbillBusService = injector.getInstance(BusService.class);
@@ -292,7 +299,13 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void stopLifecycleStage3() {
     }
 
-    protected void stopEmbeddedDB() {
+    protected void stopEmbeddedDBs() {
+        stopEmbeddedDB(osgiEmbeddedDB);
+        stopEmbeddedDB(shiroEmbeddedDB);
+        stopEmbeddedDB(mainEmbeddedDB);
+    }
+
+    protected void stopEmbeddedDB(final EmbeddedDB embeddedDB) {
         if (embeddedDB != null) {
             try {
                 embeddedDB.stop();
