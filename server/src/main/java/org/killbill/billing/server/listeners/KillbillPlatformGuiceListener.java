@@ -51,6 +51,7 @@ import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.weakref.jmx.MBeanExporter;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.util.StatusViaSLF4JLoggerFactory;
@@ -139,6 +140,8 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         stopEmbeddedDBs();
 
         stopMetrics();
+
+        removeJMXExports();
 
         stopLogging();
     }
@@ -348,6 +351,13 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void stopMetrics() {
         if (metricsJMXReporter != null) {
             metricsJMXReporter.stop();
+        }
+    }
+
+    private void removeJMXExports() {
+        final MBeanExporter mBeanExporter = injector.getInstance(MBeanExporter.class);
+        if (mBeanExporter != null) {
+            mBeanExporter.unexportAllAndReportMissing();
         }
     }
 
