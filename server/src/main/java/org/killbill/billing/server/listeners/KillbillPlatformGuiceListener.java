@@ -48,9 +48,14 @@ import org.killbill.commons.skeleton.modules.StatsModule;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.StatusViaSLF4JLoggerFactory;
+import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.spi.ContextAwareBase;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
@@ -134,6 +139,8 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         stopEmbeddedDBs();
 
         stopMetrics();
+
+        stopLogging();
     }
 
     protected void initializeConfig() throws IOException, URISyntaxException {
@@ -341,6 +348,18 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void stopMetrics() {
         if (metricsJMXReporter != null) {
             metricsJMXReporter.stop();
+        }
+    }
+
+    protected void stopLogging() {
+        // We don't use LogbackServletContextListener to make sure Logback is up until the end
+        final ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
+        if (iLoggerFactory instanceof LoggerContext) {
+            final LoggerContext loggerContext = (LoggerContext) iLoggerFactory;
+            final ContextAware contextAwareBase = new ContextAwareBase();
+            contextAwareBase.setContext(loggerContext);
+            StatusViaSLF4JLoggerFactory.addInfo("About to stop " + loggerContext.getClass().getCanonicalName() + " [" + loggerContext.getName() + "]", this);
+            loggerContext.stop();
         }
     }
 
