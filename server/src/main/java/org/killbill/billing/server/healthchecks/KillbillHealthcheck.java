@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -18,24 +18,59 @@
 
 package org.killbill.billing.server.healthchecks;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
 import com.codahale.metrics.health.HealthCheck;
 
+@Singleton
 public class KillbillHealthcheck extends HealthCheck {
+
+    private static final Logger logger = LoggerFactory.getLogger(KillbillHealthcheck.class);
+
+    private static final String OK = "OK";
+    private static final String OUT_OF_ROTATION = "Out of rotation";
+
+    private final AtomicBoolean outOfRotation = new AtomicBoolean(true);
 
     @Override
     public Result check() {
-        try {
-            // TODO obviously needs more than that
-            return Result.healthy();
-        } catch (final Exception e) {
-            return Result.unhealthy(e);
+        if (outOfRotation.get()) {
+            return buildHealthcheckResponse(false, OUT_OF_ROTATION);
+        } else {
+            return buildHealthcheckResponse(true, OK);
         }
     }
 
     @Managed(description = "Basic killbill healthcheck")
     public boolean isHealthy() {
         return check().isHealthy();
+    }
+
+    @Managed(description = "Put in rotation")
+    public void putInRotation() {
+        logger.warn("Putting host in rotation");
+        outOfRotation.set(false);
+    }
+
+    @Managed(description = "Put out of rotation")
+    public void putOutOfRotation() {
+        logger.warn("Putting host out of rotation");
+        outOfRotation.set(true);
+    }
+
+    private Result buildHealthcheckResponse(final boolean healthy, final String message) {
+        final ResultBuilder resultBuilder = Result.builder();
+        if (healthy) {
+            resultBuilder.healthy();
+        } else {
+            resultBuilder.unhealthy();
+        }
+        return resultBuilder.withMessage(message).build();
     }
 }

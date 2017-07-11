@@ -21,6 +21,7 @@ package org.killbill.billing.server.filters;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 
+import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
 import org.killbill.billing.server.updatechecker.UpdateChecker;
 import org.skife.config.ConfigSource;
 import org.slf4j.Logger;
@@ -45,5 +46,9 @@ public class KillbillGuiceFilter extends GuiceFilter {
         final ConfigSource configSource = injector.getInstance(ConfigSource.class);
         final UpdateChecker checker = new UpdateChecker(configSource);
         checker.check(filterConfig.getServletContext());
+
+        // The host will be put out of rotation in KillbillPlatformGuiceListener
+        final KillbillHealthcheck killbillHealthcheck = injector.getInstance(KillbillHealthcheck.class);
+        killbillHealthcheck.putInRotation();
     }
 }

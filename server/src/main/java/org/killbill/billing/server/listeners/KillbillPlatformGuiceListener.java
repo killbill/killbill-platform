@@ -86,6 +86,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     public static final ImmutableList<String> METRICS_SERVLETS_PATHS = ImmutableList.<String>of("/1.0/healthcheck", "/1.0/metrics", "/1.0/ping", "/1.0/threads");
 
+    protected KillbillHealthcheck killbillHealthcheck;
     protected KillbillServerConfig config;
     protected KillbillConfigSource configSource;
     protected MetricsGraphiteConfig metricsGraphiteConfig;
@@ -113,10 +114,14 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         registerEhcacheMBeans();
 
         startLifecycle();
+
+        // The host will be put in rotation in KillbillGuiceFilter, once Jersey is fully initialized
     }
 
     @Override
     public void contextDestroyed(final ServletContextEvent sce) {
+        putOutOfRotation();
+
         super.contextDestroyed(sce);
 
         // Guice error, no need to fill the screen with useless stack traces
@@ -171,6 +176,8 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         killbillLifecycle = injector.getInstance(Lifecycle.class);
         killbillBusService = injector.getInstance(BusService.class);
+
+        killbillHealthcheck = injector.getInstance(KillbillHealthcheck.class);
     }
 
     protected ServletModule getServletModule() {
@@ -275,6 +282,12 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void startLifecycleStage3() {
+    }
+
+    protected void putOutOfRotation() {
+        if (killbillHealthcheck != null) {
+            killbillHealthcheck.putOutOfRotation();
+        }
     }
 
     protected void stopLifecycle() {
