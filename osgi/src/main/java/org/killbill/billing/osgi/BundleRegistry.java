@@ -107,7 +107,9 @@ public class BundleRegistry {
     public void stopBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             try {
-                stopAndUninstallBundle(bundleWithConfig.getBundle(), bundleWithConfig.getConfig().getPluginName());
+                if (bundleWithConfig.getBundle() != null && bundleWithConfig.getConfig() != null) {
+                    stopAndUninstallBundle(bundleWithConfig.getBundle(), bundleWithConfig.getConfig().getPluginName());
+                }
             } catch (final BundleException e) {
                 log.warn("Unable to stop bundle", e);
             }
