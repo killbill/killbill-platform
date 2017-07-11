@@ -287,6 +287,17 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void putOutOfRotation() {
         if (killbillHealthcheck != null) {
             killbillHealthcheck.putOutOfRotation();
+
+            if (config.getShutdownDelay() != null && config.getShutdownDelay().getMillis() > 0) {
+                logger.info("Delaying shutdown sequence for {}ms", config.getShutdownDelay().getMillis());
+                try {
+                    Thread.sleep(config.getShutdownDelay().getMillis());
+                } catch (final InterruptedException e) {
+                    logger.warn("Interrupted while sleeping", e);
+                    Thread.currentThread().interrupt();
+                }
+                logger.info("Resuming shutdown sequence");
+            }
         }
     }
 
