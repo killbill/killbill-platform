@@ -1,3 +1,7 @@
+0.36.10
+    Shutdown sequence enhancements
+    Enhance healthcheck support for LB
+
 0.36.9
     Support unpooled database connections (mainly for PGBouncer)
     Update to killbill-oss-parent 0.140.33
