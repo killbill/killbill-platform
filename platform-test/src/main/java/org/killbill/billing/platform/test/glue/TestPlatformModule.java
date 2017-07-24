@@ -1,6 +1,6 @@
 /*
- * Copyright 2014-2016 Groupon, Inc
- * Copyright 2014-2016 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -27,14 +27,18 @@ import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.PluginInfo;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
+import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
+import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommand;
 import org.killbill.billing.util.nodes.NodeInfo;
+import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.skife.config.ConfigurationObjectFactory;
 
 public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
 
@@ -93,7 +97,9 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        install(new DefaultOSGIModule(configSource, osgiConfigProperties));
+        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        final EmbeddedDB embeddedDB = PlatformDBTestingHelper.get().getInstance();
+        install(new DefaultOSGIModule(configSource, osgiConfigProperties, osgiDataSourceConfig, embeddedDB));
     }
 
     protected void configureJNDI() {

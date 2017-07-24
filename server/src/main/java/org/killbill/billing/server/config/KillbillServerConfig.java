@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -22,6 +22,7 @@ import org.killbill.billing.platform.api.KillbillPlatformConfig;
 import org.skife.config.Config;
 import org.skife.config.Default;
 import org.skife.config.Description;
+import org.skife.config.TimeSpan;
 
 public interface KillbillServerConfig extends KillbillPlatformConfig {
 
@@ -44,4 +45,9 @@ public interface KillbillServerConfig extends KillbillPlatformConfig {
     @Default("false")
     @Description("Allow Kill Bill to return gzip json when Content-Encoding is set with gzip")
     public boolean isConfiguredToReturnGZIPResponses();
+
+    @Config(KILL_BILL_NAMESPACE + "server.shutdownDelay")
+    @Default("0s")
+    @Description("Shutdown delay before starting shutdown sequence")
+    public TimeSpan getShutdownDelay();
 }

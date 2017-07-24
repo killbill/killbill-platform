@@ -33,6 +33,7 @@ import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.config.MetricsGraphiteConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
@@ -47,9 +48,15 @@ import org.killbill.commons.skeleton.modules.StatsModule;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.weakref.jmx.MBeanExporter;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.util.StatusViaSLF4JLoggerFactory;
+import ch.qos.logback.core.spi.ContextAware;
+import ch.qos.logback.core.spi.ContextAwareBase;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
@@ -74,7 +81,9 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.name.Names;
 import com.google.inject.servlet.ServletModule;
 
 public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
@@ -83,13 +92,16 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     public static final ImmutableList<String> METRICS_SERVLETS_PATHS = ImmutableList.<String>of("/1.0/healthcheck", "/1.0/metrics", "/1.0/ping", "/1.0/threads");
 
+    protected KillbillHealthcheck killbillHealthcheck;
     protected KillbillServerConfig config;
     protected KillbillConfigSource configSource;
     protected MetricsGraphiteConfig metricsGraphiteConfig;
     protected Injector injector;
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
-    protected EmbeddedDB embeddedDB;
+    protected EmbeddedDB mainEmbeddedDB;
+    protected EmbeddedDB shiroEmbeddedDB;
+    protected EmbeddedDB osgiEmbeddedDB;
     protected JmxReporter metricsJMXReporter;
 
     @Override
@@ -108,10 +120,14 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         registerEhcacheMBeans();
 
         startLifecycle();
+
+        // The host will be put in rotation in KillbillGuiceFilter, once Jersey is fully initialized
     }
 
     @Override
     public void contextDestroyed(final ServletContextEvent sce) {
+        putOutOfRotation();
+
         super.contextDestroyed(sce);
 
         // Guice error, no need to fill the screen with useless stack traces
@@ -121,9 +137,13 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         stopLifecycle();
 
-        stopEmbeddedDB();
+        stopEmbeddedDBs();
 
         stopMetrics();
+
+        removeJMXExports();
+
+        stopLogging();
     }
 
     protected void initializeConfig() throws IOException, URISyntaxException {
@@ -160,10 +180,14 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         event.getServletContext().setAttribute(Injector.class.getName(), injector);
 
         // Already started at this point - we just need the instance for shutdown
-        embeddedDB = injector.getInstance(EmbeddedDB.class);
+        mainEmbeddedDB = injector.getInstance(EmbeddedDB.class);
+        shiroEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.SHIRO_DATA_SOURCE_ID_NAMED)));
+        osgiEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.OSGI_DATA_SOURCE_ID_NAMED)));
 
         killbillLifecycle = injector.getInstance(Lifecycle.class);
         killbillBusService = injector.getInstance(BusService.class);
+
+        killbillHealthcheck = injector.getInstance(KillbillHealthcheck.class);
     }
 
     protected ServletModule getServletModule() {
@@ -270,6 +294,23 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void startLifecycleStage3() {
     }
 
+    protected void putOutOfRotation() {
+        if (killbillHealthcheck != null) {
+            killbillHealthcheck.putOutOfRotation();
+
+            if (config.getShutdownDelay() != null && config.getShutdownDelay().getMillis() > 0) {
+                logger.info("Delaying shutdown sequence for {}ms", config.getShutdownDelay().getMillis());
+                try {
+                    Thread.sleep(config.getShutdownDelay().getMillis());
+                } catch (final InterruptedException e) {
+                    logger.warn("Interrupted while sleeping", e);
+                    Thread.currentThread().interrupt();
+                }
+                logger.info("Resuming shutdown sequence");
+            }
+        }
+    }
+
     protected void stopLifecycle() {
         stopLifecycleStage1();
 
@@ -292,7 +333,13 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void stopLifecycleStage3() {
     }
 
-    protected void stopEmbeddedDB() {
+    protected void stopEmbeddedDBs() {
+        stopEmbeddedDB(osgiEmbeddedDB);
+        stopEmbeddedDB(shiroEmbeddedDB);
+        stopEmbeddedDB(mainEmbeddedDB);
+    }
+
+    protected void stopEmbeddedDB(final EmbeddedDB embeddedDB) {
         if (embeddedDB != null) {
             try {
                 embeddedDB.stop();
@@ -304,6 +351,25 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void stopMetrics() {
         if (metricsJMXReporter != null) {
             metricsJMXReporter.stop();
+        }
+    }
+
+    private void removeJMXExports() {
+        final MBeanExporter mBeanExporter = injector.getInstance(MBeanExporter.class);
+        if (mBeanExporter != null) {
+            mBeanExporter.unexportAllAndReportMissing();
+        }
+    }
+
+    protected void stopLogging() {
+        // We don't use LogbackServletContextListener to make sure Logback is up until the end
+        final ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
+        if (iLoggerFactory instanceof LoggerContext) {
+            final LoggerContext loggerContext = (LoggerContext) iLoggerFactory;
+            final ContextAware contextAwareBase = new ContextAwareBase();
+            contextAwareBase.setContext(loggerContext);
+            StatusViaSLF4JLoggerFactory.addInfo("About to stop " + loggerContext.getClass().getCanonicalName() + " [" + loggerContext.getName() + "]", this);
+            loggerContext.stop();
         }
     }
 
