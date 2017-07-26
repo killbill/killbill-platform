@@ -41,6 +41,11 @@ public interface KillbillServerConfig extends KillbillPlatformConfig {
     @Description("Server base url")
     public String getBaseUrl();
 
+    @Config(KILL_BILL_NAMESPACE + "server.region")
+    @Default("local")
+    @Description("Region or data center where the server is deployed")
+    public String getRegion();
+
     @Config(KILL_BILL_NAMESPACE + "server.http.gzip")
     @Default("false")
     @Description("Allow Kill Bill to return gzip json when Content-Encoding is set with gzip")

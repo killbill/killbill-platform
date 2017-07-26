@@ -1,3 +1,6 @@
+0.36.11
+    Multi-regions support
+
 0.36.10
     Shutdown sequence enhancements
     Enhance healthcheck support for LB
