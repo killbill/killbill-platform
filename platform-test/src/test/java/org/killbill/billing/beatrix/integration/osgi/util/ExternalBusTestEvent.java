@@ -1,6 +1,6 @@
 /*
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -41,7 +41,11 @@ public class ExternalBusTestEvent implements ExtBusEvent, BusEvent {
     private final UUID userToken;
 
     public ExternalBusTestEvent() {
-        this(UUID.randomUUID(), ObjectType.ACCOUNT, ExtBusEventType.ACCOUNT_CREATION, UUID.randomUUID(), UUID.randomUUID(), null, 1L, 2L, UUID.randomUUID());
+        this(ExtBusEventType.ACCOUNT_CREATION, null, UUID.randomUUID());
+    }
+
+    public ExternalBusTestEvent(final ExtBusEventType extBusEventType, final String metadata, final UUID userToken) {
+        this(UUID.randomUUID(), ObjectType.ACCOUNT, extBusEventType, UUID.randomUUID(), UUID.randomUUID(), metadata, 1L, 2L, userToken);
     }
 
     @JsonCreator
@@ -72,7 +76,7 @@ public class ExternalBusTestEvent implements ExtBusEvent, BusEvent {
 
     @Override
     public String getMetaData() {
-        return null;
+        return metaData;
     }
 
     @Override

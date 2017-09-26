@@ -28,9 +28,11 @@ import org.killbill.billing.osgi.DefaultOSGIService;
 import org.killbill.billing.osgi.FileInstall;
 import org.killbill.billing.osgi.KillbillActivator;
 import org.killbill.billing.osgi.KillbillEventObservable;
+import org.killbill.billing.osgi.KillbillEventRetriableBusHandler;
 import org.killbill.billing.osgi.OSGIListener;
 import org.killbill.billing.osgi.PureOSGIBundleFinder;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
+import org.killbill.billing.osgi.api.KillbillEventRetriableBusHandlerService;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
@@ -106,6 +108,9 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(PluginConfigServiceApi.class).to(DefaultPluginConfigServiceApi.class).asEagerSingleton();
         bind(OSGIKillbill.class).to(DefaultOSGIKillbill.class).asEagerSingleton();
         bind(KillbillEventObservable.class).asEagerSingleton();
+        bind(KillbillEventRetriableBusHandlerService.class).to(KillbillEventRetriableBusHandler.class);
+        // Required, because KillbillActivator will inject the class directly (KillbillEventRetriableBusHandlerService is injected by the lifecycle)
+        bind(KillbillEventRetriableBusHandler.class).asEagerSingleton();
         bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
     }
 
