@@ -146,12 +146,14 @@ public class KillbillEventRetriableBusHandler extends RetryableService implement
 
         @Override
         public Long getSearchKey1() {
-            return extBusEvent.getAccountId().getMostSignificantBits() & Long.MAX_VALUE;
+            final UUID accountId = extBusEvent.getAccountId();
+            return accountId == null ? null : accountId.getMostSignificantBits() & Long.MAX_VALUE;
         }
 
         @Override
         public Long getSearchKey2() {
-            return extBusEvent.getTenantId().getMostSignificantBits() & Long.MAX_VALUE;
+            final UUID tenantId = extBusEvent.getTenantId();
+            return tenantId == null ? null : tenantId.getMostSignificantBits() & Long.MAX_VALUE;
         }
 
         @Override
