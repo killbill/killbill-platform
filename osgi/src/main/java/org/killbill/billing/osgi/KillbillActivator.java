@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -71,6 +71,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final HttpService defaultHttpService;
     private final DataSource dataSource;
     private final Clock clock;
+    private final KillbillEventRetriableBusHandler killbillEventRetriableBusHandler;
     private final KillbillEventObservable observable;
     private final OSGIKillbillRegistrar registrar;
     private final OSGIConfigProperties configProperties;
@@ -87,6 +88,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
                              final Clock clock,
                              final BundleRegistry bundleRegistry,
                              final HttpService defaultHttpService,
+                             final KillbillEventRetriableBusHandler killbillEventRetriableBusHandler,
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
                              final MetricRegistry metricsRegistry,
@@ -96,6 +98,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
         this.clock = clock;
+        this.killbillEventRetriableBusHandler = killbillEventRetriableBusHandler;
         this.observable = observable;
         this.configProperties = configProperties;
         this.jndiManager = jndiManager;
@@ -148,7 +151,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         final Dictionary<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, "killbill");
 
-        observable.register();
+        killbillEventRetriableBusHandler.register();
 
         registrar.registerService(context, OSGIKillbill.class, osgiKillbill, props);
         registrar.registerService(context, HttpService.class, defaultHttpService, props);
@@ -168,7 +171,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
 
         this.context = null;
         context.removeServiceListener(this);
-        observable.unregister();
+        killbillEventRetriableBusHandler.unregister();
         registrar.unregisterAll();
     }
 
