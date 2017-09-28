@@ -61,17 +61,19 @@
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
-            <artifactId>command</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.airlift</groupId>
             <artifactId>testing-postgresql-server</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>units</artifactId>
+            <version>1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
