@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.37-SNAPSHOT</version>
+        <version>0.37</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-test</artifactId>
@@ -62,13 +62,13 @@
         <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>testing-postgresql-server</artifactId>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
                 </exclusion>
             </exclusions>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
