@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2017 Groupon, Inc
+ * Copyright 2014-2017 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -23,39 +23,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Vector;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.killbill.billing.notification.plugin.api.ExtBusEvent;
-import org.killbill.bus.api.PersistentBus;
-import org.killbill.bus.api.PersistentBus.EventBusException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.AllowConcurrentEvents;
-import com.google.common.eventbus.Subscribe;
-
 public class KillbillEventObservable extends Observable {
-
-    private final Logger logger = LoggerFactory.getLogger(KillbillEventObservable.class);
-
-    private final PersistentBus externalBus;
-
-    @Inject
-    public KillbillEventObservable(@Named("externalBus") final PersistentBus externalBus) {
-        this.externalBus = externalBus;
-    }
-
-    public void register() throws EventBusException {
-        externalBus.register(this);
-    }
-
-    public void unregister() throws EventBusException {
-        deleteObservers();
-        if (externalBus != null) {
-            externalBus.unregister(this);
-        }
-    }
 
     //
     // Override notifyObservers from Observable to prevent from having to
@@ -69,13 +37,6 @@ public class KillbillEventObservable extends Observable {
         for (int i = arrLocal.length - 1; i >= 0; i--) {
             ((Observer) arrLocal[i]).update(this, arg);
         }
-    }
-
-    @AllowConcurrentEvents
-    @Subscribe
-    public void handleKillbillEvent(final ExtBusEvent event) {
-        logger.debug("Received external event " + event.toString());
-        setChangedAndNotifyObservers(event);
     }
 
     public void setChangedAndNotifyObservers(final Object event) {

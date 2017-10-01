@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.37-SNAPSHOT</version>
+        <version>0.38-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-test</artifactId>
@@ -61,17 +61,19 @@
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
-            <artifactId>command</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.airlift</groupId>
             <artifactId>testing-postgresql-server</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>units</artifactId>
+            <version>1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -95,6 +97,11 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-mxj</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>ST4</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
