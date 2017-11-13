@@ -36,6 +36,7 @@ import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.config.MetricsGraphiteConfig;
+import org.killbill.billing.server.config.MetricsInfluxDbConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
 import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
@@ -85,6 +86,9 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.servlet.ServletModule;
+import com.izettle.metrics.influxdb.InfluxDbReporter;
+import com.izettle.metrics.influxdb.InfluxDbSender;
+import com.izettle.metrics.influxdb.InfluxDbTcpSender;
 
 public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
@@ -96,6 +100,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected KillbillServerConfig config;
     protected KillbillConfigSource configSource;
     protected MetricsGraphiteConfig metricsGraphiteConfig;
+    protected MetricsInfluxDbConfig metricsInfluxDbConfig;
     protected Injector injector;
     protected Lifecycle killbillLifecycle;
     protected BusService killbillBusService;
@@ -152,6 +157,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         final ConfigurationObjectFactory configFactory = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
         config = configFactory.build(KillbillServerConfig.class);
         metricsGraphiteConfig = configFactory.build(MetricsGraphiteConfig.class);
+        metricsInfluxDbConfig = configFactory.build(MetricsInfluxDbConfig.class);
     }
 
     protected KillbillConfigSource getConfigSource() throws IOException, URISyntaxException {
@@ -249,6 +255,26 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
             logger.info(String.format("reporting metrics to %s:%d",
                                       metricsGraphiteConfig.getHostname(), metricsGraphiteConfig.getPort()));
+        }
+
+        // stream metric values to a InfluxDB server
+        if (metricsInfluxDbConfig.isInfluxDbReportingEnabled()) {
+            // Note: TCP protocol only for now
+            final InfluxDbSender influxDbTcpSender = new InfluxDbTcpSender(metricsInfluxDbConfig.getHostname(),
+                                                                           metricsInfluxDbConfig.getPort(),
+                                                                           metricsInfluxDbConfig.getSocketTimeout(),
+                                                                           metricsInfluxDbConfig.getDatabase(),
+                                                                           metricsInfluxDbConfig.getPrefix());
+            final InfluxDbReporter reporter = InfluxDbReporter.forRegistry(metricRegistry)
+                                                              .convertRatesTo(TimeUnit.SECONDS)
+                                                              .convertDurationsTo(TimeUnit.NANOSECONDS)
+                                                              .filter(MetricFilter.ALL)
+                                                              .build(influxDbTcpSender);
+
+            reporter.start(metricsInfluxDbConfig.getInterval(), TimeUnit.SECONDS);
+
+            logger.info(String.format("reporting metrics to %s:%d",
+                                      metricsInfluxDbConfig.getHostname(), metricsInfluxDbConfig.getPort()));
         }
 
         event.getServletContext().setAttribute(HealthCheckServlet.HEALTH_CHECK_REGISTRY, injector.getInstance(HealthCheckRegistry.class));
