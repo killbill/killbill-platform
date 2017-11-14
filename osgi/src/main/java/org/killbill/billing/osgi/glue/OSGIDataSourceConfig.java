@@ -132,4 +132,10 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Config(DATA_SOURCE_PROP_PREFIX + "poolingType")
     @Default("HIKARICP")
     DataSourceConnectionPoolingType getConnectionPoolingType();
+
+    @Override
+    @Description("Whether or not initialization should fail on error immediately")
+    @Config(DATA_SOURCE_PROP_PREFIX + "initializationFailFast")
+    @Default("false")
+    boolean isInitializationFailFast();
 }
