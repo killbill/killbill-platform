@@ -22,12 +22,19 @@ import org.skife.config.Config;
 import org.skife.config.Default;
 import org.skife.config.Description;
 
+import com.izettle.metrics.dw.SenderType;
+
 public interface MetricsInfluxDbConfig extends KillbillPlatformConfig {
 
     @Config(KILL_BILL_NAMESPACE + "metrics.influxDb")
     @Default("false")
     @Description("Whether metrics reporting to InfluxDB is enabled")
     public boolean isInfluxDbReportingEnabled();
+
+    @Config(KILL_BILL_NAMESPACE + "metrics.influxDb.senderType")
+    @Default("HTTP")
+    @Description("InfluxDb protocol")
+    public SenderType getSenderType();
 
     @Config(KILL_BILL_NAMESPACE + "metrics.influxDb.host")
     @Default("localhost")

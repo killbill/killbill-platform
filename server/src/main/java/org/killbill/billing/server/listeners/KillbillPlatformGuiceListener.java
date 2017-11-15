@@ -63,6 +63,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.health.HealthCheck;
@@ -86,9 +87,7 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
 import com.google.inject.servlet.ServletModule;
-import com.izettle.metrics.influxdb.InfluxDbReporter;
-import com.izettle.metrics.influxdb.InfluxDbSender;
-import com.izettle.metrics.influxdb.InfluxDbTcpSender;
+import com.izettle.metrics.dw.InfluxDbReporterFactory;
 
 public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
@@ -259,17 +258,17 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         // stream metric values to a InfluxDB server
         if (metricsInfluxDbConfig.isInfluxDbReportingEnabled()) {
-            // Note: TCP protocol only for now
-            final InfluxDbSender influxDbTcpSender = new InfluxDbTcpSender(metricsInfluxDbConfig.getHostname(),
-                                                                           metricsInfluxDbConfig.getPort(),
-                                                                           metricsInfluxDbConfig.getSocketTimeout(),
-                                                                           metricsInfluxDbConfig.getDatabase(),
-                                                                           metricsInfluxDbConfig.getPrefix());
-            final InfluxDbReporter reporter = InfluxDbReporter.forRegistry(metricRegistry)
-                                                              .convertRatesTo(TimeUnit.SECONDS)
-                                                              .convertDurationsTo(TimeUnit.NANOSECONDS)
-                                                              .filter(MetricFilter.ALL)
-                                                              .build(influxDbTcpSender);
+            final InfluxDbReporterFactory influxDbReporterFactory = new InfluxDbReporterFactory();
+            influxDbReporterFactory.setRateUnit(TimeUnit.SECONDS);
+            influxDbReporterFactory.setDurationUnit(TimeUnit.NANOSECONDS);
+            influxDbReporterFactory.setHost(metricsInfluxDbConfig.getHostname());
+            influxDbReporterFactory.setPort(metricsInfluxDbConfig.getPort());
+            influxDbReporterFactory.setReadTimeout(metricsInfluxDbConfig.getSocketTimeout());
+            influxDbReporterFactory.setDatabase(metricsInfluxDbConfig.getDatabase());
+            influxDbReporterFactory.setPrefix(metricsInfluxDbConfig.getPrefix());
+            influxDbReporterFactory.setSenderType(metricsInfluxDbConfig.getSenderType());
+
+            final ScheduledReporter reporter = influxDbReporterFactory.build(metricRegistry);
 
             reporter.start(metricsInfluxDbConfig.getInterval(), TimeUnit.SECONDS);
 
