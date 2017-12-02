@@ -1,3 +1,6 @@
+0.37.1
+    Merge features from master, mostly InfluxDB protocols
+
 0.36.12
     metrics: add InfluxDB integration
     osgi: add new config property org.killbill.billing.osgi.dao.initializationFailFast
