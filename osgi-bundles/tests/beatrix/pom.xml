@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform-osgi-test-bundles</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.37.1</version>
+        <version>0.37.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-test-beatrix</artifactId>
