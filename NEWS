@@ -1,3 +1,6 @@
+0.37.2
+    Update parent oss pom.xml to have the correct transitive dependencies in killbill
+
 0.37.1
     Merge features from master, mostly InfluxDB protocols
 
