@@ -171,7 +171,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         guiceModules = ImmutableList.<Module>of(getServletModule(),
                                                 getJacksonModule(),
-                                                new JMXModule(KillbillHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
+                                                new JMXModule(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
                                                 new StatsModule(METRICS_SERVLETS_PATHS.get(0),
                                                                 METRICS_SERVLETS_PATHS.get(1),
                                                                 METRICS_SERVLETS_PATHS.get(2),
