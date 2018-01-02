@@ -1,3 +1,6 @@
+0.36.13
+    Update to killbill-oss-parent 0.140.48
+
 0.36.12
     metrics: add InfluxDB integration
     osgi: add new config property org.killbill.billing.osgi.dao.initializationFailFast
