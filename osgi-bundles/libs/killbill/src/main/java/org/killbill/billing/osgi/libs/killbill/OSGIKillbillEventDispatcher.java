@@ -39,7 +39,10 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
 
     private final Map<Object, Observer> handlerToObserver;
 
+    private final String symbolicName;
+
     public OSGIKillbillEventDispatcher(final BundleContext context) {
+        symbolicName = context.getBundle().getSymbolicName();
         handlerToObserver = new HashMap<Object, Observer>();
         observableTracker = new ServiceTracker<Observable, Observable>(context, OBSERVABLE_SERVICE_NAME, null);
         observableTracker.open();
@@ -100,8 +103,16 @@ public class OSGIKillbillEventDispatcher extends OSGIKillbillLibraryBase {
                 }
 
                 final String topic = ((Event) arg).getTopic();
+                // Platform is up, all bundles/plugins have been started
                 if ("org/killbill/billing/osgi/lifecycle/STARTED".equals(topic)) {
                     handler.started();
+                } else if (("org/killbill/billing/osgi/plugin/START_PLUGIN".equals(topic) || "org/killbill/billing/osgi/plugin/RESTART_PLUGIN".equals(topic))) {
+
+                    final String symbolicNameProperty = (String) ((Event) arg).getProperty("symbolicName");
+                    // This specific plugin has been started/restarted
+                    if (symbolicNameProperty != null && symbolicNameProperty.equals(symbolicName)) {
+                        handler.started();
+                    }
                 }
             }
         };

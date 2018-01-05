@@ -18,6 +18,7 @@
 package org.killbill.billing.osgi;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import javax.inject.Inject;
 
@@ -60,9 +61,11 @@ public class OSGIListener {
     private final PluginFinder pluginFinder;
     private final PluginsInfoApi pluginsInfoApi;
     private final KillbillNodesApi nodesApi;
+    private final KillbillActivator killbillActivator;
 
     @Inject
-    public OSGIListener(final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final PluginsInfoApi pluginsInfoApi, final KillbillNodesApiHolder nodesApiHolder) {
+    public OSGIListener(final KillbillActivator killbillActivator, final BundleRegistry bundleRegistry, final PluginFinder pluginFinder, final PluginsInfoApi pluginsInfoApi, final KillbillNodesApiHolder nodesApiHolder) {
+        this.killbillActivator = killbillActivator;
         this.bundleRegistry = bundleRegistry;
         this.pluginFinder = pluginFinder;
         this.pluginsInfoApi = pluginsInfoApi;
@@ -113,10 +116,20 @@ public class OSGIListener {
                 throw new IllegalStateException("Unexpected type " + commandType);
         }
 
+
         final String defaultPluginVersion = pluginFinder.getPluginVersionSelectedForStart(nodeCommandMetadata.getPluginName());
         final boolean isSelectedForStart = defaultPluginVersion != null && nodeCommandMetadata.getPluginVersion() != null ? defaultPluginVersion.equals(nodeCommandMetadata.getPluginVersion()) : true; /* this is lie, we don't know */
 
         final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
+
+
+        final HashMap<String, String> eventProperties = new HashMap<String, String>();
+        eventProperties.put("pluginName", pluginName);
+        eventProperties.put("pluginKey", nodeCommandMetadata.getPluginKey());
+        eventProperties.put("symbolicName", symbolicName);
+        killbillActivator.sendEvent("org/killbill/billing/osgi/plugin/" + commandType, eventProperties);
+
+
         final PluginInfo pluginInfo = new DefaultPluginInfo(nodeCommandMetadata.getPluginKey(), symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
         nodesApi.notifyPluginChanged(pluginInfo, pluginsInfoApi.getPluginsInfo());
     }
