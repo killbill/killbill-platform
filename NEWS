@@ -1,3 +1,6 @@
+0.36.14
+    Configure HikariCP leak detection
+
 0.36.13
     Update to killbill-oss-parent 0.140.48
 
