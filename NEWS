@@ -7,6 +7,10 @@
 0.37.1
     Merge features from master, mostly InfluxDB protocols
 
+0.36.14
+    Configure HikariCP leak detection
+    Update to killbill-oss-parent 0.140.50
+
 0.36.13
     Update to killbill-oss-parent 0.140.48
 

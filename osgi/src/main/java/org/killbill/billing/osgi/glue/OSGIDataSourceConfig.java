@@ -61,6 +61,11 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Default("100")
     int getMaxActive();
 
+    @Description("Amount of time that a connection can be out of the pool before a message is logged indicating a possible connection leak")
+    @Config(DATA_SOURCE_PROP_PREFIX + "leakDetectionThreshold")
+    @Default("60")
+    long getLeakDetectionThreshold();
+
     @Override
     @Description("How long to wait before a connection attempt to the database is considered timed out")
     @Config(DATA_SOURCE_PROP_PREFIX + "connectionTimeout")
