@@ -1,3 +1,6 @@
+0.37.5
+    org.killbill.billing.osgi.dao.leakDetectionThreshold to TimeSpan
+
 0.37.4
     Configure HikariCP leak detection
     Update to killbill-oss-parent 0.140.21
