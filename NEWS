@@ -11,6 +11,9 @@
 0.37.1
     Merge features from master, mostly InfluxDB protocols
 
+0.36.15
+    change org.killbill.billing.osgi.dao.leakDetectionThreshold to TimeSpan
+
 0.36.14
     Configure HikariCP leak detection
     Update to killbill-oss-parent 0.140.50
