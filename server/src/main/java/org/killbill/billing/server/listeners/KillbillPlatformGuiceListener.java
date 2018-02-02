@@ -38,6 +38,7 @@ import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.config.MetricsGraphiteConfig;
 import org.killbill.billing.server.config.MetricsInfluxDbConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
+import org.killbill.billing.server.healthchecks.KillbillQueuesHealthcheck;
 import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
@@ -170,12 +171,12 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         guiceModules = ImmutableList.<Module>of(getServletModule(),
                                                 getJacksonModule(),
-                                                new JMXModule(KillbillHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
+                                                new JMXModule(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
                                                 new StatsModule(METRICS_SERVLETS_PATHS.get(0),
                                                                 METRICS_SERVLETS_PATHS.get(1),
                                                                 METRICS_SERVLETS_PATHS.get(2),
                                                                 METRICS_SERVLETS_PATHS.get(3),
-                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class, ThreadDeadlockHealthCheck.class)),
+                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, ThreadDeadlockHealthCheck.class)),
                                                 getModule(event.getServletContext()));
 
         // Start the Guice machinery
