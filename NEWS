@@ -1,3 +1,6 @@
+0.37.6
+    Implement healtcheck logic for queues
+
 0.37.5
     org.killbill.billing.osgi.dao.leakDetectionThreshold to TimeSpan
 
