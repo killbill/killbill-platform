@@ -123,7 +123,7 @@ public interface OSGIDataSourceConfig extends DaoConfig {
 
     @Description("MySQL server version")
     @Config(DATA_SOURCE_PROP_PREFIX + "mysqlServerVersion")
-    @Default("4.0")
+    @Default("5.1")
     String getMySQLServerVersion();
 
     @Override
