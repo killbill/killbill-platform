@@ -143,4 +143,10 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Config(DATA_SOURCE_PROP_PREFIX + "initializationFailFast")
     @Default("false")
     boolean isInitializationFailFast();
+
+    @Override
+    @Description("Set the default transaction isolation level")
+    @Config(DATA_SOURCE_PROP_PREFIX + "transactionIsolationLevel")
+    @Default("TRANSACTION_READ_COMMITTED")
+    String getTransactionIsolationLevel();
 }
