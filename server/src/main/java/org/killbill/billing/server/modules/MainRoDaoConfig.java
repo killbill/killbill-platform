@@ -153,4 +153,10 @@ public interface MainRoDaoConfig extends DaoConfig {
     @Config(DATA_SOURCE_PROP_PREFIX + "transactionIsolationLevel")
     @Default("TRANSACTION_READ_COMMITTED")
     String getTransactionIsolationLevel();
+
+    @Override
+    @Description("Whether to put connections in read-only mode")
+    @Config(DATA_SOURCE_PROP_PREFIX + "readOnly")
+    @Default("true")
+    boolean isReadOnly();
 }
