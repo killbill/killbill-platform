@@ -112,6 +112,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
         bind(IDBI.class).toProvider(DBIProvider.class).asEagerSingleton();
         bind(IDBI.class).annotatedWith(Names.named(DefaultQueueLifecycle.QUEUE_NAME)).toProvider(DBIProvider.class).asEagerSingleton();
+        bind(IDBI.class).annotatedWith(Names.named(MAIN_RO_DATA_SOURCE_ID)).toProvider(RODBIProvider.class).asEagerSingleton();
     }
 
     // https://code.google.com/p/google-guice/issues/detail?id=627
