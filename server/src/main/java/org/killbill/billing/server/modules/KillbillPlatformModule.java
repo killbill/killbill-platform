@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2017 Groupon, Inc
- * Copyright 2014-2017 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -64,7 +64,9 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     protected final KillbillServerConfig serverConfig;
 
     protected DaoConfig daoConfig;
+    protected MainRoDaoConfig mainRoDataSourceConfig;
     protected EmbeddedDB mainEmbeddedDB;
+    protected EmbeddedDB mainRoEmbeddedDB;
     protected EmbeddedDB shiroEmbeddedDB;
 
     public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
@@ -98,6 +100,9 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
         daoConfig = new ConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
         bind(DaoConfig.class).toInstance(daoConfig);
 
+        mainRoDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(MainRoDaoConfig.class);
+        bind(MainRoDaoConfig.class).toInstance(mainRoDataSourceConfig);
+
         final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();
         bind(DatabaseTransactionNotificationApi.class).toInstance(databaseTransactionNotificationApi);
 
@@ -121,7 +126,21 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     @Provides
-    @Named(SHIRO_DATA_SOURCE_ID_NAMED)
+    @Named(MAIN_RO_DATA_SOURCE_ID)
+    @Singleton
+    protected DataSource provideMainRoDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
+        if (mainRoDataSourceConfig.isEnabled()) {
+            final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(mainRoDataSourceConfig, mainRoEmbeddedDB, MAIN_RO_DATA_SOURCE_ID);
+            injector.injectMembers(dataSourceSpyProvider);
+            return dataSourceSpyProvider.get();
+        } else {
+            // See provideDataSourceInAComplicatedWayBecauseOf627 above
+            return injector.getInstance(DataSource.class);
+        }
+    }
+
+    @Provides
+    @Named(SHIRO_DATA_SOURCE_ID)
     @Singleton
     protected DataSource provideShiroDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
         final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, shiroEmbeddedDB, SHIRO_DATA_SOURCE_ID);
@@ -147,7 +166,14 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
         // Same database, but different pool: clone the object so the shutdown sequence cleans the pool properly
         shiroEmbeddedDB = new EmbeddedDBProvider(daoConfig).get();
-        bind(EmbeddedDB.class).annotatedWith(Names.named(SHIRO_DATA_SOURCE_ID_NAMED)).toInstance(shiroEmbeddedDB);
+        bind(EmbeddedDB.class).annotatedWith(Names.named(SHIRO_DATA_SOURCE_ID)).toInstance(shiroEmbeddedDB);
+
+        if (mainRoDataSourceConfig.isEnabled()) {
+            mainRoEmbeddedDB = new EmbeddedDBProvider(mainRoDataSourceConfig).get();
+        } else {
+            mainRoEmbeddedDB = mainEmbeddedDB;
+        }
+        bind(EmbeddedDB.class).annotatedWith(Names.named(MAIN_RO_DATA_SOURCE_ID)).toInstance(mainRoEmbeddedDB);
     }
 
     protected void configureLifecycle() {
@@ -166,7 +192,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     protected void configureOSGI() {
         final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         final EmbeddedDB osgiEmbeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
-        bind(EmbeddedDB.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiEmbeddedDB);
+        bind(EmbeddedDB.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toInstance(osgiEmbeddedDB);
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, osgiEmbeddedDB));
     }
 

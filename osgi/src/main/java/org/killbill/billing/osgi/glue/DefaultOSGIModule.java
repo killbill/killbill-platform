@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2017 Groupon, Inc
- * Copyright 2014-2017 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -90,11 +90,11 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
     protected void installDataSource() {
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
-        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiDataSourceConfig);
+        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toInstance(osgiDataSourceConfig);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID_NAMED);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID);
         requestInjection(dataSourceSpyProvider);
-        bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
+        bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }
 
     protected void installOSGIComponents() {
