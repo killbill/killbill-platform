@@ -1,7 +1,6 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -16,7 +15,7 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.glue;
+package org.killbill.billing.server.modules;
 
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.killbill.commons.jdbi.guice.DataSourceConnectionPoolingType;
@@ -27,14 +26,19 @@ import org.skife.config.DefaultNull;
 import org.skife.config.Description;
 import org.skife.config.TimeSpan;
 
-public interface OSGIDataSourceConfig extends DaoConfig {
+public interface MainRoDaoConfig extends DaoConfig {
 
-    static final String DATA_SOURCE_PROP_PREFIX = "org.killbill.billing.osgi.dao.";
+    static final String DATA_SOURCE_PROP_PREFIX = "org.killbill.billing.main-ro.dao.";
+
+    @Description("Whether the read-only datasource is enabled")
+    @Config(DATA_SOURCE_PROP_PREFIX + "enabled")
+    @Default("false")
+    boolean isEnabled();
 
     @Override
     @Description("The jdbc url for the database")
     @Config(DATA_SOURCE_PROP_PREFIX + "url")
-    @Default("jdbc:h2:file:/var/tmp/killbill;MODE=MYSQL;DB_CLOSE_DELAY=-1;MVCC=true;DB_CLOSE_ON_EXIT=FALSE")
+    @Default("jdbc:h2:file:/var/tmp/killbill;MODE=MYSQL;DB_CLOSE_DELAY=-1;MVCC=true;DB_CLOSE_ON_EXIT=FALSE;ACCESS_MODE_DATA=r")
     String getJdbcUrl();
 
     @Override
@@ -150,8 +154,9 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Default("TRANSACTION_READ_COMMITTED")
     String getTransactionIsolationLevel();
 
+    @Override
     @Description("Whether to put connections in read-only mode")
     @Config(DATA_SOURCE_PROP_PREFIX + "readOnly")
-    @Default("false")
+    @Default("true")
     boolean isReadOnly();
 }

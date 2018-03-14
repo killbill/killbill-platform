@@ -187,8 +187,8 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         // Already started at this point - we just need the instance for shutdown
         mainEmbeddedDB = injector.getInstance(EmbeddedDB.class);
-        shiroEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.SHIRO_DATA_SOURCE_ID_NAMED)));
-        osgiEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.OSGI_DATA_SOURCE_ID_NAMED)));
+        shiroEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.SHIRO_DATA_SOURCE_ID)));
+        osgiEmbeddedDB = injector.getInstance(Key.get(EmbeddedDB.class, Names.named(KillBillPlatformModuleBase.OSGI_DATA_SOURCE_ID)));
 
         killbillLifecycle = injector.getInstance(Lifecycle.class);
         killbillBusService = injector.getInstance(BusService.class);
