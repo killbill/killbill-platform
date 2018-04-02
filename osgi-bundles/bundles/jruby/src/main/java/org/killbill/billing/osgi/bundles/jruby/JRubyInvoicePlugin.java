@@ -1,6 +1,6 @@
 /*
- * Copyright 2015 Groupon, Inc
- * Copyright 2015 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -23,11 +23,15 @@ import java.util.List;
 import org.jruby.Ruby;
 import org.killbill.billing.invoice.api.Invoice;
 import org.killbill.billing.invoice.api.InvoiceItem;
+import org.killbill.billing.invoice.plugin.api.InvoiceContext;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
+import org.killbill.billing.invoice.plugin.api.OnFailureInvoiceResult;
+import org.killbill.billing.invoice.plugin.api.OnSuccessInvoiceResult;
+import org.killbill.billing.invoice.plugin.api.PriorInvoiceResult;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.util.callcontext.CallContext;
-import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
@@ -44,11 +48,41 @@ public class JRubyInvoicePlugin extends JRubyNotificationPlugin implements Invoi
     }
 
     @Override
+    public PriorInvoiceResult priorCall(final InvoiceContext context, final Iterable<PluginProperty> properties) {
+        return callWithRuntimeAndChecking(new PluginCallback<PriorInvoiceResult, RuntimeException>() {
+            @Override
+            public PriorInvoiceResult doCall(final Ruby runtime) {
+                return ((InvoicePluginApi) pluginInstance).priorCall(context, properties);
+            }
+        });
+    }
+
+    @Override
     public List<InvoiceItem> getAdditionalInvoiceItems(final Invoice invoice, final boolean dryRun, final Iterable<PluginProperty> properties, final CallContext context) {
         return callWithRuntimeAndChecking(new PluginCallback<List<InvoiceItem>, RuntimeException>() {
             @Override
             public List<InvoiceItem> doCall(final Ruby runtime) {
                 return ((InvoicePluginApi) pluginInstance).getAdditionalInvoiceItems(invoice, dryRun, properties, context);
+            }
+        });
+    }
+
+    @Override
+    public OnSuccessInvoiceResult onSuccessCall(final InvoiceContext context, final Iterable<PluginProperty> properties) {
+        return callWithRuntimeAndChecking(new PluginCallback<OnSuccessInvoiceResult, RuntimeException>() {
+            @Override
+            public OnSuccessInvoiceResult doCall(final Ruby runtime) {
+                return ((InvoicePluginApi) pluginInstance).onSuccessCall(context, properties);
+            }
+        });
+    }
+
+    @Override
+    public OnFailureInvoiceResult onFailureCall(final InvoiceContext context, final Iterable<PluginProperty> properties) {
+        return callWithRuntimeAndChecking(new PluginCallback<OnFailureInvoiceResult, RuntimeException>() {
+            @Override
+            public OnFailureInvoiceResult doCall(final Ruby runtime) {
+                return ((InvoicePluginApi) pluginInstance).onFailureCall(context, properties);
             }
         });
     }
