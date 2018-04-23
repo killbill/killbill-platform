@@ -1,3 +1,6 @@
+0.37.14
+     Add new  ROOSGIKillbillAPI to allow plugins to force RO DB calls
+
 0.37.13
     Update to killbill-oss-parent 0.141.54
     Update to killbill-oss-parent 0.141.54
