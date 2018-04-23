@@ -29,6 +29,10 @@
     <name>killbill-platform-osgi-api</name>
     <dependencies>
         <dependency>
+            <groupId>org.kill-bill.billing</groupId>
+            <artifactId>killbill-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-payment</artifactId>
             <scope>test</scope>
