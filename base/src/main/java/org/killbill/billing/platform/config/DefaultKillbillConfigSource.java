@@ -20,12 +20,14 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.xmlloader.UriAccessor;
@@ -33,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
@@ -43,6 +47,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static final Logger logger = LoggerFactory.getLogger(DefaultKillbillConfigSource.class);
     private static final String PROPERTIES_FILE = "org.killbill.server.properties";
     private static final String GMT_ID = "GMT";
+
+    private static final String ENABLE_JASYPT_DECRYPTION = "org.killbill.server.enableJasypt";
+    private static final String JASYPT_ENCRYPTOR_PASSWORD_KEY = "JASYPT_ENCRYPTOR_PASSWORD";
+    private static final String JASYPT_ENCRYPTOR_ALGORITHM_KEY = "JASYPT_ENCRYPTOR_ALGORITHM";
+    private static final String ENC_PREFIX = "ENC(";
+    private static final String ENC_SUFFIX = ")";
 
     private static final int NOT_SHOWN = 0;
     private static final int SHOWN = 1;
@@ -80,6 +90,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         populateDefaultProperties();
+
+        if (Boolean.parseBoolean(getString(ENABLE_JASYPT_DECRYPTION))) {
+            decryptJasyptProperties();
+        }
     }
 
     @Override
@@ -179,6 +193,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         final Properties properties = new Properties();
         properties.put("org.killbill.persistent.bus.external.tableName", "bus_ext_events");
         properties.put("org.killbill.persistent.bus.external.historyTableName", "bus_ext_events_history");
+        properties.put(ENABLE_JASYPT_DECRYPTION, "false");
         return properties;
     }
 
@@ -195,5 +210,59 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         properties.put("log4jdbc.dump.sql.maxlinelength", "0");
         properties.put("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
         return properties;
+    }
+
+    private void decryptJasyptProperties() {
+        String password = getEnvironmentVariable(JASYPT_ENCRYPTOR_PASSWORD_KEY, System.getProperty(JASYPT_ENCRYPTOR_PASSWORD_KEY));
+        String algorithm = getEnvironmentVariable(JASYPT_ENCRYPTOR_ALGORITHM_KEY, System.getProperty(JASYPT_ENCRYPTOR_ALGORITHM_KEY));
+
+        Enumeration keys = properties.keys();
+        StandardPBEStringEncryptor encryptor = initializeEncryptor(password, algorithm);
+        // Iterate over all properties and decrypt ones that match
+        while (keys.hasMoreElements()) {
+            final String key = (String) keys.nextElement();
+            final String value = (String) properties.get(key);
+            Optional<String> decryptableValue = decryptableValue(value);
+            if (decryptableValue.isPresent()) {
+                properties.setProperty(key, encryptor.decrypt(decryptableValue.get()));
+            }
+        }
+    }
+
+    private StandardPBEStringEncryptor initializeEncryptor(String password, String algorithm) {
+        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+
+        if (Strings.isNullOrEmpty(password)) {
+            logger.error(JASYPT_ENCRYPTOR_PASSWORD_KEY + " is not set. Decrypting properties via Jasypt will likely fail.");
+        }
+        if (Strings.isNullOrEmpty(algorithm)) {
+            logger.error(JASYPT_ENCRYPTOR_ALGORITHM_KEY + " is not set. Decrypting properties via Jasypt will likely fail.");
+        }
+        encryptor.setPassword(password);
+        encryptor.setAlgorithm(algorithm);
+        return encryptor;
+    }
+
+    private String getEnvironmentVariable(String name, String defaultValue) {
+        String value = System.getenv(name);
+        if (Strings.isNullOrEmpty(value)) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    private Optional<String> decryptableValue(String value) {
+        if (value == null) {
+            return Optional.absent();
+        }
+
+        int start = value.indexOf(ENC_PREFIX);
+        if (start != -1) {
+            int end = value.lastIndexOf(ENC_SUFFIX);
+            if (end != -1) {
+                return Optional.of(value.substring(start + ENC_PREFIX.length(), end));
+            }
+        }
+        return Optional.absent();
     }
 }

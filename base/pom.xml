@@ -51,6 +51,10 @@
             <artifactId>log4jdbc-log4j2-jdbc4</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-api</artifactId>
         </dependency>
