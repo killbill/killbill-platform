@@ -72,7 +72,7 @@ public class TestPluginFinder {
         process.destroy();
     }
 
-    //@Test(groups = "fast")
+    @Test(groups = "fast")
     public void testMultipleJavaVersions() throws IOException, InterruptedException, PluginConfigException {
 
         final File plugin = createNewJavaPlugin("FOO", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, null);
@@ -87,7 +87,7 @@ public class TestPluginFinder {
     }
 
 
-    //@Test(groups = "fast")
+    @Test(groups = "fast")
     public void testMultipleJavaVersionsWithDefault() throws IOException, InterruptedException, PluginConfigException {
 
         final File plugin = createNewJavaPlugin("BAR", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, "0.5");
@@ -101,7 +101,7 @@ public class TestPluginFinder {
         assertEquals(javaConfig.getBundleJarPath(), plugin.getAbsolutePath() + "/0.5" + "/BAR.jar");
     }
 
-    //@Test(groups = "fast")
+    @Test(groups = "fast")
     public void testJavaPluginWithDisabledHighest() throws IOException, InterruptedException, PluginConfigException {
 
         final File plugin = createNewJavaPlugin("ZOO", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, null);
@@ -118,7 +118,7 @@ public class TestPluginFinder {
     }
 
 
-    //@Test(groups = "fast")
+    @Test(groups = "fast")
     public void testJavaPluginWithAllDisabled() throws IOException, InterruptedException, PluginConfigException {
 
         final File plugin = createNewJavaPlugin("LOL", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, null);
@@ -133,7 +133,7 @@ public class TestPluginFinder {
     }
 
 
-    //@Test(groups = "fast")
+    @Test(groups = "fast")
     public void testJavaPluginWithDisabledDefault() throws IOException, InterruptedException, PluginConfigException {
 
         final File plugin = createNewJavaPlugin("YEAH", new String[]{"1.2", "0.5", "1.0", "2.1", "0.8"}, "1.0");
