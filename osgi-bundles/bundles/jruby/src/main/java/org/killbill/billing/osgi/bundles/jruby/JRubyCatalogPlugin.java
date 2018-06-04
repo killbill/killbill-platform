@@ -19,6 +19,7 @@ package org.killbill.billing.osgi.bundles.jruby;
 
 import java.util.Dictionary;
 
+import org.joda.time.DateTime;
 import org.jruby.Ruby;
 import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
 import org.killbill.billing.catalog.plugin.api.VersionedPluginCatalog;
@@ -39,6 +40,16 @@ public class JRubyCatalogPlugin extends JRubyNotificationPlugin implements Catal
     @Override
     protected ServiceRegistration doRegisterService(final BundleContext context, final Dictionary<String, Object> props) {
         return context.registerService(CatalogPluginApi.class.getName(), this, props);
+    }
+
+    @Override
+    public DateTime getLatestCatalogVersion(final Iterable<PluginProperty> pluginProperties, final TenantContext tenantContext) {
+        return callWithRuntimeAndChecking(new PluginCallback<DateTime, RuntimeException>() {
+            @Override
+            public DateTime doCall(final Ruby runtime) throws RuntimeException {
+                return ((CatalogPluginApi) pluginInstance).getLatestCatalogVersion(pluginProperties, tenantContext);
+            }
+        });
     }
 
     @Override

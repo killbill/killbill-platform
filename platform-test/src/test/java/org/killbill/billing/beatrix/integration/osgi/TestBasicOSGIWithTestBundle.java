@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
+import org.killbill.billing.notification.plugin.api.ExtBusEventType;
 import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
@@ -98,6 +99,34 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         Assert.assertEquals(PaymentTransactionInfoPlugin.getAmount().compareTo(paymentAmount), 0);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getCurrency(), currency);
         assertTor.assertPluginCreatedPayment(paymentId, paymentMethodId, paymentAmount);
+    }
+
+    @Test(groups = "slow")
+    public void testBundleTestWithRetries() throws Exception {
+        // At this point test bundle should have been started already
+        final TestActivatorWithAssertion assertTor = new TestActivatorWithAssertion(dbi);
+        assertTor.assertPluginInitialized();
+
+        // Large number to verify to test the QueueRetryException retry logic (not the built-in one)
+        final ExternalBusTestEvent event = new ExternalBusTestEvent(ExtBusEventType.BLOCKING_STATE, "5", UUID.randomUUID());
+        externalBus.post(event);
+        assertTor.assertPluginReceivedEvent("error-1");
+
+        // Add 5'
+        clock.addDeltaFromReality(5 * 60 * 1000);
+        assertTor.assertPluginReceivedEvent("error-2");
+
+        // Add 10'
+        clock.addDeltaFromReality(10 * 60 * 1000);
+        assertTor.assertPluginReceivedEvent("error-3");
+
+        // Add 45'
+        clock.addDeltaFromReality(45 * 60 * 1000);
+        assertTor.assertPluginReceivedEvent("error-4");
+
+        // Add 5h
+        clock.addDeltaFromReality(60 * 5 * 60 * 1000);
+        assertTor.assertPluginReceivedEvent(event.getAccountId().toString());
     }
 
     private static final class TestActivatorWithAssertion {

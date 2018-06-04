@@ -21,6 +21,7 @@ package org.killbill.billing.platform.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -104,7 +105,7 @@ public class PlatformDBTestingHelper {
         return dataSource;
     }
 
-    public synchronized void start() throws IOException {
+    public synchronized void start() throws IOException, SQLException {
         instance.initialize();
         instance.start();
 
@@ -138,7 +139,7 @@ public class PlatformDBTestingHelper {
         instance.executeScript(ddl);
     }
 
-    protected synchronized void executeEngineSpecificScripts() throws IOException {
+    protected synchronized void executeEngineSpecificScripts() throws IOException, SQLException {
         switch (instance.getDBEngine()) {
             case POSTGRESQL:
                 final int port = URI.create(instance.getJdbcConnectionString().substring(5)).getPort();

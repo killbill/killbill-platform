@@ -127,4 +127,14 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
             return externalPersistentBusConfig.getHistoryTableName();
         }
     }
+
+    @Override
+    public TimeSpan getReapThreshold() {
+        return externalPersistentBusConfig.getReapThreshold();
+    }
+
+    @Override
+    public int getMaxReDispatchCount() {
+        return externalPersistentBusConfig.getMaxReDispatchCount();
+    }
 }

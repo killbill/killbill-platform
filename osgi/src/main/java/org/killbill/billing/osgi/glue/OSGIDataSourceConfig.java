@@ -123,7 +123,7 @@ public interface OSGIDataSourceConfig extends DaoConfig {
 
     @Description("MySQL server version")
     @Config(DATA_SOURCE_PROP_PREFIX + "mysqlServerVersion")
-    @Default("4.0")
+    @Default("5.1")
     String getMySQLServerVersion();
 
     @Override
@@ -143,4 +143,15 @@ public interface OSGIDataSourceConfig extends DaoConfig {
     @Config(DATA_SOURCE_PROP_PREFIX + "initializationFailFast")
     @Default("false")
     boolean isInitializationFailFast();
+
+    @Override
+    @Description("Set the default transaction isolation level")
+    @Config(DATA_SOURCE_PROP_PREFIX + "transactionIsolationLevel")
+    @Default("TRANSACTION_READ_COMMITTED")
+    String getTransactionIsolationLevel();
+
+    @Description("Whether to put connections in read-only mode")
+    @Config(DATA_SOURCE_PROP_PREFIX + "readOnly")
+    @Default("false")
+    boolean isReadOnly();
 }

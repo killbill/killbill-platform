@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.36.16-SNAPSHOT</version>
+        <version>0.37.15-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-server</artifactId>
@@ -193,8 +193,12 @@
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
-            <artifactId>ST4</artifactId>
+            <artifactId>stringtemplate</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
