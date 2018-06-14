@@ -18,6 +18,8 @@
 
 package org.killbill.billing.server.healthchecks;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Singleton;
@@ -27,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.google.common.base.Optional;
+import com.google.inject.Inject;
 
 @Singleton
 public class KillbillHealthcheck extends HealthCheck {
@@ -37,6 +41,12 @@ public class KillbillHealthcheck extends HealthCheck {
     private static final String OUT_OF_ROTATION = "Out of rotation";
 
     private final AtomicBoolean outOfRotation = new AtomicBoolean(true);
+    private Set<ServiceRegistry> serviceRegistries = Collections.emptySet();
+
+    @Inject(optional=true)
+    public void setServiceRegistries(Set<ServiceRegistry> serviceRegistries) {
+        this.serviceRegistries = serviceRegistries;
+    }
 
     @Override
     public Result check() {
@@ -56,12 +66,21 @@ public class KillbillHealthcheck extends HealthCheck {
     public void putInRotation() {
         logger.warn("Putting host in rotation");
         outOfRotation.set(false);
+
+        for (ServiceRegistry serviceRegistry : serviceRegistries) {
+            logger.info("registering with " + serviceRegistry);
+            serviceRegistry.register();
+        }
     }
 
     @Managed(description = "Put out of rotation")
     public void putOutOfRotation() {
         logger.warn("Putting host out of rotation");
         outOfRotation.set(true);
+
+        for (ServiceRegistry serviceRegistry : serviceRegistries) {
+            serviceRegistry.unregister();
+        }
     }
 
     private Result buildHealthcheckResponse(final boolean healthy, final String message) {
