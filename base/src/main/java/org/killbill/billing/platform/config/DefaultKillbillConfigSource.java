@@ -123,7 +123,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        return System.getProperties();
+        return new Properties(System.getProperties());
     }
 
     @VisibleForTesting
