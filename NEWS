@@ -1,3 +1,6 @@
+0.37.16
+    Fix issues in DefaultKillbillConfigSource
+
 0.37.15
     Add Jasypt support
     Update to killbill-oss-parent 0.141.73
