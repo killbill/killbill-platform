@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2017 Groupon, Inc
- * Copyright 2014-2017 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -38,6 +38,7 @@ import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.config.MetricsGraphiteConfig;
 import org.killbill.billing.server.config.MetricsInfluxDbConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
+import org.killbill.billing.server.healthchecks.KillbillPluginsHealthcheck;
 import org.killbill.billing.server.healthchecks.KillbillQueuesHealthcheck;
 import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
@@ -176,7 +177,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
                                                                 METRICS_SERVLETS_PATHS.get(1),
                                                                 METRICS_SERVLETS_PATHS.get(2),
                                                                 METRICS_SERVLETS_PATHS.get(3),
-                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, ThreadDeadlockHealthCheck.class)),
+                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class, KillbillPluginsHealthcheck.class, KillbillQueuesHealthcheck.class, ThreadDeadlockHealthCheck.class)),
                                                 getModule(event.getServletContext()));
 
         // Start the Guice machinery
