@@ -68,8 +68,12 @@ public class KillbillHealthcheck extends HealthCheck {
         outOfRotation.set(false);
 
         for (ServiceRegistry serviceRegistry : serviceRegistries) {
-            logger.info("registering with " + serviceRegistry);
-            serviceRegistry.register();
+            logger.info("Registering ServiceRegistry {}", serviceRegistry);
+            try {
+                serviceRegistry.register();
+            } catch (RuntimeException e) {
+                logger.warn("Failed to register ServiceRegistry {}. Exception: {}", serviceRegistry, e);
+            }
         }
     }
 
@@ -79,7 +83,12 @@ public class KillbillHealthcheck extends HealthCheck {
         outOfRotation.set(true);
 
         for (ServiceRegistry serviceRegistry : serviceRegistries) {
-            serviceRegistry.unregister();
+            logger.info("Unregistering ServiceRegistry {}", serviceRegistry);
+            try {
+                serviceRegistry.unregister();
+            } catch (RuntimeException e) {
+                logger.warn("Failed to unregister ServiceRegistry {}. Exception: {}", serviceRegistry, e);
+            }
         }
     }
 

@@ -76,11 +76,11 @@ public class KillbillEurekaInstanceInfoProvider implements Provider<InstanceInfo
                 if (dataCenterInfo instanceof UniqueIdentifier) {
                     instanceId = ((UniqueIdentifier) dataCenterInfo).getId();
                 } else {
-                    instanceId = eurekaConfig.getHostName(false);
+                    instanceId = CreatorName.get();
                 }
             }
 
-            String hostName = CreatorName.get();
+            String hostName = eurekaConfig.getHostName(false);
 
             builder.setNamespace(eurekaConfig.getNamespace())
                    .setInstanceId(instanceId)

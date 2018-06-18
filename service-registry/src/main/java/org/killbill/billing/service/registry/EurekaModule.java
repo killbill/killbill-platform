@@ -44,21 +44,17 @@ public class EurekaModule extends KillBillPlatformModuleBase {
         // need to eagerly initialize
         bind(ApplicationInfoManager.class).asEagerSingleton();
 
-        bind(EurekaInstanceConfig.class).toProvider(KillbillEurekaInstanceConfigProvider.class).in(Scopes.SINGLETON);
-        bind(EurekaClientConfig.class).toProvider(DefaultEurekaClientConfigProvider.class).in(Scopes.SINGLETON);
+        bind(EurekaInstanceConfig.class).toProvider(KillbillEurekaInstanceConfigProvider.class).asEagerSingleton();
+        bind(EurekaClientConfig.class).toProvider(DefaultEurekaClientConfigProvider.class).asEagerSingleton();
 
         // this is the self instanceInfo used for registration purposes
-        bind(InstanceInfo.class).toProvider(KillbillEurekaInstanceInfoProvider.class).in(Scopes.SINGLETON);
+        bind(InstanceInfo.class).toProvider(KillbillEurekaInstanceInfoProvider.class).asEagerSingleton();
 
-        bind(EurekaClient.class).to(DiscoveryClient.class).in(Scopes.SINGLETON);
-
-        bind(AbstractDiscoveryClientOptionalArgs.class).to(EurekaClientOptionalArgs.class).in(Scopes.SINGLETON);
-
+        bind(EurekaClient.class).to(DiscoveryClient.class).asEagerSingleton();
+        bind(AbstractDiscoveryClientOptionalArgs.class).to(EurekaClientOptionalArgs.class).asEagerSingleton();
 
         Multibinder<ServiceRegistry> serviceRegistryBinder = Multibinder.newSetBinder(binder(), ServiceRegistry.class);
         serviceRegistryBinder.addBinding().to(EurekaServiceRegistry.class);
-
-
     }
 
     @Provides

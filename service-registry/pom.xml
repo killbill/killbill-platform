@@ -25,6 +25,8 @@
     </parent>
     <artifactId>killbill-platform-service-registry</artifactId>
     <packaging>jar</packaging>
+    <version>0.37.18-SNAPSHOT</version>
+
     <name>killbill-platform-service-registry</name>
     <properties>
         <!-- http://jira.codehaus.org/browse/MRESOURCES-99 -->
@@ -52,7 +54,6 @@
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-server</artifactId>
-            <version>${project.version}</version>
             <classifier>classes</classifier>
         </dependency>
     </dependencies>
@@ -83,6 +84,16 @@
                                     <artifact>${project.groupId}:${project.artifactId}</artifact>
                                 </filter>
                             </filters>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>com.shaded.fasterxml.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.sun.jersey</pattern>
+                                    <shadedPattern>com.shaded.sun.jersey</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>
