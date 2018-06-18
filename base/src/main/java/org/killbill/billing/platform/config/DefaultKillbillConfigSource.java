@@ -245,10 +245,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private String getEnvironmentVariable(String name, String defaultValue) {
         String value = System.getenv(name);
-        if (Strings.isNullOrEmpty(value)) {
-            return defaultValue;
+        if (!Strings.isNullOrEmpty(value)) {
+            return value;
         }
-        return value;
+
+        value = getString(name);
+        return Strings.isNullOrEmpty(value) ? defaultValue : value;
     }
 
     private Optional<String> decryptableValue(String value) {
