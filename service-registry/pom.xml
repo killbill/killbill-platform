@@ -25,7 +25,6 @@
     </parent>
     <artifactId>killbill-platform-service-registry</artifactId>
     <packaging>jar</packaging>
-    <version>0.37.18-SNAPSHOT</version>
 
     <name>killbill-platform-service-registry</name>
     <properties>
