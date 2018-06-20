@@ -20,7 +20,7 @@
     <parent>
         <artifactId>killbill-platform</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.37.16-SNAPSHOT</version>
+        <version>0.37.18-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-service-registry</artifactId>
@@ -64,6 +64,48 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>com.ning.maven.plugins</groupId>
+                <artifactId>maven-dependency-versions-check-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
+                    <exceptions>
+                        <!-- See relocations below -->
+                        <exception>
+                            <groupId>com.fasterxml.jackson.core</groupId>
+                            <artifactId>jackson-annotations</artifactId>
+                            <expectedVersion>2.8.7</expectedVersion>
+                            <resolvedVersion>2.6.7</resolvedVersion>
+                        </exception>
+                        <exception>
+                            <groupId>com.fasterxml.jackson.core</groupId>
+                            <artifactId>jackson-core</artifactId>
+                            <expectedVersion>2.8.7</expectedVersion>
+                            <resolvedVersion>2.6.7</resolvedVersion>
+                        </exception>
+                        <exception>
+                            <groupId>com.fasterxml.jackson.core</groupId>
+                            <artifactId>jackson-databind</artifactId>
+                            <expectedVersion>2.8.7</expectedVersion>
+                            <resolvedVersion>2.6.7</resolvedVersion>
+                        </exception>
+                        <exception>
+                            <groupId>com.sun.jersey</groupId>
+                            <artifactId>jersey-core</artifactId>
+                            <expectedVersion>1.19.4</expectedVersion>
+                            <resolvedVersion>1.19.3</resolvedVersion>
+                        </exception>
+                    </exceptions>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

@@ -21,6 +21,7 @@
     <file url="file://$PROJECT_DIR$/platform-api" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/server" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/service-registry" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>
