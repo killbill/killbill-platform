@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.37.18</version>
+        <version>0.37.19-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
