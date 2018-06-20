@@ -36,6 +36,7 @@ import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
+import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
@@ -140,6 +141,11 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     @Inject(optional = true)
     public void addEntitlementPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<EntitlementPluginApi> entitlementProviderPluginRegistry) {
         allRegistrationHandlers.add(entitlementProviderPluginRegistry);
+    }
+
+    @Inject(optional = true)
+    public void addHealthcheckOSGIServiceRegistration(final OSGIServiceRegistration<Healthcheck> healthcheckRegistry) {
+        allRegistrationHandlers.add(healthcheckRegistry);
     }
 
     @Override
