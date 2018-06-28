@@ -23,7 +23,7 @@
         <version>0.141.92</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
-    <version>0.37.19</version>
+    <version>0.37.20-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>killbill-platform</name>
     <description>Platform to build billing and payment infrastructures</description>
