@@ -1,3 +1,6 @@
+0.37.19
+    Update to killbill-oss-parent 0.141.92
+
 0.37.18
     New service-registry module with Eureka integration
     KillbillPluginsHealthcheck registration bugfix
