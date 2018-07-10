@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2017 Groupon, Inc
- * Copyright 2014-2017 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -28,9 +28,11 @@ import org.killbill.billing.osgi.DefaultOSGIService;
 import org.killbill.billing.osgi.FileInstall;
 import org.killbill.billing.osgi.KillbillActivator;
 import org.killbill.billing.osgi.KillbillEventObservable;
+import org.killbill.billing.osgi.KillbillEventRetriableBusHandler;
 import org.killbill.billing.osgi.OSGIListener;
 import org.killbill.billing.osgi.PureOSGIBundleFinder;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
+import org.killbill.billing.osgi.api.KillbillEventRetriableBusHandlerService;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
@@ -88,11 +90,11 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
     protected void installDataSource() {
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
-        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toInstance(osgiDataSourceConfig);
+        bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toInstance(osgiDataSourceConfig);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID_NAMED);
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID);
         requestInjection(dataSourceSpyProvider);
-        bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID_NAMED)).toProvider(dataSourceSpyProvider).asEagerSingleton();
+        bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }
 
     protected void installOSGIComponents() {
@@ -106,6 +108,9 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(PluginConfigServiceApi.class).to(DefaultPluginConfigServiceApi.class).asEagerSingleton();
         bind(OSGIKillbill.class).to(DefaultOSGIKillbill.class).asEagerSingleton();
         bind(KillbillEventObservable.class).asEagerSingleton();
+        bind(KillbillEventRetriableBusHandlerService.class).to(KillbillEventRetriableBusHandler.class);
+        // Required, because KillbillActivator will inject the class directly (KillbillEventRetriableBusHandlerService is injected by the lifecycle)
+        bind(KillbillEventRetriableBusHandler.class).asEagerSingleton();
         bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
     }
 

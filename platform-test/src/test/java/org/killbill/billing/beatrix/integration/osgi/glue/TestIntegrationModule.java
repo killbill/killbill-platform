@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
+import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
@@ -32,7 +33,6 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.platform.test.glue.TestPlatformModuleWithEmbeddedDB;
-import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
 
@@ -48,7 +48,9 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
     protected void configure() {
         install(new TestPlatformModuleWithEmbeddedDB(configSource, true, (TestKillbillConfigSource) configSource));
 
-        bind(Clock.class).to(ClockMock.class).asEagerSingleton();
+        bind(Clock.class).to(ClockMock.class);
+        // Make sure we have a unique clock if one requests ClockMock explicitly
+        bind(ClockMock.class).asEagerSingleton();
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<PaymentPluginApi>(PaymentPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CurrencyPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<CurrencyPluginApi>(CurrencyPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<InvoicePluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<InvoicePluginApi>(InvoicePluginApi.class));

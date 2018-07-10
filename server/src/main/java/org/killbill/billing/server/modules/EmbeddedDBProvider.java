@@ -21,6 +21,7 @@ package org.killbill.billing.server.modules;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.SQLException;
 
 import javax.inject.Inject;
 
@@ -58,13 +59,15 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
                 initializeEmbeddedDB(embeddedDB);
             } catch (final IOException e) {
                 logger.error("Error while initializing H2, opportunistically continuing the startup sequence", e);
+            } catch (final SQLException e) {
+                logger.error("Error while initializing H2, opportunistically continuing the startup sequence", e);
             }
         }
 
         return embeddedDB;
     }
 
-    protected void initializeEmbeddedDB(final EmbeddedDB embeddedDB) throws IOException {
+    protected void initializeEmbeddedDB(final EmbeddedDB embeddedDB) throws IOException, SQLException {
         embeddedDB.initialize();
         embeddedDB.start();
 

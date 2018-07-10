@@ -18,6 +18,7 @@
 
 package org.killbill.billing.osgi.bundles.test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Iterator;
@@ -165,6 +166,10 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
     public Pagination<PaymentTransactionInfoPlugin> searchPayments(final String searchKey, final Long offset, final Long limit, final Iterable<PluginProperty> properties, final TenantContext tenantContext) throws PaymentPluginApiException {
         return new Pagination<PaymentTransactionInfoPlugin>() {
             @Override
+            public void close() throws IOException {
+            }
+
+            @Override
             public Long getCurrentOffset() {
                 return 0L;
             }
@@ -216,6 +221,10 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
     @Override
     public Pagination<PaymentMethodPlugin> searchPaymentMethods(final String searchKey, final Long offset, final Long limit, final Iterable<PluginProperty> properties, final TenantContext tenantContext) throws PaymentPluginApiException {
         return new Pagination<PaymentMethodPlugin>() {
+            @Override
+            public void close() throws IOException {
+            }
+
             @Override
             public Long getCurrentOffset() {
                 return 0L;

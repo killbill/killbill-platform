@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2014-2018 Groupon, Inc
+ * Copyright 2014-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -36,6 +36,7 @@ import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
+import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
@@ -71,6 +72,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final HttpService defaultHttpService;
     private final DataSource dataSource;
     private final Clock clock;
+    private final KillbillEventRetriableBusHandler killbillEventRetriableBusHandler;
     private final KillbillEventObservable observable;
     private final OSGIKillbillRegistrar registrar;
     private final OSGIConfigProperties configProperties;
@@ -82,11 +84,12 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private BundleContext context = null;
 
     @Inject
-    public KillbillActivator(@Named(DefaultOSGIModule.OSGI_DATA_SOURCE_ID_NAMED) final DataSource dataSource,
+    public KillbillActivator(@Named(DefaultOSGIModule.OSGI_DATA_SOURCE_ID) final DataSource dataSource,
                              final OSGIKillbill osgiKillbill,
                              final Clock clock,
                              final BundleRegistry bundleRegistry,
                              final HttpService defaultHttpService,
+                             final KillbillEventRetriableBusHandler killbillEventRetriableBusHandler,
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
                              final MetricRegistry metricsRegistry,
@@ -96,6 +99,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
         this.clock = clock;
+        this.killbillEventRetriableBusHandler = killbillEventRetriableBusHandler;
         this.observable = observable;
         this.configProperties = configProperties;
         this.jndiManager = jndiManager;
@@ -103,7 +107,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistration>();
     }
-
 
     @Inject(optional = true)
     public void addServletOSGIServiceRegistration(final OSGIServiceRegistration<Servlet> servletRouter) {
@@ -130,7 +133,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         allRegistrationHandlers.add(paymentControlProviderPluginRegistry);
     }
 
-
     @Inject(optional = true)
     public void addCatalogPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<CatalogPluginApi> catalogProviderPluginRegistry) {
         allRegistrationHandlers.add(catalogProviderPluginRegistry);
@@ -141,6 +143,11 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         allRegistrationHandlers.add(entitlementProviderPluginRegistry);
     }
 
+    @Inject(optional = true)
+    public void addHealthcheckOSGIServiceRegistration(final OSGIServiceRegistration<Healthcheck> healthcheckRegistry) {
+        allRegistrationHandlers.add(healthcheckRegistry);
+    }
+
     @Override
     public void start(final BundleContext context) throws Exception {
 
@@ -148,7 +155,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         final Dictionary<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, "killbill");
 
-        observable.register();
+        killbillEventRetriableBusHandler.register();
 
         registrar.registerService(context, OSGIKillbill.class, osgiKillbill, props);
         registrar.registerService(context, HttpService.class, defaultHttpService, props);
@@ -168,7 +175,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
 
         this.context = null;
         context.removeServiceListener(this);
-        observable.unregister();
+        killbillEventRetriableBusHandler.unregister();
         registrar.unregisterAll();
     }
 
@@ -190,7 +197,6 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     public void sendEvent(final String topic, final Map<String, String> properties) {
         observable.setChangedAndNotifyObservers(new Event(topic, properties));
     }
-
 
     public List<OSGIServiceRegistration> getAllRegistrationHandlers() {
         return allRegistrationHandlers;

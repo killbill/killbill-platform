@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.36.16-SNAPSHOT</version>
+        <version>0.37.20-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
@@ -36,10 +36,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>

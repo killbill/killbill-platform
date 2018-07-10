@@ -1,3 +1,65 @@
+0.37.19
+    Update to killbill-oss-parent 0.141.92
+
+0.37.18
+    New service-registry module with Eureka integration
+    KillbillPluginsHealthcheck registration bugfix
+    Update to killbill-oss-parent 0.141.84
+
+0.37.17
+    Introduce KillbillPluginsHealthcheck
+
+0.37.16
+    Fix issues in DefaultKillbillConfigSource
+
+0.37.15
+    Add Jasypt support
+    Update to killbill-oss-parent 0.141.73
+
+0.37.14
+    Add new ROOSGIKillbillAPI to allow plugins to force RO DB calls
+
+0.37.13
+    Update to killbill-oss-parent 0.141.54
+
+0.37.12
+    Update to killbill-oss-parent 0.141.50
+
+0.37.11
+    Update to killbill-oss-parent 0.141.45
+
+0.37.10
+    Update to killbill-oss-parent 0.141.42
+    Add support for read-only pool
+
+0.37.9
+    Update to killbill-oss-parent 0.141.39
+
+0.37.8
+    Update to killbill-oss-parent 0.141.37
+
+0.37.7
+    Update to killbill-oss-parent 0.141.35
+
+0.37.6
+    Implement healtcheck logic for queues
+
+0.37.5
+    org.killbill.billing.osgi.dao.leakDetectionThreshold to TimeSpan
+
+0.37.4
+    Configure HikariCP leak detection
+    Update to killbill-oss-parent 0.140.21
+
+0.37.3
+    Add new osgi events when plugins are being started/restarted
+
+0.37.2
+    Update parent oss pom.xml to have the correct transitive dependencies in killbill
+
+0.37.1
+    Merge features from master, mostly InfluxDB protocols
+
 0.36.15
     change org.killbill.billing.osgi.dao.leakDetectionThreshold to TimeSpan
 

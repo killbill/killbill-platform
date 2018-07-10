@@ -39,6 +39,7 @@
         <module name="killbill-platform-osgi-bundles-test-payment" />
         <module name="killbill-platform-osgi-bundles-webconsolebranding" />
         <module name="killbill-platform-server" />
+        <module name="killbill-platform-service-registry" />
         <module name="killbill-platform-test" />
         <module name="killbill-server" />
       </profile>
@@ -63,6 +64,7 @@
       <module name="killbill-platform-osgi-lib-bundles" target="1.6" />
       <module name="killbill-platform-osgi-test-bundles" target="1.6" />
       <module name="killbill-platform-server" target="1.6" />
+      <module name="killbill-platform-service-registry" target="1.6" />
       <module name="killbill-platform-test" target="1.6" />
     </bytecodeTargetLevel>
   </component>

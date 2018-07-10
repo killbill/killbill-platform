@@ -1,6 +1,6 @@
 /*
- * Copyright 2016 Groupon, Inc
- * Copyright 2016 The Billing Project, LLC
+ * Copyright 2016-2018 Groupon, Inc
+ * Copyright 2016-2018 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -44,6 +44,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     public static final String DISABLED_FILE_NAME = "disabled.txt";
 
     protected OSGIKillbillAPI killbillAPI;
+    protected ROOSGIKillbillAPI roOSGIkillbillAPI;
     protected OSGIKillbillLogService logService;
     protected OSGIKillbillRegistrar registrar;
     protected OSGIKillbillDataSource dataSource;
@@ -63,6 +64,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         logSafely(LogService.LOG_INFO, String.format("OSGI bundle='%s' received START command", context.getBundle().getSymbolicName()));
 
         killbillAPI = new OSGIKillbillAPI(context);
+        roOSGIkillbillAPI = new ROOSGIKillbillAPI(context);
         configureSLF4JBinding();
         dataSource = new OSGIKillbillDataSource(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
@@ -116,6 +118,10 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         if (killbillAPI != null) {
             killbillAPI.close();
             killbillAPI = null;
+        }
+        if (roOSGIkillbillAPI != null) {
+            roOSGIkillbillAPI.close();
+            roOSGIkillbillAPI = null;
         }
         if (dataSource != null) {
             dataSource.close();

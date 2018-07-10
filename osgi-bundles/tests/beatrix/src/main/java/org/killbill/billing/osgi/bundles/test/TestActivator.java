@@ -19,15 +19,20 @@
 package org.killbill.billing.osgi.bundles.test;
 
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.notification.plugin.api.ExtBusEventType;
+import org.killbill.billing.notification.plugin.api.NotificationPluginApiRetryException;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.bundles.test.dao.TestDao;
-import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
+import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 import org.skife.jdbi.v2.DBI;
@@ -43,6 +48,8 @@ import org.skife.jdbi.v2.IDBI;
 public class TestActivator extends KillbillActivatorBase implements OSGIKillbillEventHandler {
 
     private static final String TEST_PLUGIN_NAME = "test";
+
+    private final Map<UUID, AtomicInteger> countPerToken = new HashMap<UUID, AtomicInteger>();
 
     private TestDao testDao;
 
@@ -77,6 +84,21 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
     @Override
     public void handleKillbillEvent(final ExtBusEvent killbillEvent) {
         logService.log(LogService.LOG_INFO, "Received external event " + killbillEvent.toString());
+
+        // Specific event for retries
+        if (killbillEvent.getEventType() == ExtBusEventType.BLOCKING_STATE) {
+            if (countPerToken.get(killbillEvent.getUserToken()) == null) {
+                countPerToken.put(killbillEvent.getUserToken(), new AtomicInteger());
+            }
+            final Integer seen = countPerToken.get(killbillEvent.getUserToken()).incrementAndGet();
+            if (!seen.toString().equalsIgnoreCase(killbillEvent.getMetaData())) {
+                testDao.insertExternalKey("error-" + seen);
+                throw new NotificationPluginApiRetryException();
+            } else {
+                testDao.insertExternalKey(killbillEvent.getAccountId().toString());
+                return;
+            }
+        }
 
         // Only looking at account creation
         if (killbillEvent.getEventType() != ExtBusEventType.ACCOUNT_CREATION) {
