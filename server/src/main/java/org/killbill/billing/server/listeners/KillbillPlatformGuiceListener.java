@@ -79,6 +79,7 @@ import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.codahale.metrics.servlet.InstrumentedFilter;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -169,6 +170,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JodaModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         guiceModules = ImmutableList.<Module>of(getServletModule(),
                                                 getJacksonModule(),
