@@ -56,8 +56,6 @@ import com.google.common.eventbus.Subscribe;
 // Needs to be injected for the lifecycle logic
 public class KillbillEventRetriableBusHandler extends RetryableService implements KillbillEventRetriableBusHandlerService {
 
-    public static final String EXT_BUS_EVENT_LISTENER_SERVICE = "extBusEvent-listener-service";
-
     private final Logger logger = LoggerFactory.getLogger(KillbillEventRetriableBusHandler.class);
 
     private final PersistentBus externalBus;
@@ -98,7 +96,12 @@ public class KillbillEventRetriableBusHandler extends RetryableService implement
 
     @Override
     public String getName() {
-        return EXT_BUS_EVENT_LISTENER_SERVICE;
+        return KILLBILL_SERVICES.RETRIABLE_BUS_HANDLER_SERVICE.getServiceName();
+    }
+
+    @Override
+    public int getRegistrationOrdering() {
+        return KILLBILL_SERVICES.RETRIABLE_BUS_HANDLER_SERVICE.getRegistrationOrdering();
     }
 
     @LifecycleHandlerType(LifecycleLevel.INIT_SERVICE)

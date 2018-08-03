@@ -18,6 +18,11 @@
 
 package org.killbill.billing.lifecycle;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.SortedSet;
+
+import org.killbill.billing.lifecycle.DefaultLifecycle.LifecycleHandler;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
@@ -91,6 +96,11 @@ public class TestLifecycle {
         public String getName() {
             return null;
         }
+
+        @Override
+        public int getRegistrationOrdering() {
+            return 1000;
+        }
     }
 
     public interface TestService2Interface extends KillbillService {
@@ -126,13 +136,41 @@ public class TestLifecycle {
         public String getName() {
             return null;
         }
+
+        @Override
+        public int getRegistrationOrdering() {
+            return 1000;
+        }
     }
+
+
+    public KillbillService createKillBillService(final String name, final int order) {
+        return new KillbillService() {
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public int getRegistrationOrdering() {
+                return order;
+            }
+
+            @LifecycleHandlerType(LifecycleLevel.INIT_SERVICE)
+            public void initService() {
+            }
+        };
+    }
+
 
     @BeforeClass(groups = "fast")
     public void setup() {
         final Injector g = Guice.createInjector(Stage.DEVELOPMENT, new TestLifecycleModule());
         s1 = g.getInstance(Service1.class);
         s2 = g.getInstance(Service2.class);
+
+        final KillbillService s = createKillBillService("foo", 3);
+
         lifecycle = g.getInstance(DefaultLifecycle.class);
     }
 
@@ -157,6 +195,27 @@ public class TestLifecycle {
         s2.reset();
         lifecycle.fireShutdownSequencePostEventUnRegistration();
         Assert.assertEquals(s1.getCount() + s2.getCount(), 1);
+    }
+
+
+    @Test(groups = "fast")
+    public void testHandlersOrdering() {
+        final Set<KillbillService> services = new HashSet();
+
+        for (int i = 0; i < 100; i++) {
+            int order = (i + 37) % 100;
+            services.add(createKillBillService(String.format("yo-%d", order) , order));
+        }
+
+        final DefaultLifecycle otherLifecycle = new DefaultLifecycle(services);
+        final SortedSet<LifecycleHandler<? extends KillbillService>> handlers =  otherLifecycle.getHandlersByLevel().get(LifecycleLevel.INIT_SERVICE);
+
+        int prevOrdering = -1;
+        for (LifecycleHandler<? extends KillbillService> h : handlers) {
+            Assert.assertTrue(h.getTarget().getRegistrationOrdering() > prevOrdering);
+            prevOrdering++;
+        }
+
     }
 
     public static class LifecycleNoWarn extends DefaultLifecycle {

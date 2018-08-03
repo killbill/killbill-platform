@@ -20,9 +20,12 @@ package org.killbill.billing.lifecycle;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -31,14 +34,17 @@ import javax.annotation.Nullable;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
+import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Supplier;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.SortedSetMultimap;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -47,7 +53,7 @@ import com.google.inject.ProvisionException;
 public class DefaultLifecycle implements Lifecycle {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultLifecycle.class);
-    private final SetMultimap<LifecycleHandlerType.LifecycleLevel, LifecycleHandler<? extends KillbillService>> handlersByLevel;
+    private final SortedSetMultimap<LifecycleLevel, LifecycleHandler<? extends KillbillService>> handlersByLevel;
 
     @Inject
     public DefaultLifecycle(final Injector injector) {
@@ -62,15 +68,15 @@ public class DefaultLifecycle implements Lifecycle {
         init(services);
     }
 
-    private DefaultLifecycle() {
-        this.handlersByLevel = Multimaps.newSetMultimap(new ConcurrentHashMap<LifecycleHandlerType.LifecycleLevel, Collection<LifecycleHandler<? extends KillbillService>>>(),
 
-                                                        new Supplier<Set<LifecycleHandler<? extends KillbillService>>>() {
-                                                            @Override
-                                                            public Set<LifecycleHandler<? extends KillbillService>> get() {
-                                                                return new CopyOnWriteArraySet<LifecycleHandler<? extends KillbillService>>();
-                                                            }
-                                                        });
+    private DefaultLifecycle() {
+        this.handlersByLevel = Multimaps.newSortedSetMultimap(new ConcurrentHashMap<LifecycleHandlerType.LifecycleLevel, Collection<LifecycleHandler<? extends KillbillService>>>(),
+                                                              new Supplier<SortedSet<LifecycleHandler<? extends KillbillService>>>() {
+                                                                  @Override
+                                                                  public SortedSet<LifecycleHandler<? extends KillbillService>> get() {
+                                                                      return new TreeSet<LifecycleHandler<? extends KillbillService>>();
+                                                                  }
+                                                              });
     }
 
     @Override
@@ -178,7 +184,7 @@ public class DefaultLifecycle implements Lifecycle {
         return methodsInService;
     }
 
-    private final class LifecycleHandler<T> {
+    final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler> {
 
         private final T target;
         private final Method method;
@@ -195,5 +201,39 @@ public class DefaultLifecycle implements Lifecycle {
         public Method getMethod() {
             return method;
         }
+
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final LifecycleHandler<?> that = (LifecycleHandler<?>) o;
+            return Objects.equal(target, that.target) &&
+                   Objects.equal(method, that.method);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(target, method);
+        }
+
+        @Override
+        public int compareTo(final LifecycleHandler o) {
+            if (target.getRegistrationOrdering() < o.getTarget().getRegistrationOrdering()) {
+                return -1;
+            } else if (target.getRegistrationOrdering() > o.getTarget().getRegistrationOrdering()) {
+                return 1;
+            } else {
+                return Integer.valueOf(target.hashCode()).compareTo(Integer.valueOf(o.hashCode()));
+            }
+        }
+    }
+
+    SortedSetMultimap<LifecycleLevel, LifecycleHandler<? extends KillbillService>> getHandlersByLevel() {
+        return handlersByLevel;
     }
 }

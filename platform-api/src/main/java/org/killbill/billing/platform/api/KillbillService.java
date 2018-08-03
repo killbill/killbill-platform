@@ -53,4 +53,53 @@ public interface KillbillService {
      */
     public String getName();
 
+    /**
+     *
+     */
+    public int getRegistrationOrdering();
+
+    // Known services
+    public enum KILLBILL_SERVICES {
+
+        /* Platform range 0-100 */
+        NODES_SERVICE("nodes-service", 10),
+        BUS_SERVICE("bus-service", 20),
+        EXTERNAL_BUS_SERVICE("external-bus-service", 30),
+        SECURITY_SERVICE("security-service", 40),
+        CONFIG_SERVICE("config-service", 50),
+        BROADCAST_SERVICE("broadcast-service", 60),
+        RETRIABLE_BUS_HANDLER_SERVICE("extBusEvent-listener-service", 70),
+        /* Kill Bill core 100 - 500 */
+        TENANT_SERVICE("tenant-service", 110),
+        CATALOG_SERVICE("catalog-service", 120),
+        ACCOUNT_SERVICE("account-service", 130),
+        SUBSCRIPTION_BASE_SERVICE("subscription-service", 140),
+        ENTITLEMENT_SERVICE("entitlement-service", 150),
+        INVOICE_SERVICE("invoice-service", 160),
+        PAYMENT_SERVICE("payment-service", 170),
+        OVERDUE_SERVICE("overdue-service", 180),
+        CURRENCY_SERVICE("currency-service", 190),
+        JAXRS_SERVICE("jaxrs-service", 200),
+        /*  Apis, plugins, push notifications */
+        BEATRIX_SERVICE("beatrix-service", 500),
+        SERVER_SERVICE("server-service", 510),
+        OSGI_SERVICE("osgi-service", 520);
+
+        String serviceName;
+        int registrationOrdering;
+
+        KILLBILL_SERVICES(final String serviceName, final int registrationOrdering) {
+            this.serviceName = serviceName;
+            this.registrationOrdering = registrationOrdering;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public int getRegistrationOrdering() {
+            return registrationOrdering;
+        }
+    };
+
 }
