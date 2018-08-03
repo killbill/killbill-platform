@@ -1,3 +1,6 @@
+0.38.2
+    Introduce new ordering among Killbill Services to ensure initialization of services is deterministic
+
 0.38.1
     Configure jackson Mapper to ignore unknown properties
 
