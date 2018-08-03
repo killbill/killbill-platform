@@ -26,7 +26,6 @@ import com.google.inject.Inject;
 
 public class DefaultBusService implements BusService {
 
-    public static final String EVENT_BUS_SERVICE = "bus-service";
 
     private final PersistentBus eventBus;
 
@@ -37,7 +36,12 @@ public class DefaultBusService implements BusService {
 
     @Override
     public String getName() {
-        return EVENT_BUS_SERVICE;
+        return KILLBILL_SERVICES.BUS_SERVICE.getServiceName() ;
+    }
+
+    @Override
+    public int getRegistrationOrdering() {
+        return KILLBILL_SERVICES.BUS_SERVICE.getRegistrationOrdering();
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.INIT_BUS)

@@ -27,8 +27,6 @@ import com.google.inject.name.Named;
 
 public class DefaultExternalBusService implements ExternalBusService {
 
-    public static final String EXTERNAL_BUS_SERVICE = "external-bus-service";
-
     private final PersistentBus eventBus;
 
     @Inject
@@ -38,7 +36,12 @@ public class DefaultExternalBusService implements ExternalBusService {
 
     @Override
     public String getName() {
-        return EXTERNAL_BUS_SERVICE;
+        return KILLBILL_SERVICES.EXTERNAL_BUS_SERVICE.getServiceName() ;
+    }
+
+    @Override
+    public int getRegistrationOrdering() {
+        return KILLBILL_SERVICES.EXTERNAL_BUS_SERVICE.getRegistrationOrdering() ;
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.INIT_BUS)

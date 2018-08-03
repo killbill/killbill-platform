@@ -44,7 +44,6 @@ import com.google.common.collect.ImmutableList;
 
 public class DefaultOSGIService implements OSGIService {
 
-    public static final String OSGI_SERVICE_NAME = "osgi-service";
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultOSGIService.class);
 
@@ -72,7 +71,12 @@ public class DefaultOSGIService implements OSGIService {
 
     @Override
     public String getName() {
-        return OSGI_SERVICE_NAME;
+        return KILLBILL_SERVICES.OSGI_SERVICE.getServiceName();
+    }
+
+    @Override
+    public int getRegistrationOrdering() {
+        return KILLBILL_SERVICES.OSGI_SERVICE.getRegistrationOrdering();
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.INIT_PLUGIN)
