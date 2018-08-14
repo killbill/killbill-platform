@@ -28,6 +28,7 @@
     <packaging>pom</packaging>
     <name>killbill-platform-osgi-bundles</name>
     <modules>
+        <module>rpc</module>
         <module>jruby</module>
         <module>logger</module>
         <module>webconsolebranding</module>
