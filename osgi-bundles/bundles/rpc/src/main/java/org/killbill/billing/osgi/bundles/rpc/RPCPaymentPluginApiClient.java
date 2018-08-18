@@ -18,6 +18,8 @@
 package org.killbill.billing.osgi.bundles.rpc;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -94,28 +96,8 @@ public class RPCPaymentPluginApiClient implements PaymentPluginApi, Notification
                                               .setAmount(amount.toString())
                                               .setCurrency(currency.toString());
 
-        int idx = 0;
-        for (final org.killbill.billing.payment.api.PluginProperty pluginProperty : properties) {
-            builder.setProperties(idx, PluginProperty.newBuilder()
-                                                     .setKey(pluginProperty.getKey())
-                                                     .setValue(pluginProperty.getValue().toString())
-                                                     .setIsUpdatable(pluginProperty.getIsUpdatable())
-                                                     .build());
-            idx++;
-        }
-        final PaymentRequest request = builder.setContext(CallContext.newBuilder()
-                                                                     .setAccountId(context.getAccountId().toString())
-                                                                     .setTenantId(context.getTenantId().toString())
-                                                                     .setUserToken(context.getUserToken().toString())
-                                                                     .setUserName(context.getUserName())
-                                                                     .setCallOrigin(CallOrigin.valueOf(context.getCallOrigin().toString()))
-                                                                     .setUserType(UserType.valueOf(context.getUserType().toString()))
-                                                                     .setReasonCode(context.getReasonCode())
-                                                                     .setComments(context.getComments())
-                                                                     .setCreatedDate(context.getCreatedDate().toString())
-                                                                     .setUpdatedDate(context.getUpdatedDate().toString())
-                                                                     .build())
-                                              .build();
+        populateProperties(builder, properties);
+        final PaymentRequest request = setPaymentRequestContext(context, builder).build();
 
         final PaymentTransactionInfoPlugin response = stub.purchasePayment(request);
         return new org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin() {
@@ -211,7 +193,98 @@ public class RPCPaymentPluginApiClient implements PaymentPluginApi, Notification
 
     @Override
     public List<org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin> getPaymentInfo(final UUID kbAccountId, final UUID kbPaymentId, final Iterable<org.killbill.billing.payment.api.PluginProperty> properties, final TenantContext context) throws PaymentPluginApiException {
-        return null;
+        final PaymentPluginApiGrpc.PaymentPluginApiBlockingStub stub = PaymentPluginApiGrpc.newBlockingStub(channel);
+        final Builder builder = PaymentRequest.newBuilder()
+                                              .setKbAccountId(kbAccountId.toString())
+                                              .setKbPaymentId(kbPaymentId.toString());
+        populateProperties(builder, properties);
+        final CallContext.Builder newBuilder = CallContext.newBuilder().setTenantId(context.getTenantId().toString());
+        // TODO KB BUG
+        if (context.getAccountId() != null) {
+            newBuilder.setAccountId(context.getAccountId().toString());
+        }
+
+        final PaymentRequest request = builder.setContext(newBuilder.build()).build();
+
+        final List<org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin> res = new LinkedList<org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin>();
+        for (final Iterator<PaymentTransactionInfoPlugin> it = stub.getPaymentInfo(request); it.hasNext(); ) {
+            final PaymentTransactionInfoPlugin paymentTransactionInfoPlugin = it.next();
+            res.add(new org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin() {
+                @Override
+                public UUID getKbPaymentId() {
+                    return UUID.fromString(paymentTransactionInfoPlugin.getKbPaymentId());
+                }
+
+                @Override
+                public UUID getKbTransactionPaymentId() {
+                    return UUID.fromString(paymentTransactionInfoPlugin.getKbTransactionPaymentId());
+                }
+
+                @Override
+                public TransactionType getTransactionType() {
+                    return TransactionType.valueOf(paymentTransactionInfoPlugin.getTransactionType().name());
+                }
+
+                @Override
+                public BigDecimal getAmount() {
+                    return new BigDecimal(paymentTransactionInfoPlugin.getAmount());
+                }
+
+                @Override
+                public Currency getCurrency() {
+                    return Currency.valueOf(paymentTransactionInfoPlugin.getCurrency());
+                }
+
+                @Override
+                public DateTime getCreatedDate() {
+                    return new DateTime(paymentTransactionInfoPlugin.getCreatedDate());
+                }
+
+                @Override
+                public DateTime getEffectiveDate() {
+                    return new DateTime(paymentTransactionInfoPlugin.getEffectiveDate());
+                }
+
+                @Override
+                public PaymentPluginStatus getStatus() {
+                    return PaymentPluginStatus.valueOf(paymentTransactionInfoPlugin.getGetStatus().name());
+                }
+
+                @Override
+                public String getGatewayError() {
+                    return paymentTransactionInfoPlugin.getGatewayError();
+                }
+
+                @Override
+                public String getGatewayErrorCode() {
+                    return paymentTransactionInfoPlugin.getGatewayErrorCode();
+                }
+
+                @Override
+                public String getFirstPaymentReferenceId() {
+                    return paymentTransactionInfoPlugin.getFirstPaymentReferenceId();
+                }
+
+                @Override
+                public String getSecondPaymentReferenceId() {
+                    return paymentTransactionInfoPlugin.getSecondPaymentReferenceId();
+                }
+
+                @Override
+                public List<org.killbill.billing.payment.api.PluginProperty> getProperties() {
+                    return Lists.<PluginProperty, org.killbill.billing.payment.api.PluginProperty>transform(paymentTransactionInfoPlugin.getPropertiesList(),
+                                                                                                            new Function<PluginProperty, org.killbill.billing.payment.api.PluginProperty>() {
+                                                                                                                @Override
+                                                                                                                public org.killbill.billing.payment.api.PluginProperty apply(final PluginProperty input) {
+                                                                                                                    return new org.killbill.billing.payment.api.PluginProperty(input.getKey(),
+                                                                                                                                                                               input.getValue(),
+                                                                                                                                                                               input.getIsUpdatable());
+                                                                                                                }
+                                                                                                            });
+                }
+            });
+        }
+        return res;
     }
 
     @Override
@@ -221,7 +294,52 @@ public class RPCPaymentPluginApiClient implements PaymentPluginApi, Notification
 
     @Override
     public void addPaymentMethod(final UUID kbAccountId, final UUID kbPaymentMethodId, final PaymentMethodPlugin paymentMethodProps, final boolean setDefault, final Iterable<org.killbill.billing.payment.api.PluginProperty> properties, final org.killbill.billing.util.callcontext.CallContext context) throws PaymentPluginApiException {
+        final PaymentPluginApiGrpc.PaymentPluginApiBlockingStub stub = PaymentPluginApiGrpc.newBlockingStub(channel);
+        final Builder builder = PaymentRequest.newBuilder()
+                                              .setKbAccountId(kbAccountId.toString())
+                                              .setKbPaymentMethodId(kbPaymentMethodId.toString());
 
+        final Iterable<org.killbill.billing.payment.api.PluginProperty> paymentMethodPropsProperties = paymentMethodProps.getProperties();
+        populateProperties(builder, paymentMethodPropsProperties);
+        populateProperties(builder, properties);
+        final PaymentRequest request = setPaymentRequestContext(context, builder).build();
+        stub.addPaymentMethod(request);
+    }
+
+    private Builder setPaymentRequestContext(final org.killbill.billing.util.callcontext.CallContext context, final Builder builder) {
+        final CallContext.Builder newBuilder = CallContext.newBuilder();
+        newBuilder
+                .setAccountId(context.getAccountId().toString())
+                .setTenantId(context.getTenantId().toString())
+                .setUserToken(context.getUserToken().toString())
+                .setUserName(context.getUserName())
+                .setCallOrigin(CallOrigin.valueOf(context.getCallOrigin().toString()))
+                .setUserType(UserType.valueOf(context.getUserType().toString()));
+        if (context.getReasonCode() != null) {
+            newBuilder.setReasonCode(context.getReasonCode());
+        }
+        if (context.getComments() != null) {
+            newBuilder.setComments(context.getComments());
+        }
+        if (context.getCreatedDate() != null) {
+            newBuilder.setCreatedDate(context.getCreatedDate().toString());
+        }
+        if (context.getUpdatedDate() != null) {
+            newBuilder.setUpdatedDate(context.getUpdatedDate().toString());
+        }
+        return builder.setContext(newBuilder.build());
+    }
+
+    private void populateProperties(final Builder builder, final Iterable<org.killbill.billing.payment.api.PluginProperty> properties) {
+        for (final org.killbill.billing.payment.api.PluginProperty pluginProperty : properties) {
+            final PluginProperty.Builder builderForValue = PluginProperty.newBuilder()
+                                                                         .setKey(pluginProperty.getKey())
+                                                                         .setValue(pluginProperty.getValue().toString());
+            if (pluginProperty.getIsUpdatable() != null) {
+                builderForValue.setIsUpdatable(pluginProperty.getIsUpdatable());
+            }
+            builder.addProperties(builderForValue.build());
+        }
     }
 
     @Override
