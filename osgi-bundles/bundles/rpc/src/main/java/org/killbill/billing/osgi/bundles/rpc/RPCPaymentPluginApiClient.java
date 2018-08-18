@@ -25,16 +25,6 @@ import org.joda.time.DateTime;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.notification.plugin.api.NotificationPluginApi;
-import org.killbill.billing.osgi.bundles.rpc.gen.CallContext;
-import org.killbill.billing.osgi.bundles.rpc.gen.CallContext.CallOrigin;
-import org.killbill.billing.osgi.bundles.rpc.gen.CallContext.UserType;
-import org.killbill.billing.osgi.bundles.rpc.gen.PaymentPluginApiGrpc;
-import org.killbill.billing.osgi.bundles.rpc.gen.PaymentRequest;
-import org.killbill.billing.osgi.bundles.rpc.gen.PaymentRequest.Builder;
-import org.killbill.billing.osgi.bundles.rpc.gen.PaymentTransactionInfoPlugin;
-import org.killbill.billing.osgi.bundles.rpc.gen.PluginProperty;
-import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
-import org.killbill.billing.osgi.libs.killbill.OSGIKillbillLogService;
 import org.killbill.billing.payment.api.PaymentMethodPlugin;
 import org.killbill.billing.payment.api.TransactionType;
 import org.killbill.billing.payment.plugin.api.GatewayNotification;
@@ -43,12 +33,18 @@ import org.killbill.billing.payment.plugin.api.PaymentMethodInfoPlugin;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.billing.payment.plugin.api.PaymentPluginStatus;
+import org.killbill.billing.rpc.common.gen.CallContext;
+import org.killbill.billing.rpc.common.gen.CallContext.CallOrigin;
+import org.killbill.billing.rpc.common.gen.CallContext.UserType;
+import org.killbill.billing.rpc.plugin.payment.gen.PaymentPluginApiGrpc;
+import org.killbill.billing.rpc.plugin.payment.gen.PaymentRequest;
+import org.killbill.billing.rpc.plugin.payment.gen.PaymentRequest.Builder;
+import org.killbill.billing.rpc.plugin.payment.gen.PaymentTransactionInfoPlugin;
+import org.killbill.billing.rpc.plugin.payment.gen.PluginProperty;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.entity.Pagination;
-import org.osgi.framework.BundleContext;
 
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -58,9 +54,10 @@ public class RPCPaymentPluginApiClient implements PaymentPluginApi, Notification
     private final ManagedChannelBuilder managedChannelBuilder;
     private ManagedChannel channel;
 
-    public RPCPaymentPluginApiClient(final BundleContext context, final OSGIKillbillLogService logService, final OSGIConfigPropertiesService configProperties) {
-        managedChannelBuilder = ManagedChannelBuilder.forTarget(":50051")
+    public RPCPaymentPluginApiClient(final String endpoint) {
+        managedChannelBuilder = ManagedChannelBuilder.forTarget(endpoint)
                                                      .usePlaintext(true);
+        start();
     }
 
     public void start() {
@@ -265,68 +262,5 @@ public class RPCPaymentPluginApiClient implements PaymentPluginApi, Notification
     @Override
     public GatewayNotification processNotification(final String notification, final Iterable<org.killbill.billing.payment.api.PluginProperty> properties, final org.killbill.billing.util.callcontext.CallContext context) throws PaymentPluginApiException {
         return null;
-    }
-
-    public static void main(final String[] args) throws Exception {
-        final PaymentPluginApi client = new RPCPaymentPluginApiClient(null, null, null);
-        final org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin response = client.purchasePayment(UUID.randomUUID(),
-                                                                                                                     UUID.randomUUID(),
-                                                                                                                     UUID.randomUUID(),
-                                                                                                                     UUID.randomUUID(),
-                                                                                                                     BigDecimal.TEN,
-                                                                                                                     Currency.USD,
-                                                                                                                     ImmutableList.<org.killbill.billing.payment.api.PluginProperty>of(),
-                                                                                                                     new org.killbill.billing.util.callcontext.CallContext() {
-                                                                                                                         @Override
-                                                                                                                         public UUID getUserToken() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public String getUserName() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public org.killbill.billing.util.callcontext.CallOrigin getCallOrigin() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public org.killbill.billing.util.callcontext.UserType getUserType() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public String getReasonCode() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public String getComments() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public DateTime getCreatedDate() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public DateTime getUpdatedDate() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public UUID getAccountId() {
-                                                                                                                             return null;
-                                                                                                                         }
-
-                                                                                                                         @Override
-                                                                                                                         public UUID getTenantId() {
-                                                                                                                             return null;
-                                                                                                                         }
-                                                                                                                     });
-        System.out.println(response.getGatewayError());
     }
 }

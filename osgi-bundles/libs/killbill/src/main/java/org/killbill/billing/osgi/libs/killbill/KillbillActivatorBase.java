@@ -75,9 +75,11 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         registrar = new OSGIKillbillRegistrar();
 
         final PluginConfig pluginConfig = retrievePluginConfig(context);
-        tmpDir = setupTmpDir(pluginConfig);
+        if (pluginConfig != null) {
+            tmpDir = setupTmpDir(pluginConfig);
 
-        setupRestartMechanism(pluginConfig, context);
+            setupRestartMechanism(pluginConfig, context);
+        }
     }
 
     @Override
