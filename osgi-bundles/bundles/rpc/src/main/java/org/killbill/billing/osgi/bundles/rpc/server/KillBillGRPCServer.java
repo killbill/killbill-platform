@@ -28,10 +28,16 @@ import org.killbill.billing.rpc.killbill.registration.gen.PluginRegistrationApiG
 import org.killbill.billing.rpc.killbill.registration.gen.RegistrationRequest;
 import org.killbill.billing.rpc.killbill.registration.gen.RegistrationRequest.PluginType;
 import org.killbill.billing.rpc.killbill.registration.gen.RegistrationResponse;
+import org.killbill.billing.rpc.plugin.lifecycle.gen.LifecyclePluginApiGrpc;
+import org.killbill.billing.rpc.plugin.lifecycle.gen.LifecyclePluginApiGrpc.LifecyclePluginApiBlockingStub;
+import org.killbill.billing.rpc.plugin.lifecycle.gen.LifecycleRequest;
+import org.killbill.billing.rpc.plugin.lifecycle.gen.LifecycleResponse;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -51,7 +57,6 @@ public class KillBillGRPCServer {
         this.port = port;
         server = ServerBuilder.forPort(port).addService(new PluginRegistrationService(registrar, context))
                               .build();
-
     }
 
     private static class PluginRegistrationService extends PluginRegistrationApiGrpc.PluginRegistrationApiImplBase {
@@ -69,9 +74,10 @@ public class KillBillGRPCServer {
 
             logger.info("Got request " + request);
 
+            final ManagedChannel channel = createChannel(request.getKey(), request.getEndpoint());
             for (final PluginType type : request.getTypeList()) {
                 if (type == PluginType.PAYMENT) {
-                    final RPCPaymentPluginApiClient paymentPluginApiClient = new RPCPaymentPluginApiClient(request.getEndpoint());
+                    final RPCPaymentPluginApiClient paymentPluginApiClient = new RPCPaymentPluginApiClient(channel);
                     registerPaymentPluginApi(context, paymentPluginApiClient, request.getKey());
                 }
             }
@@ -85,6 +91,21 @@ public class KillBillGRPCServer {
             registrar.registerService(context, PaymentPluginApi.class, api, props);
         }
 
+
+        private ManagedChannel createChannel(final String key, final String endpoint) {
+            final ManagedChannelBuilder managedChannelBuilder = ManagedChannelBuilder.forTarget(endpoint)
+                                                                                     .usePlaintext(true);
+
+            final ManagedChannel channel = managedChannelBuilder.build();
+            // Registration triggers start() -- we could consider a registration mode to make that explicit instead
+            final LifecyclePluginApiBlockingStub stub = LifecyclePluginApiGrpc.newBlockingStub(channel);
+            final LifecycleResponse response = stub.start(LifecycleRequest.newBuilder().build());
+            if (!response.getSuccess()) {
+                logger.warn("Failed to start remote plugin '%s'", key);
+                channel.shutdownNow();
+            }
+            return channel;
+        }
     }
 
 

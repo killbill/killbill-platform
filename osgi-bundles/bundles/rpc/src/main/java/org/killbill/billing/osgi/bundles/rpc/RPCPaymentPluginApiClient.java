@@ -49,25 +49,13 @@ import org.killbill.billing.util.entity.Pagination;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
 public class RPCPaymentPluginApiClient implements PaymentPluginApi, NotificationPluginApi {
 
-    private final ManagedChannelBuilder managedChannelBuilder;
     private ManagedChannel channel;
 
-    public RPCPaymentPluginApiClient(final String endpoint) {
-        managedChannelBuilder = ManagedChannelBuilder.forTarget(endpoint)
-                                                     .usePlaintext(true);
-        start();
-    }
-
-    public void start() {
-        channel = managedChannelBuilder.build();
-    }
-
-    public void stop() {
-        channel.shutdownNow();
+    public RPCPaymentPluginApiClient(final ManagedChannel channel) {
+        this.channel = channel;
     }
 
     @Override
