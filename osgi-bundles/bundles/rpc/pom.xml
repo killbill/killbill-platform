@@ -168,7 +168,6 @@
                             org.killbill.billing.subscription.api.user;
                             org.killbill.billing.junction.api;
                             org.killbill.billing.catalog.api.rules;
-                            org.killbill.billing;
                             org.killbill.billing.overdue;
                             org.killbill.billing.util.audit;
                             org.killbill.billing.util.customfield;

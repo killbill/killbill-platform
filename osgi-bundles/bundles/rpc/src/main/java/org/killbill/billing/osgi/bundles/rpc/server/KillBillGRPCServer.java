@@ -23,6 +23,7 @@ import java.util.Hashtable;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.bundles.rpc.RPCPaymentPluginApiClient;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.rpc.killbill.registration.gen.PluginRegistrationApiGrpc;
 import org.killbill.billing.rpc.killbill.registration.gen.RegistrationRequest;
@@ -53,9 +54,11 @@ public class KillBillGRPCServer {
     private final Server server;
 
 
-    public KillBillGRPCServer(final int port, final BundleContext context, final OSGIKillbillRegistrar registrar) {
+    public KillBillGRPCServer(final int port, final BundleContext context, final OSGIKillbillRegistrar registrar, final OSGIKillbillAPI osgiKillbillAPI) {
         this.port = port;
-        server = ServerBuilder.forPort(port).addService(new PluginRegistrationService(registrar, context))
+        server = ServerBuilder.forPort(port)
+                              .addService(new PluginRegistrationService(registrar, context))
+                              .addService(new AccountUserApiBridge(osgiKillbillAPI))
                               .build();
     }
 

@@ -36,7 +36,7 @@ public class Activator extends KillbillActivatorBase {
     public void start(final BundleContext context) throws Exception {
         super.start(context);
         logger.info("Starting bundle " + PLUGIN_NAME);
-        gRPCServer = new KillBillGRPCServer(DEFAULT_SERVER_PORT, context, registrar);
+        gRPCServer = new KillBillGRPCServer(DEFAULT_SERVER_PORT, context, registrar, killbillAPI);
         gRPCServer.start();
     }
 
