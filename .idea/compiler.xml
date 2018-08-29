@@ -70,5 +70,28 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-Xlint:unchecked " />
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="killbill-platform" options="" />
+      <module name="killbill-platform-api" options="" />
+      <module name="killbill-platform-base" options="" />
+      <module name="killbill-platform-lifecycle" options="" />
+      <module name="killbill-platform-osgi" options="" />
+      <module name="killbill-platform-osgi-all-bundles" options="" />
+      <module name="killbill-platform-osgi-api" options="" />
+      <module name="killbill-platform-osgi-bundles" options="" />
+      <module name="killbill-platform-osgi-bundles-defaultbundles" options="" />
+      <module name="killbill-platform-osgi-bundles-jruby" options="" />
+      <module name="killbill-platform-osgi-bundles-lib-killbill" options="" />
+      <module name="killbill-platform-osgi-bundles-lib-slf4j-osgi" options="" />
+      <module name="killbill-platform-osgi-bundles-logger" options="" />
+      <module name="killbill-platform-osgi-bundles-test-beatrix" options="" />
+      <module name="killbill-platform-osgi-bundles-test-payment" options="" />
+      <module name="killbill-platform-osgi-bundles-webconsolebranding" options="" />
+      <module name="killbill-platform-osgi-lib-bundles" options="" />
+      <module name="killbill-platform-osgi-test-bundles" options="" />
+      <module name="killbill-platform-server" options="" />
+      <module name="killbill-platform-service-registry" options="" />
+      <module name="killbill-platform-test" options="" />
+    </option>
   </component>
 </project>

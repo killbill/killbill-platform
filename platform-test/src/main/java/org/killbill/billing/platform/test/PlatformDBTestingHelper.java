@@ -33,6 +33,7 @@ import org.killbill.commons.embeddeddb.mysql.MySQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
 import org.killbill.commons.embeddeddb.postgresql.PostgreSQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.postgresql.PostgreSQLStandaloneDB;
+import org.killbill.commons.embeddeddb.spanner.SpannerDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
 import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
@@ -78,6 +79,13 @@ public class PlatformDBTestingHelper {
                 log.info("Using PostgreSQL as the embedded database");
                 instance = new PostgreSQLEmbeddedDB();
             }
+        } else if ("true".equals(System.getProperty(TEST_DB_PROPERTY_PREFIX + "spanner"))) {
+            log.info("Using Spanner database");
+            final String databaseName = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.database", "killbill");
+            final String projectId = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.projectId", "killbill");
+            final String instanceId = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.instanceId", "killbill");
+            final String privateKeyPath = System.getProperty(TEST_DB_PROPERTY_PREFIX + "localDb.instanceId", "/var/tmp/killbill.json");
+            instance = new SpannerDB(projectId, instanceId, databaseName, privateKeyPath);
         } else {
             if (isUsingLocalInstance()) {
                 log.info("Using MySQL local database");
