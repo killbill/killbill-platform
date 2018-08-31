@@ -36,6 +36,21 @@ public interface KillbillServerConfig extends KillbillPlatformConfig {
     @Description("Whether to start in test mode")
     public boolean isTestModeEnabled();
 
+    @Config(KILL_BILL_NAMESPACE + "server.test.clock.redis")
+    @Default("true")
+    @Description("Whether Redis integration for the clock is enabled")
+    public boolean isRedisClockEnabled();
+
+    @Config(KILL_BILL_NAMESPACE + "server.test.clock.redis.url")
+    @Default("redis://127.0.0.1:6379")
+    @Description("Redis clock URL")
+    public String getUrl();
+
+    @Config(KILL_BILL_NAMESPACE + "server.test.clock.redis.connectionMinimumIdleSize")
+    @Default("1")
+    @Description("Minimum number of connections for the Redis clock")
+    public int getConnectionMinimumIdleSize();
+
     @Config(KILL_BILL_NAMESPACE + "server.baseUrl")
     @Default("http://127.0.0.1:8080")
     @Description("Server base url")
