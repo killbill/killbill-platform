@@ -45,7 +45,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="killbill-platform" target="1.6" />
+      <module name="killbill-platform" target="1.8" />
       <module name="killbill-platform-api" target="1.6" />
       <module name="killbill-platform-base" target="1.6" />
       <module name="killbill-platform-lifecycle" target="1.6" />
@@ -63,8 +63,8 @@
       <module name="killbill-platform-osgi-bundles-webconsolebranding" target="1.6" />
       <module name="killbill-platform-osgi-lib-bundles" target="1.6" />
       <module name="killbill-platform-osgi-test-bundles" target="1.6" />
-      <module name="killbill-platform-server" target="1.6" />
-      <module name="killbill-platform-service-registry" target="1.6" />
+      <module name="killbill-platform-server" target="1.8" />
+      <module name="killbill-platform-service-registry" target="1.8" />
       <module name="killbill-platform-test" target="1.6" />
     </bytecodeTargetLevel>
   </component>
