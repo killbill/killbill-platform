@@ -346,6 +346,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.skife.config</groupId>
             <artifactId>config-magic</artifactId>
         </dependency>

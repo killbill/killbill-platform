@@ -90,7 +90,11 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
     protected void configureClock() {
         if (serverConfig.isTestModeEnabled()) {
-            bind(Clock.class).to(ClockMock.class).asEagerSingleton();
+            if (serverConfig.isRedisClockEnabled()) {
+                bind(Clock.class).toProvider(DistributedClockProvider.class).asEagerSingleton();
+            } else {
+                bind(Clock.class).to(ClockMock.class).asEagerSingleton();
+            }
         } else {
             bind(Clock.class).to(DefaultClock.class).asEagerSingleton();
         }
