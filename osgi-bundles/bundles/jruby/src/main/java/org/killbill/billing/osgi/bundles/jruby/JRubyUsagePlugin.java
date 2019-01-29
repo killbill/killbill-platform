@@ -24,7 +24,7 @@ import org.joda.time.LocalDate;
 import org.jruby.Ruby;
 import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
-import org.killbill.billing.usage.plugin.api.RawUsageRecord;
+import org.killbill.billing.usage.api.RawUsageRecord;
 import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.osgi.framework.BundleContext;
