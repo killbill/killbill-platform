@@ -1,3 +1,6 @@
+0.39.1
+    Fix dependencies in a better way
+
 0.39.0
     Add support for ruby framework for new usage plugin api
 
