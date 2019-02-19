@@ -1,3 +1,6 @@
+0.39.2
+    Bump oss parent pom.xml to pull latest commons
+
 0.39.1
     Fix dependencies in a better way
 
