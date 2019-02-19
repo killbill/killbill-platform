@@ -64,6 +64,16 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
+    public int getMinInFlightEntries() {
+        return 1;
+    }
+
+    @Override
+    public int getMaxInFlightEntries() {
+        return 100;
+    }
+
+    @Override
     public int getMaxEntriesClaimed() {
         return externalPersistentBusConfig.getMaxEntriesClaimed();
     }
