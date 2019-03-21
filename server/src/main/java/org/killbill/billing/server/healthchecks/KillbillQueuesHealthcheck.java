@@ -1,6 +1,6 @@
 /*
- * Copyright 2014-2017 Groupon, Inc
- * Copyright 2014-2017 The Billing Project, LLC
+ * Copyright 2014-2019 Groupon, Inc
+ * Copyright 2014-2019 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -18,9 +18,7 @@
 package org.killbill.billing.server.healthchecks;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -70,7 +68,8 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
     private final AtomicBoolean healthcheckActive = new AtomicBoolean(false);
 
     private final Clock clock;
-    private final Collection<PersistentBus> buses = new HashSet<PersistentBus>();
+    private final PersistentBus bus;
+    private final PersistentBus externalBus;
     private final NotificationQueueService notificationQueueService;
 
     @Inject
@@ -80,8 +79,8 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
                                      @Named("externalBus") final PersistentBus externalBus) {
         this.clock = clock;
         this.notificationQueueService = notificationQueueService;
-        this.buses.add(bus);
-        this.buses.add(externalBus);
+        this.bus = bus;
+        this.externalBus = externalBus;
     }
 
     @Managed(description = "Kill Bill queues healthcheck")
@@ -112,18 +111,26 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
     Result check(final int slidingWindowSize, final double alpha) {
         final DateTime now = clock.getUTCNow();
 
-        for (final PersistentBus bus : buses) {
-            final String persistentBusId = bus.toString();
+        if (bus != null) {
             try {
                 final long nbReadyEntries = bus.getNbReadyEntries(now);
-                updateRegression(persistentBusId, now.getMillis(), nbReadyEntries, slidingWindowSize, alpha);
+                updateRegression("bus", now.getMillis(), nbReadyEntries, slidingWindowSize, alpha);
+            } catch (final UnsupportedOperationException e) {
+                // Ignore - not supported by this queue
+            }
+        }
+
+        if (externalBus != null) {
+            try {
+                final long nbReadyEntries = externalBus.getNbReadyEntries(now);
+                updateRegression("externalBus", now.getMillis(), nbReadyEntries, slidingWindowSize, alpha);
             } catch (final UnsupportedOperationException e) {
                 // Ignore - not supported by this queue
             }
         }
 
         for (final NotificationQueue notificationQueue : notificationQueueService.getNotificationQueues()) {
-            final String notificationQueueId = notificationQueue.toString();
+            final String notificationQueueId = notificationQueue.getFullQName();
 
             try {
                 final long nbReadyEntries = notificationQueue.getNbReadyEntries(now);
@@ -134,7 +141,19 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         }
 
         final Result healthcheckResponse = buildHealthcheckResponse();
-        logger.debug("Queues healthcheck: {}", healthcheckResponse);
+
+        for (final Object queueStatsObject : healthcheckResponse.getDetails().values()) {
+            final QueueStats queueStats = (QueueStats) queueStatsObject;
+
+            logger.debug("healthy='{}', message='{}', error='{}', queue='{}', rawSize='{}', smoothedSize='{}', smoothedSizeSlope='{}'",
+                         healthcheckResponse.isHealthy(),
+                         healthcheckResponse.getMessage(),
+                         healthcheckResponse.getError(),
+                         queueStats.queueId,
+                         queueStats.lastRawSize,
+                         queueStats.lastSmoothedSize,
+                         queueStats.currentSmoothedSizesSlope);
+        }
         return healthcheckResponse;
     }
 
@@ -170,7 +189,7 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
             }
 
             // Display the stats, regardless of the health status
-            resultBuilder.withDetail(String.format("%s stats", growingQueueId), queueStats.toString());
+            resultBuilder.withDetail(growingQueueId, queueStats);
         }
 
         if (healthy || !healthcheckActive.get()) {
@@ -199,6 +218,9 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         private final HoltWintersComputer holtWintersComputer;
         // Linear regression to check for current trend over the slidingWindowSize
         private Double currentSmoothedSizesSlope = 0.0;
+
+        private Long lastRawSize;
+        private double lastSmoothedSize;
 
         public QueueStats(final String queueId, final int slidingWindowSize, final double alpha) {
             this.queueId = queueId;
@@ -236,6 +258,9 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
             timestamps.add(newestTimestamp);
             rawSizes.add(newestRawSize);
             smoothedSizes.add(newestSmoothedSize);
+
+            lastRawSize = newestRawSize;
+            lastSmoothedSize = newestSmoothedSize;
         }
 
         // The slope of the smoothed observations gives us the overall trend over the slidingWindowSize
