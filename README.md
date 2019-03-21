@@ -19,6 +19,7 @@ Kill Bill compatibility
 | 0.36.y           | 0.18.z            |
 | 0.37.y           | 0.19.z            |
 | 0.38.y           | 0.20.z            |
+| 0.39.y           | 0.21.z            |
 
 ## License
 

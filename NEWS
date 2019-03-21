@@ -1,3 +1,7 @@
+0.39.3
+    Better logging in KillbillQueuesHealthcheck for graphing
+    Update to killbill-oss-parent 0.143.14
+
 0.39.2
     Bump oss parent pom.xml to pull latest commons
 
