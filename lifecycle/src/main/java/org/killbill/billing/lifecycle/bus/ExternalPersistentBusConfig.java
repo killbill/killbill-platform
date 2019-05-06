@@ -104,6 +104,16 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
+    public int geNbLifecycleDispatchThreads() {
+        return 1;
+    }
+
+    @Override
+    public int geNbLifecycleCompleteThreads() {
+        return 1;
+    }
+
+    @Override
     public int getEventQueueCapacity() {
         return 0;
     }
