@@ -1,3 +1,6 @@
+0.39.4
+    Update to reflect latest queue config changes
+
 0.39.3
     Better logging in KillbillQueuesHealthcheck for graphing
     Update to killbill-oss-parent 0.143.14
