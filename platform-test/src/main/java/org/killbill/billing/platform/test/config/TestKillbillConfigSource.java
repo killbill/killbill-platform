@@ -27,14 +27,15 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
+import org.killbill.billing.platform.config.PropertyKillbillConfigSource;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 
-public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
+public class TestKillbillConfigSource extends PropertyKillbillConfigSource {
     private final String jdbcConnectionString;
     private final String jdbcUsername;
     private final String jdbcPassword;

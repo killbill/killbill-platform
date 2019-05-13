@@ -29,7 +29,7 @@ import org.testng.Assert;
 
 import com.google.common.collect.ImmutableMap;
 
-public class TestDefaultKillbillConfigSource {
+public class TestPropertyKillbillConfigSource {
 
     private static final String ENABLE_JASYPT_PROPERTY = "org.killbill.server.enableJasypt";
     private static final String JASYPT_ENCRYPTOR_PASSWORD_PROPERTY = "JASYPT_ENCRYPTOR_PASSWORD";
@@ -53,7 +53,7 @@ public class TestDefaultKillbillConfigSource {
 
     @Test(groups = "fast")
     public void testJasyptDisabledByDefault() throws IOException, URISyntaxException {
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource();
+        PropertyKillbillConfigSource configSource = new PropertyKillbillConfigSource();
 
         String enableJasyptString = configSource.getString(ENABLE_JASYPT_PROPERTY);
 
@@ -70,7 +70,7 @@ public class TestDefaultKillbillConfigSource {
                                                          JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
                                                          JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
+        PropertyKillbillConfigSource configSource = new PropertyKillbillConfigSource(properties);
 
         String actualValue = configSource.getString(ENCRYPTED_PROPERTY_1);
 
@@ -86,7 +86,7 @@ public class TestDefaultKillbillConfigSource {
                                                          JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, "",
                                                          JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        new DefaultKillbillConfigSource(properties);
+        new PropertyKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast", expectedExceptions = IllegalArgumentException.class)
@@ -98,7 +98,7 @@ public class TestDefaultKillbillConfigSource {
                                                          JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
                                                          JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, "");
 
-        new DefaultKillbillConfigSource(properties);
+        new PropertyKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast", expectedExceptions = EncryptionOperationNotPossibleException.class)
@@ -110,7 +110,7 @@ public class TestDefaultKillbillConfigSource {
                                                          JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
                                                          JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        new DefaultKillbillConfigSource(properties);
+        new PropertyKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast", expectedExceptions = EncryptionOperationNotPossibleException.class)
@@ -122,7 +122,7 @@ public class TestDefaultKillbillConfigSource {
                                                          JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
                                                          JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        new DefaultKillbillConfigSource(properties);
+        new PropertyKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast")
@@ -138,7 +138,7 @@ public class TestDefaultKillbillConfigSource {
                                                          JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
                                                          JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
+        PropertyKillbillConfigSource configSource = new PropertyKillbillConfigSource(properties);
 
         String actualValue1 = configSource.getString(ENCRYPTED_PROPERTY_1);
         String actualValue2 = configSource.getString(ENCRYPTED_PROPERTY_2);
