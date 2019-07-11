@@ -43,11 +43,11 @@ public class JRubyUsagePlugin extends JRubyNotificationPlugin implements UsagePl
     }
 
     @Override
-    public List<RawUsageRecord> geUsageForAccount(final LocalDate startDate, final LocalDate endDate, final TenantContext tenantContext) {
+    public List<RawUsageRecord> getUsageForAccount(final LocalDate startDate, final LocalDate endDate, final TenantContext tenantContext) {
         return callWithRuntimeAndChecking(new PluginCallback<List<RawUsageRecord>, RuntimeException>() {
             @Override
             public List<RawUsageRecord> doCall(final Ruby runtime) {
-                return ((UsagePluginApi) pluginInstance).geUsageForAccount(startDate, endDate, tenantContext);
+                return ((UsagePluginApi) pluginInstance).getUsageForAccount(startDate, endDate, tenantContext);
             }
         });
 

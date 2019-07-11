@@ -46,6 +46,7 @@ import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
+import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.clock.Clock;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -141,6 +142,11 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     @Inject(optional = true)
     public void addEntitlementPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<EntitlementPluginApi> entitlementProviderPluginRegistry) {
         allRegistrationHandlers.add(entitlementProviderPluginRegistry);
+    }
+
+    @Inject(optional = true)
+    public void addUsagePluginApiOSGIServiceRegistration(final OSGIServiceRegistration<UsagePluginApi> usageProviderPluginRegistry) {
+        allRegistrationHandlers.add(usageProviderPluginRegistry);
     }
 
     @Inject(optional = true)
