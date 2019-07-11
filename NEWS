@@ -1,3 +1,6 @@
+0.39.6
+    Fix wiring for usage plugin api
+
 0.39.5
     Update parent oss pom.xml (common queue update)
 
