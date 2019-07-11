@@ -48,7 +48,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
     private static final Path MAGIC_FILE_PATH = Paths.get(FileSystems.getDefault().getSeparator() + "var", "tmp", "killbill-notification-test.txt");
 
-    @BeforeClass(groups = "slow")
+    @BeforeClass(groups = "slow", enabled = false)
     public void beforeClass() throws Exception {
         super.beforeClass();
 
@@ -57,7 +57,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
         setupTest.setupJrubyBundle();
     }
 
-    @BeforeMethod(groups = "slow")
+    @BeforeMethod(groups = "slow", enabled = false)
     @Override
     public void beforeMethod() throws Exception {
         super.beforeMethod();
@@ -68,7 +68,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
         }
     }
 
-    @AfterMethod(groups = "slow")
+    @AfterMethod(groups = "slow", enabled = false)
     @Override
     public void afterMethod() throws Exception {
         super.afterMethod();
@@ -76,7 +76,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
         Assert.assertFalse(Files.exists(MAGIC_FILE_PATH));
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testOnEventForAccountCreation() throws Exception {
         final UUID objectId = UUID.randomUUID();
         final UUID accountId = UUID.randomUUID();

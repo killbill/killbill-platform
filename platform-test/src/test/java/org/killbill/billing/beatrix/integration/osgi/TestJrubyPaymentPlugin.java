@@ -46,7 +46,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
     private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-payment-test";
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
 
-    @BeforeClass(groups = "slow")
+    @BeforeClass(groups = "slow", enabled = false)
     public void beforeClass() throws Exception {
         super.beforeClass();
 
@@ -55,7 +55,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         setupTest.setupJrubyBundle();
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testProcessPayment() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
@@ -76,7 +76,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         assertEquals(res.getStatus(), PaymentPluginStatus.PROCESSED);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testGetPaymentInfo() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
@@ -97,7 +97,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         assertEquals(res.getStatus(), PaymentPluginStatus.PROCESSED);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testProcessRefund() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
@@ -118,7 +118,7 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         assertEquals(res.getStatus(), PaymentPluginStatus.PROCESSED);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testAddPaymentMethod() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 
@@ -128,13 +128,13 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         api.addPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), paymentMethodPlugin, true, ImmutableList.<PluginProperty>of(), callContext);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testDeletePaymentMethod() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         api.deletePaymentMethod(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testGetPaymentMethodDetail() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         final PaymentMethodPlugin res = api.getPaymentMethodDetail(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
@@ -148,13 +148,13 @@ public class TestJrubyPaymentPlugin extends TestOSGIBase {
         assertEquals(res.getProperties().get(1).getValue(), "value2");
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testSetDefaultPaymentMethod() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         api.setDefaultPaymentMethod(UUID.randomUUID(), UUID.randomUUID(), ImmutableList.<PluginProperty>of(), callContext);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testGetPaymentMethods() throws Exception {
         final PaymentPluginApi api = getTestApi(paymentPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
         final UUID kbAccountId = UUID.randomUUID();
