@@ -23,6 +23,9 @@
 0.39.0
     Add support for ruby framework for new usage plugin api
 
+0.38.4
+  Cleanup DataSource wiring
+
 0.38.3
     Update to killbill-oss-parent 0.142.6 (jdk 1.8)
     Support for Redis-based clock
