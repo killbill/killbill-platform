@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2018 Groupon, Inc
- * Copyright 2014-2018 The Billing Project, LLC
+ * Copyright 2014-2019 Groupon, Inc
+ * Copyright 2014-2019 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -125,9 +125,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Provides
     @Singleton
     protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, mainEmbeddedDB, MAIN_DATA_SOURCE_ID);
-        injector.injectMembers(dataSourceSpyProvider);
-        return dataSourceSpyProvider.get();
+        return provideDataSourceInAComplicatedWayBecauseOf627(injector, daoConfig, mainEmbeddedDB, MAIN_DATA_SOURCE_ID);
     }
 
     @Provides
@@ -135,9 +133,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Singleton
     protected DataSource provideMainRoDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
         if (mainRoDataSourceConfig.isEnabled()) {
-            final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(mainRoDataSourceConfig, mainRoEmbeddedDB, MAIN_RO_DATA_SOURCE_ID);
-            injector.injectMembers(dataSourceSpyProvider);
-            return dataSourceSpyProvider.get();
+            return provideDataSourceInAComplicatedWayBecauseOf627(injector, mainRoDataSourceConfig, mainRoEmbeddedDB, MAIN_RO_DATA_SOURCE_ID);
         } else {
             // See provideDataSourceInAComplicatedWayBecauseOf627 above
             return injector.getInstance(DataSource.class);
@@ -148,7 +144,11 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Named(SHIRO_DATA_SOURCE_ID)
     @Singleton
     protected DataSource provideShiroDataSourceInAComplicatedWayBecauseOf627(final Injector injector) {
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, shiroEmbeddedDB, SHIRO_DATA_SOURCE_ID);
+        return provideDataSourceInAComplicatedWayBecauseOf627(injector, daoConfig, shiroEmbeddedDB, SHIRO_DATA_SOURCE_ID);
+    }
+
+    protected DataSource provideDataSourceInAComplicatedWayBecauseOf627(final Injector injector, final DaoConfig daoConfig, final EmbeddedDB embeddedDB, final String dataSourceId) {
+        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(daoConfig, embeddedDB, dataSourceId);
         injector.injectMembers(dataSourceSpyProvider);
         return dataSourceSpyProvider.get();
     }
