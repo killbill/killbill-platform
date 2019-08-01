@@ -157,4 +157,9 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     public int getMaxReDispatchCount() {
         return externalPersistentBusConfig.getMaxReDispatchCount();
     }
+
+    @Override
+    public TimeSpan getReapSchedule() {
+        return externalPersistentBusConfig.getReapSchedule();
+    }
 }
