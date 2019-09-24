@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2016 Groupon, Inc
- * Copyright 2014-2016 The Billing Project, LLC
+ * Copyright 2014-2019 Groupon, Inc
+ * Copyright 2014-2019 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -20,7 +20,6 @@ package org.killbill.billing.osgi.bundles.logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Queue;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
@@ -32,8 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.google.common.collect.EvictingQueue;
-
 // Inspired by osgi-over-slf4j
 public class KillbillLogWriter implements LogListener {
 
@@ -42,7 +39,11 @@ public class KillbillLogWriter implements LogListener {
     private static final String MDC_KEY = "MDC";
 
     private final Map<String, Logger> delegates = new HashMap<String, Logger>();
-    private final Queue<LogEntry> latestEntries = EvictingQueue.<LogEntry>create(500);
+    private final LogEntriesManager logEntriesManager;
+
+    public KillbillLogWriter(final LogEntriesManager logEntriesManager) {
+        this.logEntriesManager = logEntriesManager;
+    }
 
     // Invoked by the log service implementation for each log entry
     @SuppressWarnings("unchecked")
@@ -79,11 +80,7 @@ public class KillbillLogWriter implements LogListener {
             log(delegate, level, message);
         }
 
-        latestEntries.offer(entry);
-    }
-
-    public Queue<LogEntry> getLatestEntries() {
-        return latestEntries;
+        logEntriesManager.recordEvent(new LogEntryJson(entry));
     }
 
     private Logger getDelegateForBundle(/* @Nullable */ final Bundle bundle) {

@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2014-2019 Groupon, Inc
+ * Copyright 2014-2019 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServlet;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.plugin.core.resources.jooby.PluginApp;
+import org.killbill.billing.plugin.core.resources.jooby.PluginAppBuilder;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
@@ -44,7 +46,6 @@ public class Activator extends KillbillActivatorBase {
 
     public static final String PLUGIN_NAME = "killbill-osgi-logger";
 
-    private final KillbillLogWriter killbillLogListener = new KillbillLogWriter();
     private final List<LogReaderService> logReaderServices = new LinkedList<LogReaderService>();
 
     private final ServiceListener logReaderServiceListener = new ServiceListener() {
@@ -70,8 +71,14 @@ public class Activator extends KillbillActivatorBase {
         }
     };
 
+    private LogEntriesManager logEntriesManager;
+    private KillbillLogWriter killbillLogListener;
+
     @Override
     public void start(final BundleContext context) throws Exception {
+        logEntriesManager = new LogEntriesManager();
+        killbillLogListener = new KillbillLogWriter(logEntriesManager);
+
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
 
@@ -88,8 +95,10 @@ public class Activator extends KillbillActivatorBase {
             logReaderServiceListener.serviceChanged(new ServiceEvent(ServiceEvent.REGISTERED, serviceReferences[i]));
         }
 
-        final LogsServlet logsServlet = new LogsServlet(killbillLogListener);
-        registerServlet(context, logsServlet);
+        final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).build();
+        pluginApp.sse("/", new LogsSseHandler(logEntriesManager));
+        final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
+        registerServlet(context, httpServlet);
     }
 
     @Override
@@ -98,6 +107,10 @@ public class Activator extends KillbillActivatorBase {
             final LogReaderService service = iterator.next();
             service.removeLogListener(killbillLogListener);
             iterator.remove();
+        }
+
+        if (logEntriesManager != null) {
+            logEntriesManager.close();
         }
 
         super.stop(context);
