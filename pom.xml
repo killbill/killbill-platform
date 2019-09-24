@@ -136,11 +136,6 @@
             </dependency>
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>
-                <artifactId>killbill-platform-osgi-bundles-webconsolebranding</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-osgi-lib-bundles</artifactId>
                 <version>${project.version}</version>
             </dependency>

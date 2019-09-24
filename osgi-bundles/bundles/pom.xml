@@ -30,6 +30,5 @@
     <modules>
         <module>jruby</module>
         <module>logger</module>
-        <module>webconsolebranding</module>
     </modules>
 </project>
