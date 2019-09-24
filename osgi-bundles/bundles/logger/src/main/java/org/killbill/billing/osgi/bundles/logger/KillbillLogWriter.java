@@ -31,7 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-// Inspired by osgi-over-slf4j
+// Listen to OSGI LogEntry events and redirect them to slf4j (inspired by osgi-over-slf4j)
+// Plugins using LoggerFactory.getLogger directly would not use this (redirected to logback by default)
 public class KillbillLogWriter implements LogListener {
 
     private static final String UNKNOWN = "[Unknown]";

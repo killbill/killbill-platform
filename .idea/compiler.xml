@@ -37,7 +37,6 @@
         <module name="killbill-platform-osgi-bundles-logger" />
         <module name="killbill-platform-osgi-bundles-test-beatrix" />
         <module name="killbill-platform-osgi-bundles-test-payment" />
-        <module name="killbill-platform-osgi-bundles-webconsolebranding" />
         <module name="killbill-platform-server" />
         <module name="killbill-platform-service-registry" />
         <module name="killbill-platform-test" />
