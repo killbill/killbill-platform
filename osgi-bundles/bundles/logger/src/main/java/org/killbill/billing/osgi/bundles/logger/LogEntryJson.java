@@ -22,7 +22,12 @@ import java.util.UUID;
 import org.osgi.service.log.LogEntry;
 import org.osgi.service.log.LogService;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class LogEntryJson {
+
+    private static final ObjectMapper DEFAULT_OBJECT_MAPPER = new ObjectMapper();
 
     private final UUID id;
     private final String level;
@@ -83,14 +88,19 @@ public class LogEntryJson {
 
     @Override
     public String toString() {
-        final StringBuffer sb = new StringBuffer("LogEntryJson{");
-        sb.append("id=").append(id);
-        sb.append(", level='").append(level).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", message='").append(message).append('\'');
-        sb.append(", time=").append(time);
-        sb.append('}');
-        return sb.toString();
+        try {
+            // Always return JSON in case this method is used as a last resort serialization mechanism
+            return DEFAULT_OBJECT_MAPPER.writeValueAsString(this);
+        } catch (final JsonProcessingException e) {
+            final StringBuffer sb = new StringBuffer("{");
+            sb.append("\"id\":\"").append(id).append("\"");
+            sb.append(", \"level\":\"").append(level).append("\"");
+            sb.append(", \"name\":\"").append(name).append("\"");
+            sb.append(", \"message\":\"").append(message).append("\"");
+            sb.append(", \"time\":\"").append(time).append("\"");
+            sb.append('}');
+            return sb.toString();
+        }
     }
 
     @Override
