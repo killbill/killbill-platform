@@ -72,6 +72,7 @@ public class Activator extends KillbillActivatorBase {
     };
 
     private LogEntriesManager logEntriesManager;
+    private LogsSseHandler logsSseHandler;
     private KillbillLogWriter killbillLogListener;
 
     @Override
@@ -96,7 +97,8 @@ public class Activator extends KillbillActivatorBase {
         }
 
         final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).build();
-        pluginApp.sse("/", new LogsSseHandler(logEntriesManager));
+        logsSseHandler = new LogsSseHandler(logEntriesManager);
+        pluginApp.sse("/", logsSseHandler);
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
         registerServlet(context, httpServlet);
     }
@@ -109,8 +111,8 @@ public class Activator extends KillbillActivatorBase {
             iterator.remove();
         }
 
-        if (logEntriesManager != null) {
-            logEntriesManager.close();
+        if (logsSseHandler != null) {
+            logsSseHandler.close();
         }
 
         super.stop(context);

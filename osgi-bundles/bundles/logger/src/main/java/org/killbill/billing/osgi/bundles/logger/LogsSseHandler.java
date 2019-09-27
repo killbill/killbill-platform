@@ -17,6 +17,8 @@
 
 package org.killbill.billing.osgi.bundles.logger;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -27,7 +29,7 @@ import org.jooby.Sse;
 import org.jooby.funzy.Throwing;
 import org.killbill.commons.concurrent.Executors;
 
-public class LogsSseHandler implements Sse.Handler {
+public class LogsSseHandler implements Sse.Handler, Closeable {
 
     private final LogEntriesManager logEntriesManager;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -38,6 +40,12 @@ public class LogsSseHandler implements Sse.Handler {
     }
 
     @Override
+    public void close() throws IOException {
+        this.scheduledExecutorService.shutdownNow();
+        this.logEntriesManager.close();
+    }
+
+    @Override
     public void handle(final Request req, final Sse sse) {
         final UUID cacheId = UUID.fromString(sse.id());
         logEntriesManager.subscribe(cacheId);
@@ -45,8 +53,15 @@ public class LogsSseHandler implements Sse.Handler {
         final ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                for (final LogEntryJson logEntryJson : logEntriesManager.drain(cacheId)) {
-                    sse.event(logEntryJson).id(logEntryJson.getId()).send();
+                final Iterable<LogEntryJson> logEntries = logEntriesManager.drain(cacheId);
+                if (!logEntries.iterator().hasNext()) {
+                    // In case we have nothing to send, send a heartbeat to verify the client is still around
+                    // That way, we can more quickly cleanup our subscriptions
+                    sse.event("heartbeat").id(UUID.randomUUID()).send();
+                } else {
+                    for (final LogEntryJson logEntryJson : logEntries) {
+                        sse.event(logEntryJson).id(logEntryJson.getId()).send();
+                    }
                 }
             }
         }, 0, 1, TimeUnit.SECONDS);
