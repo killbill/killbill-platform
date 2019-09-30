@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2018 Groupon, Inc
- * Copyright 2014-2018 The Billing Project, LLC
+ * Copyright 2014-2019 Groupon, Inc
+ * Copyright 2014-2019 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -55,6 +55,8 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.event.Event;
 import org.osgi.service.http.HttpService;
+import org.osgi.service.log.LogService;
+import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +70,8 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillActivator.class);
     private static final String KILLBILL_OSGI_JDBC_JNDI_NAME = "killbill/osgi/jdbc";
+
+    private static final String LOG_SERVICE_NAME = "org.osgi.service.log.LogService";
 
     private final OSGIKillbill osgiKillbill;
     private final HttpService defaultHttpService;
@@ -83,6 +87,8 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final List<OSGIServiceRegistration> allRegistrationHandlers;
 
     private BundleContext context = null;
+    private ServiceTracker<LogService, LogService> logTracker;
+    private OSGIAppender osgiAppender = null;
 
     @Inject
     public KillbillActivator(@Named(DefaultOSGIModule.OSGI_DATA_SOURCE_ID) final DataSource dataSource,
@@ -156,10 +162,23 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
 
     @Override
     public void start(final BundleContext context) throws Exception {
-
         this.context = context;
         final Dictionary<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, "killbill");
+
+        // Forward all core log entries to the OSGI LogService, so that plugins have access to them
+        final Object factory = LoggerFactory.getILoggerFactory();
+        if ("ch.qos.logback.classic.LoggerContext".equals(factory.getClass().getName())) {
+            logTracker = new ServiceTracker<LogService, LogService>(context, LOG_SERVICE_NAME, null);
+            logTracker.open();
+
+            final ch.qos.logback.classic.Logger root = ((ch.qos.logback.classic.LoggerContext) factory).getLogger(Logger.ROOT_LOGGER_NAME);
+
+            osgiAppender = new OSGIAppender(logTracker, context.getBundle());
+            osgiAppender.setContext(root.getLoggerContext());
+            osgiAppender.start();
+            root.addAppender(osgiAppender);
+        }
 
         killbillEventRetriableBusHandler.register();
 
@@ -183,6 +202,13 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         context.removeServiceListener(this);
         killbillEventRetriableBusHandler.unregister();
         registrar.unregisterAll();
+
+        if (osgiAppender != null) {
+            osgiAppender.stop();
+        }
+        if (logTracker != null) {
+            logTracker.close();
+        }
     }
 
     @SuppressWarnings("unchecked")
