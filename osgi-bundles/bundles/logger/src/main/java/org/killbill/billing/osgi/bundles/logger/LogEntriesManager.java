@@ -58,17 +58,19 @@ public class LogEntriesManager implements Closeable {
             if (rootCache != null) {
                 cache.addAll(rootCache);
             }
-            logger.info("Created new cache {} ({} active)", cacheId, sseIDsCaches.size());
-            return cache;
         }
+        // Logging should be done outside the synchronized block to avoid any deadlock
+        logger.info("Created new cache {} ({} active)", cacheId, sseIDsCaches.size());
+        return cache;
     }
 
     public void unsubscribe(final UUID cacheId) {
         final EvictingQueue<LogEntryJson> cache;
         synchronized (sseIDsCaches) {
             cache = sseIDsCaches.remove(cacheId);
-            logger.info("Removed cache {} ({} active)", cacheId, sseIDsCaches.size());
         }
+        // Logging should be done outside the synchronized block to avoid any deadlock
+        logger.info("Removed cache {} ({} active)", cacheId, sseIDsCaches.size());
         cache.clear();
     }
 
