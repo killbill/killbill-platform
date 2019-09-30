@@ -49,13 +49,22 @@ public class KillbillLogWriter implements LogListener {
     // Invoked by the log service implementation for each log entry
     @SuppressWarnings("unchecked")
     public void logged(final LogEntry entry) {
-        final Bundle bundle = entry.getBundle();
-        final Logger delegate = getDelegateForBundle(bundle);
+        // Forward the log to HTTP consumers
+        logEntriesManager.recordEvent(new LogEntryJson(entry));
 
+        // If the log comes from a pure OSGI LogService, forward it to slf4j
         final ServiceReference serviceReference = entry.getServiceReference();
+        if (serviceReference != null && "true".equals(serviceReference.getProperty("KILL_BILL_ROOT_LOGGING"))) {
+            // LogEntry comes from Logback already (see OSGIAppender), ignore
+            return;
+        }
+
         final int level = entry.getLevel();
         final String message = entry.getMessage();
         final Throwable exception = entry.getException();
+
+        final Bundle bundle = entry.getBundle();
+        final Logger delegate = getDelegateForBundle(bundle);
 
         if (serviceReference != null) {
             // A single thread (e.g. org.apache.felix.log.LogListenerThread) should be invoking this, but just to be safe...
@@ -80,8 +89,6 @@ public class KillbillLogWriter implements LogListener {
         } else {
             log(delegate, level, message);
         }
-
-        logEntriesManager.recordEvent(new LogEntryJson(entry));
     }
 
     private Logger getDelegateForBundle(/* @Nullable */ final Bundle bundle) {
