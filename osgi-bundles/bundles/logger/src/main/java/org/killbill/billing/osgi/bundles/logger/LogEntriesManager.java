@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,7 @@ public class LogEntriesManager implements Closeable {
     public LogEntriesManager() {
         sseIDsCaches = new HashMap<UUID, EvictingQueue<LogEntryJson>>();
         final UUID rootCacheId = UUID.randomUUID();
-        rootCache = subscribe(rootCacheId);
+        rootCache = subscribe(rootCacheId, null);
     }
 
     public void recordEvent(final LogEntryJson logEntry) {
@@ -51,12 +53,24 @@ public class LogEntriesManager implements Closeable {
         }
     }
 
-    public EvictingQueue<LogEntryJson> subscribe(final UUID cacheId) {
+    public EvictingQueue<LogEntryJson> subscribe(final UUID cacheId, @Nullable final UUID lastEventId) {
         final EvictingQueue<LogEntryJson> cache = EvictingQueue.<LogEntryJson>create(500);
         synchronized (sseIDsCaches) {
             sseIDsCaches.put(cacheId, cache);
             if (rootCache != null) {
-                cache.addAll(rootCache);
+                if (lastEventId == null) {
+                    // Add all entries
+                    cache.addAll(rootCache);
+                } else {
+                    for (final LogEntryJson logEntryJson : rootCache) {
+                        if (lastEventId.equals(logEntryJson.getId())) {
+                            // Remove everything prior to that id
+                            cache.clear();
+                            continue;
+                        }
+                        cache.add(logEntryJson);
+                    }
+                }
             }
         }
         // Logging should be done outside the synchronized block to avoid any deadlock
