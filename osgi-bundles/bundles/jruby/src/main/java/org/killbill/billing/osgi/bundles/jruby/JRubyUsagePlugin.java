@@ -19,6 +19,7 @@ package org.killbill.billing.osgi.bundles.jruby;
 
 import java.util.Dictionary;
 import java.util.List;
+import java.util.UUID;
 
 import org.joda.time.LocalDate;
 import org.jruby.Ruby;
@@ -50,6 +51,15 @@ public class JRubyUsagePlugin extends JRubyNotificationPlugin implements UsagePl
                 return ((UsagePluginApi) pluginInstance).getUsageForAccount(startDate, endDate, tenantContext);
             }
         });
+    }
 
+    @Override
+    public List<RawUsageRecord> getUsageForSubscription(final UUID subscriptionId, final LocalDate startDate, final LocalDate endDate, final TenantContext tenantContext) {
+        return callWithRuntimeAndChecking(new PluginCallback<List<RawUsageRecord>, RuntimeException>() {
+            @Override
+            public List<RawUsageRecord> doCall(final Ruby runtime) {
+                return ((UsagePluginApi) pluginInstance).getUsageForSubscription(subscriptionId, startDate, endDate, tenantContext);
+            }
+        });
     }
 }
