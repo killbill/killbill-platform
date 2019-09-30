@@ -22,18 +22,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
+import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
-import org.osgi.service.log.LogEntry;
-import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-// Listen to OSGI LogEntry events and redirect them to slf4j (inspired by osgi-over-slf4j)
+// Kill Bill LogService implementation: forwards OSGI logs to slf4j
+// Note: no LogReaderService implementation is currently provided (LogListener implementations would never be called)
 // Plugins using LoggerFactory.getLogger directly would not use this (redirected to logback by default)
-public class KillbillLogWriter implements LogListener {
+public class KillbillLogWriter implements BundleListener, FrameworkListener, ServiceListener, LogService {
 
     private static final String UNKNOWN = "[Unknown]";
     private static final String OSGI_BUNDLES_JRUBY = "org.kill-bill.billing.killbill-platform-osgi-bundles-jruby";
@@ -46,48 +51,43 @@ public class KillbillLogWriter implements LogListener {
         this.logEntriesManager = logEntriesManager;
     }
 
-    // Invoked by the log service implementation for each log entry
-    @SuppressWarnings("unchecked")
-    public void logged(final LogEntry entry) {
-        // Forward the log to HTTP consumers
-        logEntriesManager.recordEvent(new LogEntryJson(entry));
+    @Override
+    public void log(final ServiceReference serviceReference, final int level, final String message, final Throwable exception) {
+        final Bundle bundle = serviceReference == null ? null : serviceReference.getBundle();
 
-        // If the log comes from a pure OSGI LogService, forward it to slf4j
-        final ServiceReference serviceReference = entry.getServiceReference();
+        // Forward the log to HTTP consumers
+        logEntriesManager.recordEvent(new LogEntryJson(bundle, level, message, exception));
+
         if (serviceReference != null && "true".equals(serviceReference.getProperty("KILL_BILL_ROOT_LOGGING"))) {
             // LogEntry comes from Logback already (see OSGIAppender), ignore
             return;
         }
 
-        final int level = entry.getLevel();
-        final String message = entry.getMessage();
-        final Throwable exception = entry.getException();
-
-        final Bundle bundle = entry.getBundle();
+        // Log comes from a pure OSGI LogService, forward it to slf4j
         final Logger delegate = getDelegateForBundle(bundle);
-
         if (serviceReference != null) {
             // A single thread (e.g. org.apache.felix.log.LogListenerThread) should be invoking this, but just to be safe...
             synchronized (this) {
                 try {
                     final Object originalMdcMap = serviceReference.getProperty(MDC_KEY);
                     if (originalMdcMap != null) {
+                        //noinspection unchecked
                         MDC.setContextMap((Map) originalMdcMap);
                     }
 
                     if (exception != null) {
-                        log(delegate, serviceReference, level, message, exception);
+                        logInternal(delegate, serviceReference, level, message, exception);
                     } else {
-                        log(delegate, serviceReference, level, message);
+                        logInternal(delegate, serviceReference, level, message);
                     }
                 } finally {
                     MDC.clear();
                 }
             }
         } else if (exception != null) {
-            log(delegate, level, message, exception);
+            logInternal(delegate, level, message, exception);
         } else {
-            log(delegate, level, message);
+            logInternal(delegate, level, message);
         }
     }
 
@@ -122,7 +122,7 @@ public class KillbillLogWriter implements LogListener {
         return delegates.get(loggerName);
     }
 
-    private void log(final Logger delegate, final int level, final String message) {
+    private void logInternal(final Logger delegate, final int level, final String message) {
         switch (level) {
             case LogService.LOG_DEBUG:
                 delegate.debug(message);
@@ -141,7 +141,7 @@ public class KillbillLogWriter implements LogListener {
         }
     }
 
-    private void log(final Logger delegate, final int level, final String message, final Throwable exception) {
+    private void logInternal(final Logger delegate, final int level, final String message, final Throwable exception) {
         switch (level) {
             case LogService.LOG_DEBUG:
                 delegate.debug(message, exception);
@@ -160,7 +160,7 @@ public class KillbillLogWriter implements LogListener {
         }
     }
 
-    private void log(final Logger delegate, final ServiceReference sr, final int level, final String message) {
+    private void logInternal(final Logger delegate, final ServiceReference sr, final int level, final String message) {
         switch (level) {
             case LogService.LOG_DEBUG:
                 if (delegate.isDebugEnabled()) {
@@ -187,7 +187,7 @@ public class KillbillLogWriter implements LogListener {
         }
     }
 
-    private void log(final Logger delegate, final ServiceReference sr, final int level, final String message, final Throwable exception) {
+    private void logInternal(final Logger delegate, final ServiceReference sr, final int level, final String message, final Throwable exception) {
         switch (level) {
             case LogService.LOG_DEBUG:
                 if (delegate.isDebugEnabled()) {
@@ -248,5 +248,99 @@ public class KillbillLogWriter implements LogListener {
         output.append(message);
 
         return output.toString();
+    }
+
+    private static final String[] BUNDLE_EVENT_MESSAGES =
+            {
+                    "[%s] BundleEvent INSTALLED",
+                    "[%s] BundleEvent STARTED",
+                    "[%s] BundleEvent STOPPED",
+                    "[%s] BundleEvent UPDATED",
+                    "[%s] BundleEvent UNINSTALLED",
+                    "[%s] BundleEvent RESOLVED",
+                    "[%s] BundleEvent UNRESOLVED"
+            };
+
+    @Override
+    public void bundleChanged(final BundleEvent event) {
+        final int eventType = event.getType();
+        String message = null;
+
+        for (int i = 0; message == null && i < BUNDLE_EVENT_MESSAGES.length; ++i) {
+            if (eventType >> i == 1) {
+                message = BUNDLE_EVENT_MESSAGES[i];
+            }
+        }
+
+        if (message != null) {
+            log(LogService.LOG_INFO, String.format(message, event.getBundle() == null ? "?" : event.getBundle().getSymbolicName()));
+        }
+    }
+
+    private static final String[] FRAMEWORK_EVENT_MESSAGES =
+            {
+                    "[%s] FrameworkEvent STARTED",
+                    "[%s] FrameworkEvent ERROR",
+                    "[%s] FrameworkEvent PACKAGES REFRESHED",
+                    "[%s] FrameworkEvent STARTLEVEL CHANGED",
+                    "[%s] FrameworkEvent WARNING",
+                    "[%s] FrameworkEvent INFO"
+            };
+
+    @Override
+    public void frameworkEvent(final FrameworkEvent event) {
+        final int eventType = event.getType();
+        String message = null;
+
+        for (int i = 0; message == null && i < FRAMEWORK_EVENT_MESSAGES.length; ++i) {
+            if (eventType >> i == 1) {
+                message = FRAMEWORK_EVENT_MESSAGES[i];
+            }
+        }
+
+        if (message != null) {
+            log((eventType == FrameworkEvent.ERROR) ? LogService.LOG_ERROR : LogService.LOG_INFO,
+                String.format(message, event.getBundle() == null ? "?" : event.getBundle().getSymbolicName()),
+                event.getThrowable());
+        }
+    }
+
+    private static final String[] SERVICE_EVENT_MESSAGES =
+            {
+                    "[%s] ServiceEvent REGISTERED",
+                    "[%s] ServiceEvent MODIFIED",
+                    "[%s] ServiceEvent UNREGISTERING"
+            };
+
+    @Override
+    public void serviceChanged(final ServiceEvent event) {
+        final int eventType = event.getType();
+        String message = null;
+
+        for (int i = 0; message == null && i < SERVICE_EVENT_MESSAGES.length; ++i) {
+            if (eventType >> i == 1) {
+                message = SERVICE_EVENT_MESSAGES[i];
+            }
+        }
+
+        if (message != null) {
+            log((eventType == ServiceEvent.MODIFIED) ? LogService.LOG_DEBUG : LogService.LOG_INFO,
+                String.format(message, (event.getServiceReference() == null || event.getServiceReference().getBundle() == null) ? "?" : event.getServiceReference().getBundle().getSymbolicName()));
+        }
+    }
+
+    @Override
+    public void log(final int level, final String message) {
+        log(null, level, message, null);
+    }
+
+    @Override
+    public void log(final int level, final String message, final Throwable exception) {
+        log(null, level, message, exception);
+    }
+
+    @Override
+    public void log(final ServiceReference sr, final int level, final String message) {
+        log(sr, level, message, null);
     }
 }

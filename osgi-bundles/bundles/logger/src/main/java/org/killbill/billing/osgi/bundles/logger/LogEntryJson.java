@@ -19,7 +19,7 @@ package org.killbill.billing.osgi.bundles.logger;
 
 import java.util.UUID;
 
-import org.osgi.service.log.LogEntry;
+import org.osgi.framework.Bundle;
 import org.osgi.service.log.LogService;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,35 +35,35 @@ public class LogEntryJson {
     private final String message;
     private final Long time;
 
-    public LogEntryJson(final LogEntry logEntry) {
+    public LogEntryJson(final Bundle bundle, final int intLevel, final String message, final Throwable exception) {
         id = UUID.randomUUID();
 
-        if (logEntry.getLevel() == LogService.LOG_ERROR) {
+        if (intLevel == LogService.LOG_ERROR) {
             level = "ERROR";
-        } else if (logEntry.getLevel() == LogService.LOG_WARNING) {
+        } else if (intLevel == LogService.LOG_WARNING) {
             level = "WARNING";
-        } else if (logEntry.getLevel() == LogService.LOG_INFO) {
+        } else if (intLevel == LogService.LOG_INFO) {
             level = "INFO";
-        } else if (logEntry.getLevel() == LogService.LOG_DEBUG) {
+        } else if (intLevel == LogService.LOG_DEBUG) {
             level = "DEBUG";
         } else {
-            level = String.valueOf(logEntry.getLevel());
+            level = String.valueOf(intLevel);
         }
 
-        if (logEntry.getBundle() == null) {
+        if (bundle == null) {
             name = null;
-        } else if (logEntry.getBundle().getLocation() != null && logEntry.getBundle().getLocation().startsWith("jruby-")) {
+        } else if (bundle.getLocation() != null && bundle.getLocation().startsWith("jruby-")) {
             // Extract the plugin name (see FileInstall)
-            name = logEntry.getBundle().getLocation().substring(6);
-        } else if (logEntry.getBundle().getSymbolicName() != null && logEntry.getBundle().getSymbolicName().startsWith("org.kill-bill.billing.plugin.java")) {
+            name = bundle.getLocation().substring(6);
+        } else if (bundle.getSymbolicName() != null && bundle.getSymbolicName().startsWith("org.kill-bill.billing.plugin.java")) {
             // Extract the plugin name
-            name = logEntry.getBundle().getSymbolicName().substring(34);
+            name = bundle.getSymbolicName().substring(34);
         } else {
-            name = logEntry.getBundle().getSymbolicName();
+            name = bundle.getSymbolicName();
         }
 
-        message = logEntry.getMessage();
-        time = logEntry.getTime();
+        this.message = message;
+        this.time = System.currentTimeMillis();
     }
 
     public UUID getId() {

@@ -27,6 +27,8 @@ import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.MDC;
 
+// Plugins should be using slf4j directly
+@Deprecated
 public class OSGIKillbillLogService extends OSGIKillbillLibraryBase implements LogService {
 
     private static final String LOG_SERVICE_NAME = "org.osgi.service.log.LogService";

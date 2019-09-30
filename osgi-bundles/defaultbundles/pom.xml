@@ -29,10 +29,6 @@
     <name>killbill-platform-osgi-bundles-defaultbundles</name>
     <dependencies>
         <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.log</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
         </dependency>
