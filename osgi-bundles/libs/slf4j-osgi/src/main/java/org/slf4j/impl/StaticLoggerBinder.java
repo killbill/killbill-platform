@@ -22,6 +22,9 @@ import org.osgi.service.log.LogService;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.spi.LoggerFactoryBinder;
 
+// According to https://github.com/killbill/killbill/commit/33ab444b9ce4a5f5a7d4f92235a78ea32a8d9c61,
+// this used to be needed for OSGI bundles relying on third-party libraries using slf4j (e.g.
+// config-magic). Unclear if it's still really needed though.
 public class StaticLoggerBinder implements LoggerFactoryBinder {
 
     /**

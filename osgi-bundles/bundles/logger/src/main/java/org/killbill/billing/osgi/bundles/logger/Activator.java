@@ -1,7 +1,7 @@
 /*
  * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2014-2019 Groupon, Inc
+ * Copyright 2014-2019 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -19,9 +19,6 @@
 package org.killbill.billing.osgi.bundles.logger;
 
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
@@ -29,12 +26,10 @@ import javax.servlet.http.HttpServlet;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.plugin.core.resources.jooby.PluginApp;
+import org.killbill.billing.plugin.core.resources.jooby.PluginAppBuilder;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceEvent;
-import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogReaderService;
+import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,75 +39,36 @@ public class Activator extends KillbillActivatorBase {
 
     public static final String PLUGIN_NAME = "killbill-osgi-logger";
 
-    private final KillbillLogWriter killbillLogListener = new KillbillLogWriter();
-    private final List<LogReaderService> logReaderServices = new LinkedList<LogReaderService>();
-
-    private final ServiceListener logReaderServiceListener = new ServiceListener() {
-        public void serviceChanged(final ServiceEvent event) {
-            final ServiceReference<?> serviceReference = event.getServiceReference();
-            if (serviceReference == null || serviceReference.getBundle() == null) {
-                return;
-            }
-
-            final BundleContext bundleContext = serviceReference.getBundle().getBundleContext();
-            if (bundleContext == null) {
-                return;
-            }
-
-            final LogReaderService logReaderService = (LogReaderService) bundleContext.getService(serviceReference);
-            if (logReaderService != null) {
-                if (event.getType() == ServiceEvent.REGISTERED) {
-                    registerLogReaderService(logReaderService);
-                } else if (event.getType() == ServiceEvent.UNREGISTERING) {
-                    unregisterLogReaderService(logReaderService);
-                }
-            }
-        }
-    };
+    private LogEntriesManager logEntriesManager;
+    private LogsSseHandler logsSseHandler;
+    private KillbillLogWriter killbillLogListener;
 
     @Override
     public void start(final BundleContext context) throws Exception {
+        logEntriesManager = new LogEntriesManager();
+        killbillLogListener = new KillbillLogWriter(logEntriesManager);
+        context.addBundleListener(killbillLogListener);
+        context.addFrameworkListener(killbillLogListener);
+        context.addServiceListener(killbillLogListener);
+        context.registerService(LogService.class.getName(), killbillLogListener, null);
+
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
 
-        final String filter = "(objectclass=" + LogReaderService.class.getName() + ")";
-        try {
-            context.addServiceListener(logReaderServiceListener, filter);
-        } catch (final InvalidSyntaxException e) {
-            logger.warn("Unable to register the killbill LogReaderService listener", e);
-        }
-
-        // If the LogReaderService was already registered, manually construct a REGISTERED ServiceEvent
-        final ServiceReference[] serviceReferences = context.getServiceReferences((String) null, filter);
-        for (int i = 0; serviceReferences != null && i < serviceReferences.length; i++) {
-            logReaderServiceListener.serviceChanged(new ServiceEvent(ServiceEvent.REGISTERED, serviceReferences[i]));
-        }
-
-        final LogsServlet logsServlet = new LogsServlet(killbillLogListener);
-        registerServlet(context, logsServlet);
+        final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).build();
+        logsSseHandler = new LogsSseHandler(logEntriesManager);
+        pluginApp.sse("/", logsSseHandler);
+        final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
+        registerServlet(context, httpServlet);
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-        for (final Iterator<LogReaderService> iterator = logReaderServices.iterator(); iterator.hasNext(); ) {
-            final LogReaderService service = iterator.next();
-            service.removeLogListener(killbillLogListener);
-            iterator.remove();
+        if (logsSseHandler != null) {
+            logsSseHandler.close();
         }
 
         super.stop(context);
-    }
-
-    private void registerLogReaderService(final LogReaderService service) {
-        logger.info("Registering the killbill LogReaderService listener");
-        logReaderServices.add(service);
-        service.addLogListener(killbillLogListener);
-    }
-
-    private void unregisterLogReaderService(final LogReaderService logReaderService) {
-        logger.info("Unregistering the killbill LogReaderService listener");
-        logReaderService.removeLogListener(killbillLogListener);
-        logReaderServices.remove(logReaderService);
     }
 
     private void registerServlet(final BundleContext context, final HttpServlet servlet) {
