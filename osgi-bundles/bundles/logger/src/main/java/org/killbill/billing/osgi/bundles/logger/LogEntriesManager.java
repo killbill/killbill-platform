@@ -73,7 +73,7 @@ public class LogEntriesManager implements Closeable {
                 }
             }
         }
-        // Logging should be done outside the synchronized block to avoid any deadlock
+        // Logging should be done outside the synchronized block to avoid any deadlock (the log entry will be put in the caches)
         logger.info("Created new cache {} ({} active)", cacheId, sseIDsCaches.size());
         return cache;
     }
@@ -83,7 +83,7 @@ public class LogEntriesManager implements Closeable {
         synchronized (sseIDsCaches) {
             cache = sseIDsCaches.remove(cacheId);
         }
-        // Logging should be done outside the synchronized block to avoid any deadlock
+        // Logging should be done outside the synchronized block to avoid any deadlock (the log entry will be put in the caches)
         logger.info("Removed cache {} ({} active)", cacheId, sseIDsCaches.size());
         cache.clear();
     }
