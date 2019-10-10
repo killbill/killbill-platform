@@ -111,6 +111,11 @@
             </dependency>
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>
+                <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
                 <version>${project.version}</version>
             </dependency>

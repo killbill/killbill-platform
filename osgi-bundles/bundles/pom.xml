@@ -30,5 +30,6 @@
     <modules>
         <module>jruby</module>
         <module>logger</module>
+        <module>kpm</module>
     </modules>
 </project>
