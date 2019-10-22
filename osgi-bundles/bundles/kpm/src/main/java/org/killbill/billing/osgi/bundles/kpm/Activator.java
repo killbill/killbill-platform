@@ -39,7 +39,7 @@ public class Activator extends KillbillActivatorBase {
 
     private static final Logger logger = LoggerFactory.getLogger(Activator.class);
 
-    public static final String PLUGIN_NAME = "killbill-osgi-kpm";
+    public static final String PLUGIN_NAME = "killbill-kpm";
 
     private EventsListener eventsListener;
 
