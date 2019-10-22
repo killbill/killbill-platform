@@ -17,6 +17,8 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -38,7 +40,7 @@ public class PluginsResource {
     }
 
     @GET
-    public Result getAvailablePlugins(final String kbVersion, final Boolean latest) {
-        return Results.ok(kpmWrapper.getAvailablePlugins(kbVersion, latest));
+    public Result getAvailablePlugins(final Optional<String> kbVersion, final Boolean latest) {
+        return Results.ok(kpmWrapper.getAvailablePlugins(kbVersion.orElse("LATEST"), latest));
     }
 }
