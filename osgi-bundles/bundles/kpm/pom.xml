@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.39.9-SNAPSHOT</version>
+        <version>0.39.9</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
@@ -120,7 +120,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-Activator>org.killbill.billing.osgi.bundles.kpm.Activator</Bundle-Activator>
-                        <Export-Package/>
+                        <Export-Package />
                         <Private-Package>org.killbill.billing.osgi.bundles.kpm.*</Private-Package>
                         <!-- Optional resolution because exported by the Felix system bundle -->
                         <Import-Package>
