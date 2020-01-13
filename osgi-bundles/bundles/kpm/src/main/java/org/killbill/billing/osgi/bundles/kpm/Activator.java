@@ -23,6 +23,7 @@ import java.util.Hashtable;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 
+import org.jooby.json.Jackson;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
@@ -52,7 +53,11 @@ public class Activator extends KillbillActivatorBase {
         final KPMWrapper kpmWrapper = new KPMWrapper(configProperties.getProperties());
         eventsListener = new EventsListener(kpmWrapper);
 
-        final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).withService(kpmWrapper)
+        final Jackson jackson = new Jackson(PluginAppBuilder.DEFAULT_OBJECT_MAPPER);
+        // JSON pass-through from KPM
+        jackson.raw();
+        final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).withJackson(jackson)
+                                                                     .withService(kpmWrapper)
                                                                      .withRouteClass(PluginsResource.class)
                                                                      .build();
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
