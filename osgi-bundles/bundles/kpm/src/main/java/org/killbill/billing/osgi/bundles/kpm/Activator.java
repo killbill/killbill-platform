@@ -28,6 +28,7 @@ import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
 import org.killbill.billing.plugin.core.resources.jooby.PluginApp;
@@ -46,11 +47,12 @@ public class Activator extends KillbillActivatorBase {
 
     @Override
     public void start(final BundleContext context) throws Exception {
+        killbillAPI = new OSGIKillbillAPI(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
         registrar = new OSGIKillbillRegistrar();
 
-        final KPMWrapper kpmWrapper = new KPMWrapper(configProperties.getProperties());
+        final KPMWrapper kpmWrapper = new KPMWrapper(killbillAPI, configProperties.getProperties());
         eventsListener = new EventsListener(kpmWrapper);
 
         final Jackson jackson = new Jackson(PluginAppBuilder.DEFAULT_OBJECT_MAPPER);
