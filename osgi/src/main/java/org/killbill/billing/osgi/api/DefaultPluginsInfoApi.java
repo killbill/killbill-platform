@@ -110,13 +110,11 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     }
 
     @Override
-    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginKey, final String pluginName, final String pluginVersion, final PluginLanguage pluginLanguage) {
+    public void notifyOfStateChanged(final PluginStateChange newState, final String pluginKey, @Nullable final String pluginName, final String pluginVersion, @Nullable final PluginLanguage pluginLanguage) {
         try {
-
             // Refresh our filesystem view so it shows up/disappears in the list of installed plugin
             pluginFinder.reloadPlugins();
 
-            // The KPM plugin will actually always pass both so the pluginKey will never be used, but it is good to keep the code generic
             final String resolvedPluginName = pluginName != null ?
                                               pluginName :
                                               (pluginFinder.resolvePluginKey(pluginKey) != null ? pluginFinder.resolvePluginKey(pluginKey).getPluginName() : null);

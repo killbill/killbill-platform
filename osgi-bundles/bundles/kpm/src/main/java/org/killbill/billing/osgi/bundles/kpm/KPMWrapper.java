@@ -32,6 +32,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.killbill.billing.osgi.api.PluginStateChange;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
 import org.killbill.billing.plugin.util.http.SslUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +66,19 @@ public class KPMWrapper {
     private static final Duration COMMAND_TIMEOUT = new Duration(5, TimeUnit.MINUTES);
     private static final Joiner SPACE_JOINER = Joiner.on(" ");
 
+    private final OSGIKillbillAPI killbillAPI;
+    private final String adminUsername;
+    private final String adminPassword;
     private final String kpmPath;
     private final String bundlesPath;
     private final String nexusUrl;
     private final String nexusRepository;
     private final AsyncHttpClient httpClient;
 
-    public KPMWrapper(final Properties properties) throws GeneralSecurityException {
+    public KPMWrapper(final OSGIKillbillAPI killbillAPI, final Properties properties) throws GeneralSecurityException {
+        this.killbillAPI = killbillAPI;
+        this.adminUsername = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
+        this.adminPassword = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
         this.kpmPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
         this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("var", "tmp", "bundles").toString());
         this.nexusUrl = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
@@ -139,6 +147,10 @@ public class KPMWrapper {
             }
 
             system(commands);
+
+            notifyFileSystemChange(PluginStateChange.NEW_VERSION,
+                                   pluginKey,
+                                   pluginVersion);
         } finally {
             tmp.delete();
         }
@@ -197,6 +209,10 @@ public class KPMWrapper {
         }
 
         system(commands);
+
+        notifyFileSystemChange(PluginStateChange.NEW_VERSION,
+                               pluginKey,
+                               pluginVersion);
     }
 
     public void uninstall(final String pluginKey, final String pluginVersion) {
@@ -212,6 +228,11 @@ public class KPMWrapper {
         }
 
         system(commands);
+
+        notifyFileSystemChange(PluginStateChange.DISABLED,
+                               pluginKey,
+                               pluginVersion);
+
     }
 
     private AsyncHttpClient buildAsyncHttpClient(final Boolean strictSSL, final int readTimeoutMs, final int connectTimeoutMs) throws GeneralSecurityException {
@@ -239,6 +260,23 @@ public class KPMWrapper {
             return commandOutput;
         } catch (final CommandFailedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void notifyFileSystemChange(final PluginStateChange newState,
+                                        final String pluginKey,
+                                        final String pluginVersion) {
+        try {
+            logger.info("Notifying Kill Bill: state='{}', pluginKey='{}', pluginVersion={}",
+                        newState, pluginKey, pluginVersion);
+            killbillAPI.getSecurityApi().login(adminUsername, adminPassword);
+            killbillAPI.getPluginsInfoApi().notifyOfStateChanged(newState,
+                                                                 pluginKey,
+                                                                 null, // Not needed
+                                                                 pluginVersion,
+                                                                 null /* Unused */);
+        } finally {
+            killbillAPI.getSecurityApi().logout();
         }
     }
 
