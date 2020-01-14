@@ -57,6 +57,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.jooby</groupId>
+            <artifactId>jooby-jackson</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.airlift</groupId>
             <artifactId>command</artifactId>
         </dependency>
