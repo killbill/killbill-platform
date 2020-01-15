@@ -81,7 +81,7 @@ public class KPMWrapper {
         this.adminUsername = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
         this.adminPassword = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
         this.kpmPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
-        this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("var", "tmp", "bundles").toString());
+        this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/", "var", "tmp", "bundles").toString());
         this.nexusUrl = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
         this.nexusRepository = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
         this.httpClient = buildAsyncHttpClient(Boolean.valueOf(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
