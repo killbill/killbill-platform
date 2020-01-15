@@ -20,6 +20,7 @@ package org.killbill.billing.osgi.bundles.kpm;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
@@ -118,7 +119,12 @@ public class KPMWrapper {
                     pluginVersion,
                     pluginType);
 
-        final File tmp = File.createTempFile(pluginKey, "kpm");
+        final File downloadDir = Files.createTempDirectory("kpm-" + pluginKey).toFile();
+        // Use same conventions as official plugins (this is to make sure we don't confuse KPM)
+        final String suffix = "ruby".equals(pluginType) ? "tar.gz" : "jar";
+        final String pluginName = String.format("%s-plugin-%s.%s", pluginKey, pluginVersion, suffix);
+        final File tmp = new File(downloadDir, pluginName);
+
         try {
             final FileOutputStream stream = new FileOutputStream(tmp);
             final Response response = httpClient.prepareGet(uri)
