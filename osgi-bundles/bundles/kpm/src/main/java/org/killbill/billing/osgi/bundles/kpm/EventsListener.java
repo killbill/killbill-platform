@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
 public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillEventHandler {
@@ -85,8 +86,6 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
         }
 
         if ("INSTALL_PLUGIN".equals(commandType)) {
-            final String kbVersion = "LATEST"; // TODO incorrect
-
             final Map<String, String> props = toMap(nodeCommandMetadata.getProperties());
             final String pluginVersion = props.get("pluginVersion");
             final String pluginType = props.get("pluginType");
@@ -102,6 +101,8 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                     logger.warn("Unable to install plugin {}", nodeCommandMetadata.getPluginKey(), e);
                 }
             } else {
+                // Special property passed by the Kill Bill node which sent the broadcase
+                final String kbVersion = MoreObjects.firstNonNull(props.get("kbVersion"), "LATEST");
                 final String pluginArtifactId = props.get("pluginArtifactId");
                 final String pluginGroupId = props.get("pluginGroupId");
                 final String pluginPackaging = props.get("pluginPackaging");
