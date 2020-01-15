@@ -87,7 +87,6 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
 
         if ("INSTALL_PLUGIN".equals(commandType)) {
             final Map<String, String> props = toMap(nodeCommandMetadata.getProperties());
-            final String pluginVersion = props.get("pluginVersion");
             final String pluginType = props.get("pluginType");
 
             final String pluginUri = props.get("pluginUri");
@@ -95,7 +94,7 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                 try {
                     kpmWrapper.install(nodeCommandMetadata.getPluginKey(),
                                        pluginUri,
-                                       pluginVersion,
+                                       nodeCommandMetadata.getPluginVersion(),
                                        pluginType);
                 } catch (final Exception e) {
                     logger.warn("Unable to install plugin {}", nodeCommandMetadata.getPluginKey(), e);
@@ -111,7 +110,7 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                 kpmWrapper.install(nodeCommandMetadata.getPluginKey(),
                                    kbVersion,
                                    pluginArtifactId,
-                                   pluginVersion,
+                                   nodeCommandMetadata.getPluginVersion(),
                                    pluginGroupId,
                                    pluginPackaging,
                                    pluginClassifier,
