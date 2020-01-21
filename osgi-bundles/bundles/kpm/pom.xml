@@ -135,6 +135,8 @@
                             org.w3c.dom.ls,
                             javax.naming,
                             javax.net.ssl,
+                            sun.security,
+                            sun.security.util,
                             *;resolution:=optional
                         </Import-Package>
                     </instructions>
