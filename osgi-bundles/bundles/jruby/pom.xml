@@ -21,7 +21,7 @@
     <parent>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.38.5-SNAPSHOT</version>
+        <version>0.39.12-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
@@ -95,6 +95,10 @@
         <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-catalog</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-usage</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

@@ -38,7 +38,7 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
     private static final String BUNDLE_TEST_RESOURCE_PREFIX = "killbill-currency-plugin-test";
     private static final String BUNDLE_TEST_RESOURCE = BUNDLE_TEST_RESOURCE_PREFIX + ".tar.gz";
 
-    @BeforeClass(groups = "slow")
+    @BeforeClass(groups = "slow", enabled = false)
     public void beforeClass() throws Exception {
         super.beforeClass();
 
@@ -47,7 +47,7 @@ public class TestJrubyCurrencyPlugin extends TestOSGIBase {
         setupTest.setupJrubyBundle();
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testCurrencyApis() throws Exception {
         final CurrencyPluginApi api = getTestApi(currencyPluginApiOSGIServiceRegistration, BUNDLE_TEST_RESOURCE_PREFIX);
 

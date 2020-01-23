@@ -24,9 +24,9 @@
         <version>0.39.12-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
+    <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
     <packaging>bundle</packaging>
-    <name>killbill-platform-osgi-bundles-logger</name>
+    <name>killbill-platform-osgi-bundles-kpm</name>
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -57,8 +57,25 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.jooby</groupId>
+            <artifactId>jooby-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.airlift</groupId>
+            <artifactId>command</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ning</groupId>
+            <artifactId>async-http-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing.plugin</groupId>
+            <artifactId>killbill-plugin-api-notification</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -106,9 +123,9 @@
                 </executions>
                 <configuration>
                     <instructions>
-                        <Bundle-Activator>org.killbill.billing.osgi.bundles.logger.Activator</Bundle-Activator>
+                        <Bundle-Activator>org.killbill.billing.osgi.bundles.kpm.Activator</Bundle-Activator>
                         <Export-Package />
-                        <Private-Package>org.killbill.billing.osgi.bundles.logger.*</Private-Package>
+                        <Private-Package>org.killbill.billing.osgi.bundles.kpm.*</Private-Package>
                         <!-- Optional resolution because exported by the Felix system bundle -->
                         <Import-Package>
                             org.xml.sax,
@@ -116,7 +133,10 @@
                             org.xml.sax.helpers,
                             org.w3c.dom,
                             org.w3c.dom.ls,
+                            javax.naming,
                             javax.net.ssl,
+                            sun.security,
+                            sun.security.util,
                             *;resolution:=optional
                         </Import-Package>
                     </instructions>
@@ -148,7 +168,7 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>assemble-killbill-osgi-bundles-logger</id>
+                        <id>assemble-killbill-osgi-bundles-kpm</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>

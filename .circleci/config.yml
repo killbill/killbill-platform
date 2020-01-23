@@ -8,11 +8,11 @@ jobs:
   build:
     <<: *defaults
     docker:
-      - image: killbill/kbbuild:0.1.0
+      - image: killbill/kbbuild:0.7.0
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
+          key: v2-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
       - run:
           name: Setup dependencies
           command: |
@@ -33,16 +33,16 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
+          key: v2-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
 
   test-h2:
     <<: *defaults
     docker:
-      - image: killbill/kbbuild:0.1.0
+      - image: killbill/kbbuild:0.7.0
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
+          key: v2-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
       - run: mvn clean install -Ptravis
       - run:
           name: Save test results
@@ -57,11 +57,11 @@ jobs:
   test-mysql:
     <<: *defaults
     docker:
-      - image: killbill/kbbuild:0.1.0
+      - image: killbill/kbbuild:0.7.0
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
+          key: v2-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
       - run: mvn clean install -Pmysql
       - run:
           name: Save test results
@@ -76,11 +76,11 @@ jobs:
   test-postgresql:
     <<: *defaults
     docker:
-      - image: killbill/kbbuild:0.1.0
+      - image: killbill/kbbuild:0.7.0
     steps:
       - checkout
       - restore_cache:
-          key: v1-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
+          key: v2-dependencies-{{ .Branch }}-{{ checksum "pom.xml" }}
       - run: mvn clean install -Ppostgresql
       - run:
           name: Save test results

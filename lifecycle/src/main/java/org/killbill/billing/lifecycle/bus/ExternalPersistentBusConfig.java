@@ -64,6 +64,16 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     }
 
     @Override
+    public int getMinInFlightEntries() {
+        return 1;
+    }
+
+    @Override
+    public int getMaxInFlightEntries() {
+        return 100;
+    }
+
+    @Override
     public int getMaxEntriesClaimed() {
         return externalPersistentBusConfig.getMaxEntriesClaimed();
     }
@@ -91,6 +101,16 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     @Override
     public int geMaxDispatchThreads() {
         return externalPersistentBusConfig.geMaxDispatchThreads();
+    }
+
+    @Override
+    public int geNbLifecycleDispatchThreads() {
+        return 1;
+    }
+
+    @Override
+    public int geNbLifecycleCompleteThreads() {
+        return 1;
     }
 
     @Override
@@ -136,5 +156,10 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     @Override
     public int getMaxReDispatchCount() {
         return externalPersistentBusConfig.getMaxReDispatchCount();
+    }
+
+    @Override
+    public TimeSpan getReapSchedule() {
+        return externalPersistentBusConfig.getReapSchedule();
     }
 }

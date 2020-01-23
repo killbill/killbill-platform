@@ -48,7 +48,7 @@ public class PlatformDBTestingHelper {
     private static final String TEST_DATA_SOURCE_ID = "test";
     private static final String TEST_DB_PROPERTY_PREFIX = "org.killbill.billing.dbi.test.";
 
-    private final EmbeddedDB instance;
+    protected EmbeddedDB instance;
 
     // Created when we start the instance because our EmbeddedDB does not allow to retrieve DataSource until DB is up
     private IDBI idbi;

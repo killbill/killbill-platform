@@ -16,20 +16,24 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.bundles.logger;
+package org.killbill.billing.osgi.bundles.kpm;
 
 import java.util.Hashtable;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 
+import org.jooby.json.Jackson;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIFrameworkEventHandler;
 import org.killbill.billing.plugin.core.resources.jooby.PluginApp;
 import org.killbill.billing.plugin.core.resources.jooby.PluginAppBuilder;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,38 +41,40 @@ public class Activator extends KillbillActivatorBase {
 
     private static final Logger logger = LoggerFactory.getLogger(Activator.class);
 
-    public static final String PLUGIN_NAME = "killbill-osgi-logger";
+    public static final String PLUGIN_NAME = "killbill-kpm";
 
-    private LogEntriesManager logEntriesManager;
-    private LogsSseHandler logsSseHandler;
-    private KillbillLogWriter killbillLogListener;
+    private EventsListener eventsListener;
 
     @Override
     public void start(final BundleContext context) throws Exception {
-        logEntriesManager = new LogEntriesManager();
-        killbillLogListener = new KillbillLogWriter(logEntriesManager);
-        context.addBundleListener(killbillLogListener);
-        context.addFrameworkListener(killbillLogListener);
-        context.addServiceListener(killbillLogListener);
-        context.registerService(LogService.class.getName(), killbillLogListener, null);
-
-        // Registrar for bundle
+        killbillAPI = new OSGIKillbillAPI(context);
+        dispatcher = new OSGIKillbillEventDispatcher(context);
+        configProperties = new OSGIConfigPropertiesService(context);
         registrar = new OSGIKillbillRegistrar();
 
-        final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).build();
-        logsSseHandler = new LogsSseHandler(logEntriesManager);
-        pluginApp.sse("/", logsSseHandler);
+        final KPMWrapper kpmWrapper = new KPMWrapper(killbillAPI, configProperties.getProperties());
+        eventsListener = new EventsListener(kpmWrapper);
+
+        final Jackson jackson = new Jackson(PluginAppBuilder.DEFAULT_OBJECT_MAPPER);
+        // JSON pass-through from KPM
+        jackson.raw();
+        final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).withJackson(jackson)
+                                                                     .withService(kpmWrapper)
+                                                                     .withRouteClass(PluginsResource.class)
+                                                                     .build();
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
         registerServlet(context, httpServlet);
+
+        registerHandlers();
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-        if (logsSseHandler != null) {
-            logsSseHandler.close();
-        }
-
         super.stop(context);
+    }
+
+    private void registerHandlers() {
+        dispatcher.registerEventHandlers((OSGIFrameworkEventHandler) () -> dispatcher.registerEventHandlers(eventsListener));
     }
 
     private void registerServlet(final BundleContext context, final HttpServlet servlet) {

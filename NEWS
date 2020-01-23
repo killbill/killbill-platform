@@ -1,3 +1,42 @@
+0.39.11
+    KPM OSGI Bundle bugfixes
+    Update to killbill-oss-parent 0.143.47
+
+0.39.10
+    KPM OSGI Bundle bugfixes
+    Update killbill-oss-parent to 0.143.43
+
+0.39.9
+    KPM OSGI Bundle
+
+0.39.8
+    Latest change introduced in master
+
+0.39.7
+    Update killbill-oss-parent to 0.143.29
+
+0.39.6
+    Fix wiring for usage plugin api
+
+0.39.5
+    Update parent oss pom.xml (common queue update)
+
+0.39.4
+    Update to reflect latest queue config changes
+
+0.39.3
+    Better logging in KillbillQueuesHealthcheck for graphing
+    Update to killbill-oss-parent 0.143.14
+
+0.39.2
+    Bump oss parent pom.xml to pull latest commons
+
+0.39.1
+    Fix dependencies in a better way
+
+0.39.0
+    Add support for ruby framework for new usage plugin api
+
 0.38.4
   Cleanup DataSource wiring
 
