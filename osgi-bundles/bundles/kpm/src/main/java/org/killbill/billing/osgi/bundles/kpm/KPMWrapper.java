@@ -81,7 +81,7 @@ public class KPMWrapper {
         this.adminUsername = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
         this.adminPassword = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
         this.kpmPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
-        this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/", "var", "tmp", "bundles").toString());
+        this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/var", "tmp", "bundles").toString());
         this.nexusUrl = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
         this.nexusRepository = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
         this.httpClient = buildAsyncHttpClient(Boolean.valueOf(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
@@ -142,6 +142,7 @@ public class KPMWrapper {
             commands.add(pluginKey);
 
             commands.add("--from-source-file=" + tmp.toString());
+            commands.add("--destination=" + bundlesPath);
             if (pluginVersion != null) {
                 commands.add("--version=" + pluginVersion);
             }
@@ -186,6 +187,7 @@ public class KPMWrapper {
         commands.add(kpmPath);
         commands.add("ruby".equals(pluginType) ? "install_ruby_plugin" : "install_java_plugin");
         commands.add(pluginKey);
+        commands.add("--destination=" + bundlesPath);
         commands.add(kbVersion);
 
         if (pluginArtifactId != null) {
@@ -228,6 +230,7 @@ public class KPMWrapper {
         commands.add(kpmPath);
         commands.add("uninstall");
         commands.add(pluginKey);
+        commands.add("--destination=" + bundlesPath);
 
         if (pluginVersion != null) {
             commands.add("--version=" + pluginVersion);
