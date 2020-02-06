@@ -1,3 +1,6 @@
+0.39.13
+    Update oss parent pom.xml (plugin-api change)
+
 0.39.12
     KPM OSGI Bundle bugfixes
 
