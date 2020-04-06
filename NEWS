@@ -1,3 +1,6 @@
+0.38.5
+    Update killbill-commons -> 0.23.9 (in sync with master)
+
 0.38.4
   Cleanup DataSource wiring
 
