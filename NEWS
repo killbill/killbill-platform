@@ -1,3 +1,7 @@
+0.39.14
+    Update to new MySQL embeddedD
+    Add a new START_BUS lifecyle level
+
 0.39.13
     Update oss parent pom.xml (plugin-api change)
 
