@@ -40,26 +40,34 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     private final String jdbcPassword;
     private final Map<String, String> extraDefaults;
 
-    public TestKillbillConfigSource(final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+    public TestKillbillConfigSource(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         this(null, dbTestingHelperKlass);
     }
 
-    public TestKillbillConfigSource(@Nullable final String file, final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         this(file, dbTestingHelperKlass, ImmutableMap.<String, String>of());
     }
 
-    public TestKillbillConfigSource(@Nullable final String file, final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file);
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
         populateDefaultProperties();
 
-        final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
-        final EmbeddedDB instance = dbTestingHelper.getInstance();
-        this.jdbcConnectionString = instance.getJdbcConnectionString();
-        this.jdbcUsername = instance.getUsername();
-        this.jdbcPassword = instance.getPassword();
+        if (dbTestingHelperKlass != null) {
+            final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
+            final EmbeddedDB instance = dbTestingHelper.getInstance();
+            this.jdbcConnectionString = instance.getJdbcConnectionString();
+            this.jdbcUsername = instance.getUsername();
+            this.jdbcPassword = instance.getPassword();
+        } else {
+            // NoDB tests
+            this.jdbcConnectionString = null;
+            this.jdbcUsername = null;
+            this.jdbcPassword = null;
+        }
+
         this.extraDefaults = extraDefaults;
         // extraDefaults changed, need to reload defaults
         populateDefaultProperties();
