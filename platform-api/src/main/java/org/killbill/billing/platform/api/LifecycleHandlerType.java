@@ -63,11 +63,16 @@ public @interface LifecycleHandlerType {
         START_PLUGIN(Sequence.STARTUP_PRE_EVENT_REGISTRATION),
         /**
          * Service start
-         * - API call should not work
+         * - API call should work
          * - Events might be triggered
          * - Batch processing jobs started
          */
         START_SERVICE(Sequence.STARTUP_POST_EVENT_REGISTRATION),
+        /**
+         * Start event bus (only for the event bus)
+         */
+        START_BUS(Sequence.STARTUP_POST_EVENT_REGISTRATION),
+
         /**
          * Stop service
          */
