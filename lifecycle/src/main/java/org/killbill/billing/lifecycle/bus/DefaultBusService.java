@@ -20,6 +20,7 @@ package org.killbill.billing.lifecycle.bus;
 
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
+import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
 import org.killbill.bus.api.PersistentBus;
 
 import com.google.inject.Inject;
@@ -45,13 +46,18 @@ public class DefaultBusService implements BusService {
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.INIT_BUS)
+    public void initBus() {
+        eventBus.initQueue();
+    }
+
+    @LifecycleHandlerType(LifecycleLevel.START_BUS)
     public void startBus() {
-        eventBus.start();
+        eventBus.startQueue();
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.STOP_BUS)
     public void stopBus() {
-        eventBus.stop();
+        eventBus.stopQueue();
     }
 
     @Override
