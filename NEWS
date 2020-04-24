@@ -1,3 +1,6 @@
+0.39.15
+    Update to killbill-oss-parent 0.143.59
+
 0.39.14
     Update to new MySQL embeddedD
     Add a new START_BUS lifecyle level
