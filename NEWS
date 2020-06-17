@@ -1,3 +1,6 @@
+0.39.16
+    Add missing exported OSGI package
+
 0.39.15
     Update to killbill-oss-parent 0.143.59
 
