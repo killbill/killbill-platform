@@ -221,7 +221,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.xml.transform.stream," +
              "javax.xml.xpath," +
              "javax.jws.soap," +
-             "javax.security.cert.X509," +
+             "javax.security," +
+             "javax.security.cert," +
              "com.sun.org," +
              "com.sun.org.apache," +
              "com.sun.org.apache.xml," +
