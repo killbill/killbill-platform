@@ -15,10 +15,8 @@
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/jruby/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/logger" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/logger/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/webconsolebranding" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/defaultbundles" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs/killbill" charset="UTF-8" />
