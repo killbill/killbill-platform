@@ -32,6 +32,8 @@
     <properties>
         <!-- http://jira.codehaus.org/browse/MRESOURCES-99 -->
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
+        <!-- Upgrading the Eureka client might help? https://groups.google.com/g/xstream-user/c/p4pHpdnzMns -->
+        <check.fail-duplicate-finder>false</check.fail-duplicate-finder>
     </properties>
     <dependencies>
         <dependency>
@@ -43,7 +45,41 @@
                     <groupId>com.google.code.findbugs</groupId>
                     <artifactId>annotations</artifactId>
                 </exclusion>
+                <exclusion>
+                    <!-- Use javax.servlet:javax.servlet-api instead -->
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- Use jcl-over-slf4j instead -->
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.commons</groupId>
+            <artifactId>killbill-queue</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.billing</groupId>
+            <artifactId>killbill-platform-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -57,6 +93,12 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
             <version>1.19.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-core</artifactId>
+            <version>1.19.4</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>

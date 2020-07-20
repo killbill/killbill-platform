@@ -38,6 +38,12 @@
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
         <dependency>
+            <!-- Required for org.osgi.framework.ServiceReference -->
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-api</artifactId>
             <scope>provided</scope>
@@ -66,18 +72,13 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <!-- In compile scope for org.osgi.util.tracker.ServiceTracker -->
+            <!-- Required for org.osgi.util.tracker.ServiceTracker -->
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.skife.config</groupId>

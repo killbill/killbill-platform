@@ -29,14 +29,15 @@
     <name>killbill-platform-osgi-bundles-lib-slf4j-osgi</name>
     <dependencies>
         <dependency>
+            <!-- Required for org.osgi.framework.ServiceReference -->
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <!-- Required for org.osgi.service.log.LogService -->
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-        </dependency>
-        <dependency>
-            <!-- Required for org.osgi.framework.ServiceReference -->
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
