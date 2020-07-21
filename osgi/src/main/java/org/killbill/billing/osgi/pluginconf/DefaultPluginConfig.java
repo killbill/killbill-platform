@@ -146,7 +146,7 @@ public abstract class DefaultPluginConfig implements PluginConfig, Comparable<Pl
         } else if (o.isSelectedForStart()) {
             return 1;
         } else {
-            return -(getVersion().compareTo(o.getVersion()));
+            return o.getVersion().compareTo(getVersion());
         }
     }
 }

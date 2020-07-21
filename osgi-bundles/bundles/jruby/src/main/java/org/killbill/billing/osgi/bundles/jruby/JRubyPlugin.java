@@ -90,7 +90,7 @@ public abstract class JRubyPlugin {
         this.configProperties = configProperties;
     }
 
-    public void instantiatePlugin(final Map<String, Object> killbillServices, final String pluginMain) {
+    public synchronized void instantiatePlugin(final Map<String, Object> killbillServices, final String pluginMain) {
 
         container = setupScriptingContainer();
 

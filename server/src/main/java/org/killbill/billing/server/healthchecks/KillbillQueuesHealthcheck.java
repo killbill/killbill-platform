@@ -22,6 +22,7 @@ package org.killbill.billing.server.healthchecks;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -174,8 +175,8 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         boolean healthy = true;
         int i = 0;
 
-        for (final String growingQueueId : statsPerQueue.keySet()) {
-            final QueueStats queueStats = statsPerQueue.get(growingQueueId);
+        for (final Entry<String, QueueStats> entry : statsPerQueue.entrySet()) {
+            final QueueStats queueStats = entry.getValue();
             if (queueStats.isGrowing()) {
                 healthy = false;
 
@@ -184,14 +185,14 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
                 }
                 i++;
 
-                stringBuilderForMessage.append(growingQueueId)
+                stringBuilderForMessage.append(entry.getKey())
                                        .append(" (")
                                        .append(queueStats.currentSmoothedSizesSlope)
                                        .append(")");
             }
 
             // Display the stats, regardless of the health status
-            resultBuilder.withDetail(growingQueueId, queueStats);
+            resultBuilder.withDetail(entry.getKey(), queueStats);
         }
 
         if (healthy || !healthcheckActive.get()) {

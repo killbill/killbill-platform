@@ -19,6 +19,8 @@
 
 package org.killbill.billing.server.healthchecks;
 
+import java.util.Arrays;
+
 /**
  * Additive Holt-Winters prediction function
  */
@@ -192,7 +194,7 @@ public class HoltWintersComputer {
     }
 
     public double[] getSeasonal() {
-        return seasonalValues;
+        return Arrays.copyOf(seasonalValues, seasonalValues.length);
     }
 
     enum FILTERING_TYPE {

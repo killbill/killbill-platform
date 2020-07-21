@@ -185,7 +185,7 @@ public class DefaultLifecycle implements Lifecycle {
         return methodsInService;
     }
 
-    final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler> {
+    static final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler> {
 
         private final T target;
         private final Method method;
@@ -229,7 +229,7 @@ public class DefaultLifecycle implements Lifecycle {
             } else if (target.getRegistrationOrdering() > o.getTarget().getRegistrationOrdering()) {
                 return 1;
             } else {
-                return Integer.valueOf(target.hashCode()).compareTo(Integer.valueOf(o.hashCode()));
+                return Integer.compare(target.hashCode(), o.hashCode());
             }
         }
     }

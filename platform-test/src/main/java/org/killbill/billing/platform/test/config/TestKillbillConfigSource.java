@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -114,8 +115,8 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDir().getAbsolutePath());
 
         if (extraDefaults != null) {
-            for (final String key : extraDefaults.keySet()) {
-                properties.put(key, extraDefaults.get(key));
+            for (final Entry<String, String> entry : extraDefaults.entrySet()) {
+                properties.put(entry.getKey(), entry.getValue());
             }
         }
 

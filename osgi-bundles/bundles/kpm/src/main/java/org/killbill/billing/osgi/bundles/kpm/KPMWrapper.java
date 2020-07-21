@@ -52,10 +52,12 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Command;
 import io.airlift.command.CommandFailedException;
 import io.airlift.units.Duration;
 
+@SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
 public class KPMWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(KPMWrapper.class);
@@ -114,6 +116,7 @@ public class KPMWrapper {
         return system(commands);
     }
 
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void install(final String pluginKey, final String uri, final String pluginVersion, final String pluginType) throws IOException, ExecutionException, InterruptedException {
         logger.info("Installing pluginKey='{}', uri='{}', pluginVersion='{}', pluginType='{}'",
                     pluginKey,
@@ -129,14 +132,14 @@ public class KPMWrapper {
 
         try {
             final FileOutputStream stream = new FileOutputStream(tmp);
-            final Response response = httpClient.prepareGet(uri)
-                                                .execute(new AsyncCompletionHandlerBase() {
-                                                    @Override
-                                                    public STATE onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
-                                                        bodyPart.writeTo(stream);
-                                                        return STATE.CONTINUE;
-                                                    }
-                                                }).get();
+            httpClient.prepareGet(uri)
+                      .execute(new AsyncCompletionHandlerBase() {
+                          @Override
+                          public STATE onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
+                              bodyPart.writeTo(stream);
+                              return STATE.CONTINUE;
+                          }
+                      }).get();
 
             final List<String> commands = new LinkedList<String>();
             commands.add(kpmPath);

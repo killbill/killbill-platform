@@ -123,7 +123,7 @@ public class BundleRegistry {
         return Iterables.filter(registry.values(), new Predicate<BundleWithMetadata>() {
             @Override
             public boolean apply(final BundleWithMetadata input) {
-                return input.getConfig() == null;
+                return input != null && input.getConfig() == null;
             }
         });
     }

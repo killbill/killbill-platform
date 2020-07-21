@@ -70,6 +70,25 @@ public class OSGIKillbillServiceReference implements ServiceReference {
     }
 
     @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final OSGIKillbillServiceReference that = (OSGIKillbillServiceReference) o;
+
+        return delegate != null ? delegate.equals(that.delegate) : that.delegate == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate != null ? delegate.hashCode() : 0;
+    }
+
+    @Override
     public int compareTo(final Object reference) {
         return delegate == null ? -1 : delegate.compareTo(reference);
     }

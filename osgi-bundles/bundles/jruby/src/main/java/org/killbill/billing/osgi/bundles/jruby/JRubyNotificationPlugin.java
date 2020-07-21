@@ -28,6 +28,9 @@ import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIK
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 public class JRubyNotificationPlugin extends JRubyPlugin implements OSGIKillbillEventHandler {
 
     public JRubyNotificationPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {

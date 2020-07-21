@@ -21,14 +21,20 @@ package org.killbill.billing.osgi.pluginconf;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -44,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class PluginFinder {
 
@@ -79,9 +86,9 @@ public class PluginFinder {
         loadPluginsIfRequired(false);
 
         final List<PluginConfig> result = new LinkedList<PluginConfig>();
-        for (final String pluginName : allPlugins.keySet()) {
-            if (pluginName.equals(lookupName)) {
-                for (final PluginConfig cur : allPlugins.get(pluginName)) {
+        for (final Entry<String, LinkedList<PluginConfig>> entry : allPlugins.entrySet()) {
+            if (entry.getKey().equals(lookupName)) {
+                for (final PluginConfig cur : entry.getValue()) {
                     if (version == null || cur.getVersion().equals(version)) {
                         result.add(cur);
                     }
@@ -112,8 +119,8 @@ public class PluginFinder {
         loadPluginsIfRequired(false);
 
         final List<T> result = new LinkedList<T>();
-        for (final String pluginName : allPlugins.keySet()) {
-            @SuppressWarnings("unchecked") final T plugin = (T) allPlugins.get(pluginName).get(0);
+        for (final LinkedList<PluginConfig> plugins : allPlugins.values()) {
+            @SuppressWarnings("unchecked") final T plugin = (T) plugins.get(0);
             if (pluginLanguage != plugin.getPluginLanguage()) {
                 continue;
             }
@@ -123,6 +130,7 @@ public class PluginFinder {
         return result;
     }
 
+    @SuppressFBWarnings("WMI_WRONG_MAP_ITERATOR")
     private <T extends PluginConfig> void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException, IOException {
         synchronized (allPlugins) {
 
@@ -250,10 +258,9 @@ public class PluginFinder {
     }
 
     private String findPluginKey(final String pluginName, final PluginLanguage pluginLanguage) {
-        for (final String key : identifiers.keySet()) {
-            final PluginIdentifier value = identifiers.get(key);
-            if (value.getPluginName().equals(pluginName) && value.getLanguage().equalsIgnoreCase(pluginLanguage.name())) {
-                return key;
+        for (final Entry<String, PluginIdentifier> entry : identifiers.entrySet()) {
+            if (entry.getValue().getPluginName().equals(pluginName) && entry.getValue().getLanguage().equalsIgnoreCase(pluginLanguage.name())) {
+                return entry.getKey();
             }
         }
         return null;
@@ -306,15 +313,17 @@ public class PluginFinder {
 
     private Properties readPluginConfigurationFile(final File config) throws IOException {
         final Properties props = new Properties();
-        final BufferedReader br = new BufferedReader(new FileReader(config));
-        String line;
-        while ((line = br.readLine()) != null) {
-            final String[] parts = line.split("\\s*=\\s*");
-            final String key = parts[0];
-            final String value = parts[1];
-            props.put(key, value);
+        try (final InputStream in = new FileInputStream(config);
+             final Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8);
+             final BufferedReader br = new BufferedReader(reader)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                final String[] parts = line.split("\\s*=\\s*");
+                final String key = parts[0];
+                final String value = parts[1];
+                props.put(key, value);
+            }
+            return props;
         }
-        br.close();
-        return props;
     }
 }

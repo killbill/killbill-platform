@@ -140,7 +140,7 @@ public class OSGIListener {
         return Iterables.tryFind(ImmutableList.copyOf(SystemNodeCommandType.values()), new Predicate<SystemNodeCommandType>() {
             @Override
             public boolean apply(final SystemNodeCommandType input) {
-                return input.name().equals(command);
+                return input != null && input.name().equals(command);
             }
         }).orNull();
     }
@@ -150,7 +150,7 @@ public class OSGIListener {
         final SystemNodeCommandType systemType = Iterables.tryFind(ImmutableList.copyOf(SystemNodeCommandType.values()), new Predicate<SystemNodeCommandType>() {
             @Override
             public boolean apply(final SystemNodeCommandType input) {
-                return input.name().equals(type);
+                return input != null && input.name().equals(type);
             }
         }).orNull();
         return (systemType != null) ?

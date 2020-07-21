@@ -108,7 +108,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
                   });
 
         final String actualContent = com.google.common.io.Files.toString(new File(MAGIC_FILE_PATH.toUri()), Charsets.UTF_8);
-        final String expectedContent = String.format("%s-%s-%s-%s-%s\n", expectedEventType, ObjectType.ACCOUNT, extBusEvent.getObjectId(), extBusEvent.getAccountId(), extBusEvent.getTenantId());
+        final String expectedContent = String.format("%s-%s-%s-%s-%s%n", expectedEventType, ObjectType.ACCOUNT, extBusEvent.getObjectId(), extBusEvent.getAccountId(), extBusEvent.getTenantId());
         Assert.assertEquals(actualContent, expectedContent);
 
         cleanupMagicFile();

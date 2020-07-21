@@ -23,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.DateFormat;
@@ -215,9 +217,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
         } else {
             try {
                 final FileOutputStream fos = new FileOutputStream(logFile);
-                final PrintStream printStream = new PrintStream(fos);
+                final PrintStream printStream = new PrintStream(fos, true, StandardCharsets.UTF_8.name());
                 return printStream;
-            } catch (final FileNotFoundException e) {
+            } catch (final FileNotFoundException | UnsupportedEncodingException e) {
                 Util.report("Could not open [" + logFile + "]. Defaulting to System.err", e);
                 return System.err;
             }
@@ -354,6 +356,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
                 buf.append(WARN_LEVEL_STRING);
                 break;
             case LOG_LEVEL_ERROR:
+            default:
                 buf.append("ERROR");
                 break;
         }

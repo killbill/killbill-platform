@@ -38,6 +38,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class TestLifecycle {
 
@@ -157,6 +158,7 @@ public class TestLifecycle {
                 return order;
             }
 
+            @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
             @LifecycleHandlerType(LifecycleLevel.INIT_SERVICE)
             public void initService() {
             }
@@ -164,6 +166,7 @@ public class TestLifecycle {
     }
 
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @BeforeClass(groups = "fast")
     public void setup() {
         final Injector g = Guice.createInjector(Stage.DEVELOPMENT, new TestLifecycleModule());

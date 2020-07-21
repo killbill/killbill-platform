@@ -33,6 +33,8 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public abstract class KillbillActivatorBase implements BundleActivator {
 
     private ScheduledExecutorService restartMechanismExecutorService = null;
@@ -58,6 +60,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     private ScheduledFuture<?> restartFuture = null;
 
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Override
     public void start(final BundleContext context) throws Exception {
         // Tracked resource

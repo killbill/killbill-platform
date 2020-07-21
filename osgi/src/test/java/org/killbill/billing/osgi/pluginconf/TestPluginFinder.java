@@ -31,9 +31,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.google.common.io.Files;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import static org.testng.Assert.assertEquals;
 
+@SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
 public class TestPluginFinder {
 
     public static final String DEFAULT_PROPERTY_NAME = "killbill.properties";

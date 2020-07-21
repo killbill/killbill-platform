@@ -38,6 +38,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.log.LogService;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 public class JRubyInvoicePlugin extends JRubyNotificationPlugin implements InvoicePluginApi {
 
     public JRubyInvoicePlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {

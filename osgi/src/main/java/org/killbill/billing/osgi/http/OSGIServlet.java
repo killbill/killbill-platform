@@ -37,13 +37,15 @@ import com.google.common.annotations.VisibleForTesting;
 @Singleton
 public class OSGIServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     @VisibleForTesting
     final Vector<Servlet> initializedServlets = new Vector<Servlet>();
     private final Object servletsMonitor = new Object();
 
     @Inject
     @VisibleForTesting
-    DefaultServletRouter servletRouter;
+    transient DefaultServletRouter servletRouter;
 
     @Override
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {

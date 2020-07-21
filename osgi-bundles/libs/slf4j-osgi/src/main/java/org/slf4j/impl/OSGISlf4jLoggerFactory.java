@@ -34,7 +34,7 @@ public class OSGISlf4jLoggerFactory implements ILoggerFactory {
 
     public Logger getLogger(final String name) {
         if (loggerMap.get(name) == null) {
-            synchronized (this) {
+            synchronized (loggerMap) {
                 if (loggerMap.get(name) == null) {
                     final OSGISlf4jLoggerAdapter slf4jLogger = new OSGISlf4jLoggerAdapter(delegate);
                     loggerMap.put(name, slf4jLogger);
@@ -45,8 +45,8 @@ public class OSGISlf4jLoggerFactory implements ILoggerFactory {
     }
 
     public void setDelegate(final LogService delegate) {
-        this.delegate = delegate;
         synchronized (loggerMap) {
+            this.delegate = delegate;
             for (final OSGISlf4jLoggerAdapter adapter : loggerMap.values()) {
                 adapter.setDelegate(delegate);
             }

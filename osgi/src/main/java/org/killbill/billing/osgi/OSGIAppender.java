@@ -120,8 +120,27 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         }
 
         @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            final RootBundleLogbackServiceReference that = (RootBundleLogbackServiceReference) o;
+
+            return bundle != null ? bundle.equals(that.bundle) : that.bundle == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return bundle != null ? bundle.hashCode() : 0;
+        }
+
+        @Override
         public int compareTo(final Object reference) {
-            throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+            return bundle.compareTo((Bundle) reference);
         }
     }
 }

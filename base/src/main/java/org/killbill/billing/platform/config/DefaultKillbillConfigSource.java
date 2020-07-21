@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -83,10 +84,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             this.properties.load(UriAccessor.accessUri(this.getClass().getResource(file).toURI()));
         }
 
-        for (final String key : extraDefaultProperties.keySet()) {
-            final String value = extraDefaultProperties.get(key);
-            if (value != null) {
-                properties.put(key, value);
+        for (final Entry<String, String> entry : extraDefaultProperties.entrySet()) {
+            if (entry.getValue() != null) {
+                properties.put(entry.getKey(), entry.getValue());
             }
         }
 

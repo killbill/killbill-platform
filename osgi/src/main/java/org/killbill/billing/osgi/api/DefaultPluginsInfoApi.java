@@ -51,7 +51,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     private static final Ordering<PluginInfo> PLUGIN_INFO_ORDERING =  Ordering.natural().onResultOf(new Function<PluginInfo, String>() {
         @Override
         public String apply(final PluginInfo input) {
-            return toPluginFullName(input.getPluginName(), input.getVersion());
+            return input == null ? "" : toPluginFullName(input.getPluginName(), input.getVersion());
         }
 
         private String toPluginFullName(final String pluginName, final String pluginVersion) {
