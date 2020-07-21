@@ -45,7 +45,6 @@ import com.ning.http.client.AsyncCompletionHandlerBase;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.Response;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;

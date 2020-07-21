@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 @Singleton

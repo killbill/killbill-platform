@@ -21,14 +21,12 @@ package org.killbill.billing.lifecycle;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.annotation.Nullable;
 
@@ -44,7 +42,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
