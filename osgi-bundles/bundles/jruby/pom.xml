@@ -22,7 +22,7 @@
     <parent>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
         <groupId>org.kill-bill.billing</groupId>
-        <version>0.39.18-SNAPSHOT</version>
+        <version>0.40.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
@@ -49,6 +49,11 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jruby</groupId>
@@ -284,21 +289,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <!-- use the manifest file created by the bundle plugin -->
+                        <!--<useDefaultManifestFile>true</useDefaultManifestFile>-->
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <addMavenDescriptor>true</addMavenDescriptor>
+                    </archive>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>jar</goal>
                             <goal>test-jar</goal>
                         </goals>
-                        <configuration>
-                            <archive>
-                                <!-- use the manifest file created by the bundle plugin -->
-                                <!--<useDefaultManifestFile>true</useDefaultManifestFile>-->
-                                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                                <!-- bundle plugin already generated the maven descriptor -->
-                                <addMavenDescriptor>false</addMavenDescriptor>
-                            </archive>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
