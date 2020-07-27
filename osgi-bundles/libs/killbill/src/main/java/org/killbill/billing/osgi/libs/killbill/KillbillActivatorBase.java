@@ -20,7 +20,6 @@
 package org.killbill.billing.osgi.libs.killbill;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -31,11 +30,14 @@ import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public abstract class KillbillActivatorBase implements BundleActivator {
+
+    private static final Logger logger = LoggerFactory.getLogger(KillbillActivatorBase.class);
 
     private ScheduledExecutorService restartMechanismExecutorService = null;
 
@@ -63,14 +65,13 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Override
     public void start(final BundleContext context) throws Exception {
-        // Tracked resource
+        // Keep it for now for backward compatibility purposes with existing plugins
         logService = new OSGIKillbillLogService(context);
 
-        logSafely(LogService.LOG_INFO, String.format("OSGI bundle='%s' received START command", context.getBundle().getSymbolicName()));
+        logger.info("OSGI bundle='{}' received START command", context.getBundle().getSymbolicName());
 
         killbillAPI = new OSGIKillbillAPI(context);
         roOSGIkillbillAPI = new ROOSGIKillbillAPI(context);
-        configureSLF4JBinding();
         dataSource = new OSGIKillbillDataSource(context);
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
@@ -87,7 +88,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-        logSafely(LogService.LOG_INFO, String.format("OSGI bundle='%s' received STOP command", context.getBundle().getSymbolicName()));
+        logger.info("OSGI bundle='{}' received STOP command", context.getBundle().getSymbolicName());
 
         if (restartFuture != null) {
             restartFuture.cancel(true);
@@ -112,7 +113,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                 dispatcher.unregisterAllHandlers();
             }
         } catch (final OSGIServiceNotAvailable ignore) {
-            logSafely(LogService.LOG_WARNING, String.format("OSGI bundle='%s' failed to unregister killbill handler", context.getBundle().getSymbolicName()));
+            logger.warn("OSGI bundle='{}' failed to unregister killbill handler", context.getBundle().getSymbolicName());
         } finally {
             if (dispatcher != null) {
                 dispatcher.close();
@@ -135,31 +136,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         if (logService != null) {
             logService.close();
             logService = null;
-        }
-    }
-
-    protected void configureSLF4JBinding() {
-        try {
-            // KillbillActivatorBase.class.getClassLoader() is the WebAppClassLoader (org.killbill.billing.osgi.libs.killbill is exported)
-            // Make sure to use the BundleClassLoader instead
-            final Class<?> staticLoggerBinderClass = this.getClass()
-                                                         .getClassLoader()
-                                                         .loadClass("org.slf4j.impl.StaticLoggerBinder");
-
-            final Object staticLoggerBinder = staticLoggerBinderClass.getMethod("getSingleton")
-                                                                     .invoke(null);
-
-            staticLoggerBinderClass.getMethod("setLogService", LogService.class)
-                                   .invoke(staticLoggerBinder, logService);
-        } catch (final ClassNotFoundException e) {
-            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
-        } catch (final InvocationTargetException e) {
-            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
-        } catch (final NoSuchMethodException e) {
-            // Don't log the full stack trace for backward compatibility (old plugins would throw NoSuchMethodException)
-            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs");
-        } catch (final IllegalAccessException e) {
-            logService.log(LogService.LOG_WARNING, "Unable to redirect SLF4J logs", e);
         }
     }
 
@@ -192,34 +168,34 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                  final boolean shouldStopPlugin = shouldStopPlugin();
                                                                  if (shouldStopPlugin) {
                                                                      try {
-                                                                         logSafely(LogService.LOG_INFO, String.format("Stopping plugin='%s' ", pluginConfig.getPluginName()));
+                                                                         logger.info("Stopping plugin='{}' ", pluginConfig.getPluginName());
                                                                          stopAllButRestartMechanism(context);
                                                                      } catch (final IllegalStateException e) {
                                                                          // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
-                                                                         logSafely(LogService.LOG_DEBUG, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
+                                                                         logger.debug("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      } catch (final Exception e) {
-                                                                         logSafely(LogService.LOG_WARNING, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
+                                                                         logger.warn("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      }
                                                                      return;
                                                                  }
 
                                                                  final Long lastRestartTime = lastRestartTime();
                                                                  if (lastRestartTime != null && lastRestartTime > lastRestartMillis) {
-                                                                     logSafely(LogService.LOG_INFO, String.format("Restarting plugin='%s'", pluginConfig.getPluginName()));
+                                                                     logger.info("Restarting plugin='{}'", pluginConfig.getPluginName());
 
                                                                      try {
                                                                          stopAllButRestartMechanism(context);
                                                                      } catch (final IllegalStateException e) {
                                                                          // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
-                                                                         logSafely(LogService.LOG_DEBUG, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
+                                                                         logger.debug("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      } catch (final Exception e) {
-                                                                         logSafely(LogService.LOG_WARNING, String.format("Error stopping plugin='%s'", pluginConfig.getPluginName()), e);
+                                                                         logger.warn("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      }
 
                                                                      try {
                                                                          start(context);
                                                                      } catch (final Exception e) {
-                                                                         logSafely(LogService.LOG_WARNING, String.format("Error starting plugin='%s'", pluginConfig.getPluginName()), e);
+                                                                         logger.warn("Error starting plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      }
 
                                                                      lastRestartMillis = lastRestartTime;
@@ -245,28 +221,16 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         }
     }
 
-    private void logSafely(final int level, final String message) {
-        if (logService != null) {
-            logService.log(level, message);
-        }
-    }
-
-    private void logSafely(final int level, final String message, final Throwable exception) {
-        if (logService != null) {
-            logService.log(level, message, exception);
-        }
-    }
-
     private File setupTmpDir(final PluginConfig pluginConfig) {
         final File tmpDirPath = new File(pluginConfig.getPluginVersionRoot().getAbsolutePath() + "/" + TMP_DIR_NAME);
         if (!tmpDirPath.exists()) {
             if (!tmpDirPath.mkdir()) {
-                logService.log(LogService.LOG_WARNING, "Unable to create directory " + tmpDirPath + ", the restart mechanism is disabled");
+                logger.warn("Unable to create directory {}, the restart mechanism is disabled", tmpDirPath);
                 return null;
             }
         }
         if (!tmpDirPath.isDirectory()) {
-            logService.log(LogService.LOG_WARNING, tmpDirPath + " is not a directory, the restart mechanism is disabled");
+            logger.warn("{} is not a directory, the restart mechanism is disabled", tmpDirPath);
             return null;
         }
         return tmpDirPath;

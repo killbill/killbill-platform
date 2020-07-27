@@ -26,12 +26,15 @@ import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test class used by Payment tests-- to test fake OSGI payment bundle
  */
 public class PaymentActivator extends KillbillActivatorBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(PaymentActivator.class);
 
     private static final String TEST_PLUGIN_NAME = "osgi-payment-plugin";
 
@@ -40,14 +43,14 @@ public class PaymentActivator extends KillbillActivatorBase {
         super.start(context);
 
         final String bundleName = context.getBundle().getSymbolicName();
-        logService.log(LogService.LOG_INFO, "PaymentActivator: starting bundle = " + bundleName);
+        logger.info("PaymentActivator: starting bundle = {}", bundleName);
 
         registerPaymentApi(context);
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-        logService.log(LogService.LOG_INFO, "PaymentActivator: stopping bundle");
+        logger.info("PaymentActivator: stopping bundle");
 
         super.stop(context);
     }

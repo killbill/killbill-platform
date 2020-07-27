@@ -40,7 +40,6 @@ import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +60,6 @@ public abstract class JRubyPlugin {
     private static final String STOP_PLUGIN_RUBY_METHOD_NAME = "stop_plugin";
     private static final String RACK_HANDLER_RUBY_METHOD_NAME = "rack_handler";
 
-    protected final LogService logger;
     protected final BundleContext bundleContext;
     protected final String pluginGemName;
     protected final String rubyRequire;
@@ -79,8 +77,7 @@ public abstract class JRubyPlugin {
     private ServiceRegistration httpServletServiceRegistration = null;
     private String cachedRequireLine = null;
 
-    public JRubyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
-        this.logger = logger;
+    public JRubyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final OSGIConfigPropertiesService configProperties) {
         this.bundleContext = bundleContext;
         this.pluginGemName = config.getPluginName();
         this.rubyRequire = config.getRubyRequire();
@@ -137,7 +134,7 @@ public abstract class JRubyPlugin {
         // Register the rack handler
         final IRubyObject rackHandler = pluginInstance.callMethod(RACK_HANDLER_RUBY_METHOD_NAME);
         if (!rackHandler.isNil()) {
-            logger.log(LogService.LOG_INFO, String.format("Using %s as rack handler", rackHandler.getMetaClass()));
+            log.info("Using {} as rack handler", rackHandler.getMetaClass());
 
             final JRubyHttpServlet jRubyHttpServlet = new JRubyHttpServlet(rackHandler);
             final Hashtable<String, String> properties = new Hashtable<String, String>();

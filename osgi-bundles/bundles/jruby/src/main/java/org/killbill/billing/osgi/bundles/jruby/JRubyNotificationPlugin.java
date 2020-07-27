@@ -26,15 +26,14 @@ import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 public class JRubyNotificationPlugin extends JRubyPlugin implements OSGIKillbillEventHandler {
 
-    public JRubyNotificationPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
-        super(config, bundleContext, logger, configProperties);
+    public JRubyNotificationPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final OSGIConfigPropertiesService configProperties) {
+        super(config, bundleContext, configProperties);
     }
 
     @Override

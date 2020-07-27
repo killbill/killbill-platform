@@ -1,5 +1,6 @@
 0.40.0
-    Update to killbill-oss-parent 0.144.7
+    Remove usage of OSGIKillbillLogService (slf4j should be used directly instead)
+    Update to killbill-oss-parent 0.144.12
 
 0.39.17
     Add missing exported OSGI package

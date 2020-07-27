@@ -192,6 +192,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- Required for org.osgi.service.log.LogService and org.osgi.service.http.HttpService -->
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
         </dependency>

@@ -40,6 +40,7 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <!-- Required for org.osgi.framework.ServiceReference -->
@@ -58,13 +59,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-platform-osgi-bundles-lib-slf4j-osgi</artifactId>
-            <!-- Mark it as provided to prevent the StaticLoggerBinder from being bundled in Kill Bill,
-                which would cause multiple SLF4J bindings (needs to be bundled in the plugins only) -->
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-notification</artifactId>
             <scope>provided</scope>
@@ -80,9 +74,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <!-- Required for org.osgi.util.tracker.ServiceTracker -->
+            <!-- Required for org.osgi.service.event.Event -->
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.skife.config</groupId>
@@ -92,6 +87,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

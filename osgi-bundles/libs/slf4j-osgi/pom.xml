@@ -38,6 +38,7 @@
             <!-- Required for org.osgi.service.log.LogService -->
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

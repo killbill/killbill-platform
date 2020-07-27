@@ -35,9 +35,10 @@ import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.IDBI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test class used by Beatrix OSGI test to verify that:
@@ -47,6 +48,8 @@ import org.skife.jdbi.v2.IDBI;
  * - test bundle can use the DataSource from Killbill and write on disk
  */
 public class TestActivator extends KillbillActivatorBase implements OSGIKillbillEventHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(TestActivator.class);
 
     private static final String TEST_PLUGIN_NAME = "test";
 
@@ -59,7 +62,7 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
         super.start(context);
 
         final String bundleName = context.getBundle().getSymbolicName();
-        logService.log(LogService.LOG_INFO, "TestActivator: starting bundle = " + bundleName);
+        logger.info("TestActivator: starting bundle = {}", bundleName);
 
         final IDBI dbi = new DBI(dataSource.getDataSource());
         testDao = new TestDao(dbi);
@@ -71,7 +74,7 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
 
     @Override
     public void stop(final BundleContext context) throws Exception {
-        logService.log(LogService.LOG_INFO, "TestActivator: stopping bundle");
+        logger.info("TestActivator: stopping bundle");
 
         super.stop(context);
     }
@@ -84,7 +87,7 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
 
     @Override
     public void handleKillbillEvent(final ExtBusEvent killbillEvent) {
-        logService.log(LogService.LOG_INFO, "Received external event " + killbillEvent.toString());
+        logger.info("Received external event {}", killbillEvent.toString());
 
         // Specific event for retries
         if (killbillEvent.getEventType() == ExtBusEventType.BLOCKING_STATE) {

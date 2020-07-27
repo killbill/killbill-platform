@@ -31,7 +31,8 @@ import org.killbill.billing.osgi.libs.killbill.KillbillServiceListener;
 import org.killbill.billing.osgi.libs.killbill.KillbillServiceListenerCallback;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.MoreObjects;
 
@@ -42,6 +43,8 @@ import com.google.common.base.MoreObjects;
  * - config.getRubyMainClass() (i.e: pluginMainClass in JRubyPlugin) is the delegate, that is the real ruby plugin code, which in some case (PaymentPluginApi )is also pseudo-generated)
  */
 public class JRubyActivator extends KillbillActivatorBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(JRubyActivator.class);
 
     private static final String JRUBY_PLUGINS_CONF_DIR = "org.killbill.billing.osgi.bundles.jruby.conf.dir";
 
@@ -81,33 +84,33 @@ public class JRubyActivator extends KillbillActivatorBase {
                 // Retrieve the plugin config
                 final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
 
-                logService.log(LogService.LOG_INFO, String.format("JRuby plugin %s activated (symbolicName = %s)", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
+                logger.info("JRuby plugin {} activated (symbolicName = {})", rubyConfig.getPluginName(), context.getBundle().getSymbolicName());
 
                 // Setup JRuby
                 final String pluginMain;
                 if (PluginType.NOTIFICATION.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyNotificationPlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyNotificationPlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JNOTIFICATION;
                 } else if (PluginType.PAYMENT.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyPaymentPlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyPaymentPlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JPAYMENT;
                 } else if (PluginType.INVOICE.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyInvoicePlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyInvoicePlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JINVOICE;
                 } else if (PluginType.CURRENCY.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyCurrencyPlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyCurrencyPlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JCURRENCY;
                 } else if (PluginType.PAYMENT_CONTROL.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyPaymentControlPlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyPaymentControlPlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JPAYMENT_CONTROL;
                 } else if (PluginType.CATALOG.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyCatalogPlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyCatalogPlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JCATALOG;
                 } else if (PluginType.ENTITLEMENT.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyEntitlementPlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyEntitlementPlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JENTITLEMENT;
                 } else if (PluginType.USAGE.equals(rubyConfig.getPluginType())) {
-                    plugin = new JRubyUsagePlugin(rubyConfig, context, logService, configProperties);
+                    plugin = new JRubyUsagePlugin(rubyConfig, context, configProperties);
                     pluginMain = KILLBILL_PLUGIN_JUSAGE;
                 } else {
                     throw new IllegalStateException("Unsupported plugin type " + rubyConfig.getPluginType());
@@ -160,19 +163,19 @@ public class JRubyActivator extends KillbillActivatorBase {
     }
 
     private void doStartPlugin(final String pluginName, final String pluginMain, final BundleContext context, final Map<String, Object> killbillServices) {
-        logService.log(LogService.LOG_INFO, String.format("Starting JRuby plugin %s (symbolicName = %s, pluginMain=%s)", pluginName, context.getBundle().getSymbolicName(), pluginMain));
+        logger.info("Starting JRuby plugin {} (symbolicName = {}, pluginMain={})", pluginName, context.getBundle().getSymbolicName(), pluginMain);
         // Make sure to copy the services map in case the plugin modifies it (we'll need it for restarts)
         plugin.instantiatePlugin(new HashMap<String, Object>(killbillServices), pluginMain);
         plugin.startPlugin(context);
-        logService.log(LogService.LOG_INFO, String.format("JRuby plugin %s (symbolicName = %s) started", pluginName, context.getBundle().getSymbolicName()));
+        logger.info("JRuby plugin {} (symbolicName = {}) started", pluginName, context.getBundle().getSymbolicName());
     }
 
     private void doStopPlugin(final BundleContext context) {
         final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
-        logService.log(LogService.LOG_INFO, String.format("Stopping JRuby plugin %s (symbolicName = %s)", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
+        logger.info("Stopping JRuby plugin {} (symbolicName = {})", rubyConfig.getPluginName(), context.getBundle().getSymbolicName());
         plugin.stopPlugin(context);
         plugin.unInstantiatePlugin();
-        logService.log(LogService.LOG_INFO,  String.format("JRuby plugin %s (symbolicName = %s) stopped", rubyConfig.getPluginName(), context.getBundle().getSymbolicName()));
+        logger.info("JRuby plugin {} (symbolicName = {}) stopped", rubyConfig.getPluginName(), context.getBundle().getSymbolicName());
     }
 
 

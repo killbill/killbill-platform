@@ -35,16 +35,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
-import org.killbill.billing.plugin.util.http.SslUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ning.http.client.AsyncCompletionHandlerBase;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.HttpResponseBodyPart;
+import org.asynchttpclient.AsyncCompletionHandlerBase;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.HttpResponseBodyPart;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
@@ -134,9 +134,9 @@ public class KPMWrapper {
             httpClient.prepareGet(uri)
                       .execute(new AsyncCompletionHandlerBase() {
                           @Override
-                          public STATE onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
-                              bodyPart.writeTo(stream);
-                              return STATE.CONTINUE;
+                          public State onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
+                              stream.write(bodyPart.getBodyPartBytes());
+                              return State.CONTINUE;
                           }
                       }).get();
 
@@ -249,14 +249,12 @@ public class KPMWrapper {
     }
 
     private AsyncHttpClient buildAsyncHttpClient(final Boolean strictSSL, final int readTimeoutMs, final int connectTimeoutMs) throws GeneralSecurityException {
-        final AsyncHttpClientConfig.Builder cfg = new AsyncHttpClientConfig.Builder();
+        final DefaultAsyncHttpClientConfig.Builder cfg = new DefaultAsyncHttpClientConfig.Builder();
         cfg.setUserAgent("KillBill/kpm-plugin/1.0")
            .setConnectTimeout(connectTimeoutMs)
-           .setReadTimeout(readTimeoutMs);
-        if (!strictSSL) {
-            cfg.setSSLContext(SslUtils.getInstance().getSSLContext(!strictSSL));
-        }
-        return new AsyncHttpClient(cfg.build());
+           .setReadTimeout(readTimeoutMs)
+           .setUseInsecureTrustManager(!strictSSL);
+        return new DefaultAsyncHttpClient(cfg.build());
     }
 
     private String system(final List<String> commands) {
