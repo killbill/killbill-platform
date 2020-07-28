@@ -30,7 +30,6 @@
     <name>killbill-platform-osgi-bundles-test-beatrix</name>
     <properties>
         <osgi.private>org.killbill.billing.osgi.bundles.test.*</osgi.private>
-        <surefire.skipTests>true</surefire.skipTests>
     </properties>
     <dependencies>
         <dependency>
