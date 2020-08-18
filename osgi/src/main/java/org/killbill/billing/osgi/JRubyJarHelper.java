@@ -1,6 +1,8 @@
 /*
- * Copyright 2016 Groupon, Inc
- * Copyright 2016 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -85,31 +87,13 @@ public class JRubyJarHelper {
     }
 
     private Properties getProperties(final String jarFileName, final String entryName) throws IOException {
-
-        InputStream stream = null;
-        Reader reader = null;
-        try {
-            final JarFile jarFile = new JarFile(jarFileName);
+        try (final JarFile jarFile = new JarFile(jarFileName)) {
             final ZipEntry entry = jarFile.getEntry(entryName);
-            stream = jarFile.getInputStream(entry);
-            reader = new InputStreamReader(stream, Charsets.UTF_8);
-            final Properties props = new Properties();
-            props.load(reader);
-            return props;
-        } finally {
-            IOException streamIOException = null;
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (final IOException ioe) {
-                    streamIOException = ioe;
-                }
-            }
-            if (reader != null) {
-                reader.close();
-            }
-            if (streamIOException != null) {
-                throw streamIOException;
+            try (final InputStream stream = jarFile.getInputStream(entry);
+                 final Reader reader = new InputStreamReader(stream, Charsets.UTF_8)) {
+                final Properties props = new Properties();
+                props.load(reader);
+                return props;
             }
         }
     }

@@ -1,7 +1,8 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -115,7 +117,7 @@ public class SetupBundleWithAssertion {
         try {
             final File configFile = new File(pluginConfig.getPluginVersionRoot(), config.getOSGIKillbillPropertyName());
             Assert.assertTrue(configFile.createNewFile(), "Unable to create file " + configFile.getAbsolutePath());
-            printStream = new PrintStream(new FileOutputStream(configFile));
+            printStream = new PrintStream(new FileOutputStream(configFile), true, StandardCharsets.UTF_8.name());
             printStream.print("pluginType=" + PluginType.NOTIFICATION);
         } finally {
             if (printStream != null) {
@@ -161,7 +163,10 @@ public class SetupBundleWithAssertion {
         }
 
         final File rubyJarDestination = new File(platform, "jruby.jar");
-        ByteStreams.copy(new FileInputStream(rubyJarInput), new FileOutputStream(rubyJarDestination));
+        try (final FileInputStream from = new FileInputStream(rubyJarInput);
+             final FileOutputStream to = new FileOutputStream(rubyJarDestination)) {
+            ByteStreams.copy(from, to);
+        }
     }
 
     private PluginJavaConfig extractJavaBundleTestResource() {
@@ -180,9 +185,27 @@ public class SetupBundleWithAssertion {
     private PluginJavaConfig createPluginJavaConfig(final String bundleTestResourcePath) {
 
         return new PluginJavaConfig() {
+
+            @Override
+            public boolean equals(final Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+
+                return getPluginKey().equals(((PluginJavaConfig) o).getPluginKey());
+            }
+
+            @Override
+            public int hashCode() {
+                return getPluginKey().hashCode();
+            }
+
             @Override
             public int compareTo(final PluginConfig o) {
-                return 0;
+                return getPluginKey().compareTo(o.getPluginKey());
             }
 
             @Override
@@ -277,27 +300,14 @@ public class SetupBundleWithAssertion {
     }
 
     private static File unGzip(final File inputFile, final File outputDir) throws IOException {
-        GZIPInputStream in = null;
-        FileOutputStream out = null;
+        final File outputFile = new File(outputDir, inputFile.getName().substring(0, inputFile.getName().length() - 3));
 
-        try {
-            final File outputFile = new File(outputDir, inputFile.getName().substring(0, inputFile.getName().length() - 3));
-
-            in = new GZIPInputStream(new FileInputStream(inputFile));
-            out = new FileOutputStream(outputFile);
-
+        try (final GZIPInputStream in = new GZIPInputStream(new FileInputStream(inputFile));
+             final FileOutputStream out = new FileOutputStream(outputFile)) {
             for (int c = in.read(); c != -1; c = in.read()) {
                 out.write(c);
             }
             return outputFile;
-
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
-            }
         }
     }
 }

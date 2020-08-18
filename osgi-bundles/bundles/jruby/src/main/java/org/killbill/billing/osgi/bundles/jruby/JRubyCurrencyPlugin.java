@@ -1,7 +1,8 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2015 Groupon, Inc
- * Copyright 2014-2015 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -31,12 +32,14 @@ import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.log.LogService;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 public class JRubyCurrencyPlugin extends JRubyNotificationPlugin implements CurrencyPluginApi {
 
-    public JRubyCurrencyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
-        super(config, bundleContext, logger, configProperties);
+    public JRubyCurrencyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final OSGIConfigPropertiesService configProperties) {
+        super(config, bundleContext, configProperties);
     }
 
     @Override

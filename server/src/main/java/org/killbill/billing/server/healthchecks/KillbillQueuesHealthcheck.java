@@ -1,6 +1,8 @@
 /*
- * Copyright 2014-2019 Groupon, Inc
- * Copyright 2014-2019 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -20,6 +22,7 @@ package org.killbill.billing.server.healthchecks;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -172,8 +175,8 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         boolean healthy = true;
         int i = 0;
 
-        for (final String growingQueueId : statsPerQueue.keySet()) {
-            final QueueStats queueStats = statsPerQueue.get(growingQueueId);
+        for (final Entry<String, QueueStats> entry : statsPerQueue.entrySet()) {
+            final QueueStats queueStats = entry.getValue();
             if (queueStats.isGrowing()) {
                 healthy = false;
 
@@ -182,14 +185,14 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
                 }
                 i++;
 
-                stringBuilderForMessage.append(growingQueueId)
+                stringBuilderForMessage.append(entry.getKey())
                                        .append(" (")
                                        .append(queueStats.currentSmoothedSizesSlope)
                                        .append(")");
             }
 
             // Display the stats, regardless of the health status
-            resultBuilder.withDetail(growingQueueId, queueStats);
+            resultBuilder.withDetail(entry.getKey(), queueStats);
         }
 
         if (healthy || !healthcheckActive.get()) {

@@ -1,6 +1,8 @@
 /*
- * Copyright 2016 Groupon, Inc
- * Copyright 2016 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -65,6 +67,25 @@ public class OSGIKillbillServiceReference implements ServiceReference {
     @Override
     public boolean isAssignableTo(final Bundle bundle, final String className) {
         return delegate != null && delegate.isAssignableTo(bundle, className);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final OSGIKillbillServiceReference that = (OSGIKillbillServiceReference) o;
+
+        return delegate != null ? delegate.equals(that.delegate) : that.delegate == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate != null ? delegate.hashCode() : 0;
     }
 
     @Override

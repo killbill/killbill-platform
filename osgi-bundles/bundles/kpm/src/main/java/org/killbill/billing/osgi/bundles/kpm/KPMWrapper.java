@@ -1,6 +1,8 @@
 /*
- * Copyright 2014-2019 Groupon, Inc
- * Copyright 2014-2019 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -33,27 +35,28 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
-import org.killbill.billing.plugin.util.http.SslUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ning.http.client.AsyncCompletionHandlerBase;
-import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
-import com.ning.http.client.HttpResponseBodyPart;
-import com.ning.http.client.Response;
+import org.asynchttpclient.AsyncCompletionHandlerBase;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.HttpResponseBodyPart;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Command;
 import io.airlift.command.CommandFailedException;
 import io.airlift.units.Duration;
 
+@SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
 public class KPMWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(KPMWrapper.class);
@@ -112,6 +115,7 @@ public class KPMWrapper {
         return system(commands);
     }
 
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void install(final String pluginKey, final String uri, final String pluginVersion, final String pluginType) throws IOException, ExecutionException, InterruptedException {
         logger.info("Installing pluginKey='{}', uri='{}', pluginVersion='{}', pluginType='{}'",
                     pluginKey,
@@ -127,14 +131,14 @@ public class KPMWrapper {
 
         try {
             final FileOutputStream stream = new FileOutputStream(tmp);
-            final Response response = httpClient.prepareGet(uri)
-                                                .execute(new AsyncCompletionHandlerBase() {
-                                                    @Override
-                                                    public STATE onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
-                                                        bodyPart.writeTo(stream);
-                                                        return STATE.CONTINUE;
-                                                    }
-                                                }).get();
+            httpClient.prepareGet(uri)
+                      .execute(new AsyncCompletionHandlerBase() {
+                          @Override
+                          public State onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
+                              stream.write(bodyPart.getBodyPartBytes());
+                              return State.CONTINUE;
+                          }
+                      }).get();
 
             final List<String> commands = new LinkedList<String>();
             commands.add(kpmPath);
@@ -245,14 +249,12 @@ public class KPMWrapper {
     }
 
     private AsyncHttpClient buildAsyncHttpClient(final Boolean strictSSL, final int readTimeoutMs, final int connectTimeoutMs) throws GeneralSecurityException {
-        final AsyncHttpClientConfig.Builder cfg = new AsyncHttpClientConfig.Builder();
+        final DefaultAsyncHttpClientConfig.Builder cfg = new DefaultAsyncHttpClientConfig.Builder();
         cfg.setUserAgent("KillBill/kpm-plugin/1.0")
            .setConnectTimeout(connectTimeoutMs)
-           .setReadTimeout(readTimeoutMs);
-        if (!strictSSL) {
-            cfg.setSSLContext(SslUtils.getInstance().getSSLContext(!strictSSL));
-        }
-        return new AsyncHttpClient(cfg.build());
+           .setReadTimeout(readTimeoutMs)
+           .setUseInsecureTrustManager(!strictSSL);
+        return new DefaultAsyncHttpClient(cfg.build());
     }
 
     private String system(final List<String> commands) {

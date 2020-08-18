@@ -1,4 +1,5 @@
-## Kill Bill platform
+# Kill Bill platform
+![Maven Central](https://img.shields.io/maven-central/v/org.kill-bill.billing/killbill-platform?color=blue&label=Maven%20Central)
 
 Underlying platform powering Kill Bill. It features:
 
@@ -10,8 +11,7 @@ Underlying platform powering Kill Bill. It features:
 
 The platform is billing and payment agnostic, and can be used to create other services.
 
-Kill Bill compatibility
------------------------
+## Kill Bill compatibility
 
 | Platform version | Kill Bill version |
 | ---------------: | ----------------: |
@@ -20,7 +20,112 @@ Kill Bill compatibility
 | 0.37.y           | 0.19.z            |
 | 0.38.y           | 0.20.z            |
 | 0.39.y           | 0.22.z            |
+| 0.40.y           | 0.22.z            |
 
-## License
+We've upgraded numerous dependencies in 0.40.x (required for Java 11 support).
 
-The Kill Bill platform is released under the [Apache license](http://www.apache.org/licenses/LICENSE-2.0).
+## Usage
+
+Add the relevant submodule(s) to a project:
+
+```xml
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-api</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-base</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-lifecycle</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-all-bundles</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-api</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-defaultbundles</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-lib-slf4j-osgi</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-test-beatrix</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-test-payment</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-webconsolebranding</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-lib-bundles</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-test-bundles</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-server</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-test</artifactId>
+    <version>... release version ...</version>
+</dependency>
+```
+
+## About
+
+Kill Bill is the leading Open-Source Subscription Billing & Payments Platform. For more information about the project, go to https://killbill.io/.

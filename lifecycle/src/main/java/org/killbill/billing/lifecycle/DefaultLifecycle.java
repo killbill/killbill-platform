@@ -1,7 +1,8 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014-2017 Groupon, Inc
- * Copyright 2014-2017 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -20,14 +21,12 @@ package org.killbill.billing.lifecycle;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.annotation.Nullable;
 
@@ -43,7 +42,6 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.inject.ConfigurationException;
 import com.google.inject.Inject;
@@ -184,7 +182,7 @@ public class DefaultLifecycle implements Lifecycle {
         return methodsInService;
     }
 
-    final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler> {
+    static final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler> {
 
         private final T target;
         private final Method method;
@@ -228,7 +226,7 @@ public class DefaultLifecycle implements Lifecycle {
             } else if (target.getRegistrationOrdering() > o.getTarget().getRegistrationOrdering()) {
                 return 1;
             } else {
-                return Integer.valueOf(target.hashCode()).compareTo(Integer.valueOf(o.hashCode()));
+                return Integer.compare(target.hashCode(), o.hashCode());
             }
         }
     }

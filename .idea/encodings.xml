@@ -26,10 +26,8 @@
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/beatrix" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/beatrix/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/osgi-bundles/tests/beatrix/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/payment" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/payment/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/osgi-bundles/tests/payment/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-api" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-api/src/main/java" charset="UTF-8" />

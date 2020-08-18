@@ -1,6 +1,8 @@
 /*
- * Copyright 2014-2019 Groupon, Inc
- * Copyright 2014-2019 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -30,12 +32,14 @@ import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.log.LogService;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 public class JRubyUsagePlugin extends JRubyNotificationPlugin implements UsagePluginApi {
 
-    public JRubyUsagePlugin(final PluginRubyConfig config, final BundleContext bundleContext, final LogService logger, final OSGIConfigPropertiesService configProperties) {
-        super(config, bundleContext, logger, configProperties);
+    public JRubyUsagePlugin(final PluginRubyConfig config, final BundleContext bundleContext, final OSGIConfigPropertiesService configProperties) {
+        super(config, bundleContext, configProperties);
     }
 
     @Override

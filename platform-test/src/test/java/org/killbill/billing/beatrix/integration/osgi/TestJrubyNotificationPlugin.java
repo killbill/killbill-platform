@@ -1,7 +1,8 @@
 /*
- * Copyright 2010-2013 Ning, Inc.
- * Copyright 2014 Groupon, Inc
- * Copyright 2014 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -107,7 +108,7 @@ public class TestJrubyNotificationPlugin extends TestOSGIBase {
                   });
 
         final String actualContent = com.google.common.io.Files.toString(new File(MAGIC_FILE_PATH.toUri()), Charsets.UTF_8);
-        final String expectedContent = String.format("%s-%s-%s-%s-%s\n", expectedEventType, ObjectType.ACCOUNT, extBusEvent.getObjectId(), extBusEvent.getAccountId(), extBusEvent.getTenantId());
+        final String expectedContent = String.format("%s-%s-%s-%s-%s%n", expectedEventType, ObjectType.ACCOUNT, extBusEvent.getObjectId(), extBusEvent.getAccountId(), extBusEvent.getTenantId());
         Assert.assertEquals(actualContent, expectedContent);
 
         cleanupMagicFile();

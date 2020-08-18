@@ -1,6 +1,8 @@
 /*
- * Copyright 2014-2019 Groupon, Inc
- * Copyright 2014-2019 The Billing Project, LLC
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -118,8 +120,27 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         }
 
         @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            final RootBundleLogbackServiceReference that = (RootBundleLogbackServiceReference) o;
+
+            return bundle != null ? bundle.equals(that.bundle) : that.bundle == null;
+        }
+
+        @Override
+        public int hashCode() {
+            return bundle != null ? bundle.hashCode() : 0;
+        }
+
+        @Override
         public int compareTo(final Object reference) {
-            throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+            return bundle.compareTo((Bundle) reference);
         }
     }
 }
