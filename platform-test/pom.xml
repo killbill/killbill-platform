@@ -281,6 +281,17 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>logback-test.xml</exclude>
+                        <exclude>org/killbill/billing/beatrix/ddl.sql</exclude>
+                        <exclude>org/killbill/billing/beatrix/ddl-postgresql.sql</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

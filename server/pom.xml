@@ -395,6 +395,11 @@
             <resource>
                 <filtering>true</filtering>
                 <directory>${basedir}/src/main/resources</directory>
+                <excludes>
+                    <exclude>org/killbill/billing/server/ddl.sql</exclude>
+                    <exclude>org/killbill/billing/server/version.properties</exclude>
+                    <exclude>update-checker/killbill-server-update-list.properties</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>

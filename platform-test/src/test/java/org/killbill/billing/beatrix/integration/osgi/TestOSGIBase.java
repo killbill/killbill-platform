@@ -94,7 +94,7 @@ public class TestOSGIBase {
 
     public TestOSGIBase() {
         try {
-            configSource = new TestKillbillConfigSource("/beatrix.properties", PlatformDBTestingHelper.class);
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
             assertionError.initCause(e);
