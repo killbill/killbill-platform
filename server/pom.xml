@@ -148,7 +148,7 @@
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP-java6</artifactId>
+            <artifactId>HikariCP</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -410,7 +410,7 @@
                     <dependency>
                         <groupId>ch.qos.logback</groupId>
                         <artifactId>logback-core</artifactId>
-                        <version>1.1.7</version>
+                        <version>${logback.version}</version>
                     </dependency>
                 </dependencies>
                 <configuration>

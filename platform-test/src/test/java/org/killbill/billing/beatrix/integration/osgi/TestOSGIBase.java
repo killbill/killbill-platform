@@ -138,10 +138,10 @@ public class TestOSGIBase {
     @AfterClass(groups = "slow")
     public void afterClass() throws Exception {
         if (dataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) dataSource).getDataSource() instanceof HikariDataSource) {
-            ((HikariDataSource) ((ReferenceableDataSourceSpy) dataSource).getDataSource()).shutdown();
+            ((HikariDataSource) ((ReferenceableDataSourceSpy) dataSource).getDataSource()).close();
         }
         if (osgiDataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource() instanceof HikariDataSource) {
-            ((HikariDataSource) ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource()).shutdown();
+            ((HikariDataSource) ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource()).close();
         }
     }
 
