@@ -40,7 +40,7 @@ public interface MainRoDaoConfig extends DaoConfig {
     @Override
     @Description("The jdbc url for the database")
     @Config(DATA_SOURCE_PROP_PREFIX + "url")
-    @Default("jdbc:h2:file:/var/tmp/killbill;MODE=MYSQL;DB_CLOSE_DELAY=-1;MVCC=true;DB_CLOSE_ON_EXIT=FALSE;ACCESS_MODE_DATA=r")
+    @Default("jdbc:h2:file:/var/tmp/killbill;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;ACCESS_MODE_DATA=r")
     String getJdbcUrl();
 
     @Override
