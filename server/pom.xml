@@ -36,12 +36,10 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.dmurph</groupId>
@@ -63,12 +61,10 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <!-- Needed by jmxutils -->
@@ -79,7 +75,6 @@
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-servlet</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.izettle</groupId>
@@ -142,11 +137,6 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-guice</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <scope>runtime</scope>
@@ -174,7 +164,6 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-logback</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
@@ -195,6 +184,11 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>ST4</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
@@ -406,19 +400,20 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>ch.qos.logback</groupId>
-                        <artifactId>logback-core</artifactId>
-                        <version>${logback.version}</version>
-                    </dependency>
-                </dependencies>
                 <configuration>
                     <webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>
                     <systemProperties>
                         <systemProperty>
                             <name>logback.configurationFile</name>
                             <value>file:${basedir}/src/main/webapp/logback.xml</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.killbill.dao.seedFile</name>
+                            <value>file:${basedir}/src/main/resources/org/killbill/billing/server/ddl.sql</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>org.killbill.server.updateCheck.skip</name>
+                            <value>true</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>

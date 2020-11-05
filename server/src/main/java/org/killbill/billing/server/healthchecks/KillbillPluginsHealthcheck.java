@@ -19,7 +19,6 @@
 
 package org.killbill.billing.server.healthchecks;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.killbill.billing.osgi.api.Healthcheck;
@@ -29,16 +28,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.google.inject.Inject;
 
 @Singleton
 public class KillbillPluginsHealthcheck extends HealthCheck {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillPluginsHealthcheck.class);
 
-    private final OSGIServiceRegistration<Healthcheck> pluginHealthchecks;
+    private OSGIServiceRegistration<Healthcheck> pluginHealthchecks = null;
 
-    @Inject
-    public KillbillPluginsHealthcheck(final OSGIServiceRegistration<Healthcheck> pluginHealthchecks) {
+    @Inject(optional = true)
+    public void setPluginHealthchecks(final OSGIServiceRegistration<Healthcheck> pluginHealthchecks) {
         this.pluginHealthchecks = pluginHealthchecks;
     }
 
@@ -47,14 +47,16 @@ public class KillbillPluginsHealthcheck extends HealthCheck {
         final ResultBuilder resultBuilder = Result.builder();
 
         boolean isHealthy = true;
-        for (final String pluginHealthcheckService : pluginHealthchecks.getAllServices()) {
-            final Healthcheck pluginHealthcheck = pluginHealthchecks.getServiceForName(pluginHealthcheckService);
-            if (pluginHealthcheck == null) {
-                continue;
+        if (pluginHealthchecks != null) {
+            for (final String pluginHealthcheckService : pluginHealthchecks.getAllServices()) {
+                final Healthcheck pluginHealthcheck = pluginHealthchecks.getServiceForName(pluginHealthcheckService);
+                if (pluginHealthcheck == null) {
+                    continue;
+                }
+                final HealthStatus pluginStatus = pluginHealthcheck.getHealthStatus(null, null);
+                resultBuilder.withDetail(pluginHealthcheckService, pluginStatus.getDetails());
+                isHealthy = isHealthy && pluginStatus.isHealthy();
             }
-            final HealthStatus pluginStatus = pluginHealthcheck.getHealthStatus(null, null);
-            resultBuilder.withDetail(pluginHealthcheckService, pluginStatus.getDetails());
-            isHealthy = isHealthy && pluginStatus.isHealthy();
         }
 
         return isHealthy ? resultBuilder.healthy().build() : resultBuilder.unhealthy().build();

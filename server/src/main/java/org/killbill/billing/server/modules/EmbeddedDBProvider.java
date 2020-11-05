@@ -19,8 +19,11 @@
 
 package org.killbill.billing.server.modules;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
 
@@ -78,7 +81,15 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
         }
 
         for (final String ddlFile : getDDLFiles()) {
-            final URL resource = Resources.getResource(ddlFile);
+            final URL resource;
+            try {
+                final URI uri = new URI(ddlFile);
+                final String scheme = uri.getScheme();
+                resource = scheme == null ? Resources.getResource(ddlFile) : new File(uri.getSchemeSpecificPart()).toURI().toURL();
+            } catch (final URISyntaxException e) {
+                throw new IllegalStateException(e);
+            }
+
             final InputStream inputStream = resource.openStream();
             try {
                 final String ddl = streamToString(inputStream);
@@ -91,7 +102,7 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
     }
 
     protected Iterable<String> getDDLFiles() {
-        return ImmutableList.<String>of("org/killbill/billing/server/ddl.sql");
+        return ImmutableList.<String>of(System.getProperty("org.killbill.dao.seedFile", "org/killbill/billing/server/ddl.sql"));
     }
 
     protected String streamToString(final InputStream inputStream) throws IOException {
