@@ -102,7 +102,8 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
     }
 
     protected Iterable<String> getDDLFiles() {
-        return ImmutableList.<String>of(System.getProperty("org.killbill.dao.seedFile", "org/killbill/billing/server/ddl.sql"));
+        final String seedFile = System.getProperty("org.killbill.dao.seedFile");
+        return seedFile == null ? ImmutableList.<String>of() : ImmutableList.<String>of(seedFile);
     }
 
     protected String streamToString(final InputStream inputStream) throws IOException {
