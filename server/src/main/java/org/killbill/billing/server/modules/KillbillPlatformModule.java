@@ -51,6 +51,9 @@ import org.skife.jdbi.v2.tweak.TransactionHandler;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jdbi.InstrumentedTimingCollector;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
@@ -78,6 +81,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
     @Override
     protected void configure() {
+        configureJackson();
         configureClock();
         configureDao();
         configureConfig();
@@ -87,6 +91,13 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
         configureNotificationQ();
         configureOSGI();
         configureJNDI();
+    }
+
+    protected void configureJackson() {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JodaModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        bind(ObjectMapper.class).toInstance(objectMapper);
     }
 
     protected void configureClock() {

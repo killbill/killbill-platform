@@ -44,7 +44,7 @@ public class KillbillHealthcheck extends HealthCheck {
     private Set<ServiceRegistry> serviceRegistries = Collections.emptySet();
 
     @Inject(optional=true)
-    public void setServiceRegistries(Set<ServiceRegistry> serviceRegistries) {
+    public void setServiceRegistries(final Set<ServiceRegistry> serviceRegistries) {
         this.serviceRegistries = serviceRegistries;
     }
 

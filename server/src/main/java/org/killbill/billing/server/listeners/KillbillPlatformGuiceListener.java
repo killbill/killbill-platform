@@ -47,7 +47,6 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.skeleton.listeners.GuiceServletContextListener;
 import org.killbill.commons.skeleton.modules.BaseServerModuleBuilder;
 import org.killbill.commons.skeleton.modules.JMXModule;
-import org.killbill.commons.skeleton.modules.JaxrsJacksonModule;
 import org.killbill.commons.skeleton.modules.StatsModule;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.skife.config.ConfigSource;
@@ -174,7 +173,6 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         guiceModules = ImmutableList.<Module>of(getServletModule(),
-                                                getJacksonModule(),
                                                 new JMXModule(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
                                                 new StatsModule(METRICS_SERVLETS_PATHS.get(0),
                                                                 METRICS_SERVLETS_PATHS.get(1),
@@ -207,13 +205,6 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     protected Module getModule(final ServletContext servletContext) {
         return new KillbillPlatformModule(servletContext, config, configSource);
-    }
-
-    protected JaxrsJacksonModule getJacksonModule() {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JodaModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return new JaxrsJacksonModule(objectMapper);
     }
 
     protected void initializeMetrics(final ServletContextEvent event) {
