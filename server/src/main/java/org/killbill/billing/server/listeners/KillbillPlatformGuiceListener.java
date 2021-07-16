@@ -128,28 +128,34 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
         startLifecycle();
 
+        final Thread shutdownListener = new Thread() {
+            public void run() {
+                logger.info("shutdownListener invoking shutdown sequence");
+                shutdownSequence();
+            }
+        };
+        Runtime.getRuntime().addShutdownHook(shutdownListener);
+
         // The host will be put in rotation in KillbillGuiceFilter, once Jersey is fully initialized
     }
 
     @Override
     public void contextDestroyed(final ServletContextEvent sce) {
         putOutOfRotation();
-
         super.contextDestroyed(sce);
+        shutdownSequence();
+    }
 
+    private void shutdownSequence() {
         // Guice error, no need to fill the screen with useless stack traces
         if (killbillLifecycle == null) {
             return;
         }
 
         stopLifecycle();
-
         stopEmbeddedDBs();
-
         stopMetrics();
-
         removeJMXExports();
-
         stopLogging();
     }
 
