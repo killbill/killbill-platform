@@ -166,9 +166,9 @@
             <artifactId>jruby-core</artifactId>
             <exclusions>
                 <exclusion>
-                    <artifactId>yecht</artifactId>
                     <!-- OSGI build error with YechtService which is in the default package -->
                     <groupId>org.jruby</groupId>
+                    <artifactId>yecht</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

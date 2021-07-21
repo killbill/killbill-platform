@@ -50,18 +50,18 @@
             <version>1.8.7</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>annotations</artifactId>
                     <groupId>com.google.code.findbugs</groupId>
+                    <artifactId>annotations</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>servlet-api</artifactId>
                     <!-- Use javax.servlet:javax.servlet-api instead -->
                     <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>commons-logging</artifactId>
                     <!-- Use jcl-over-slf4j instead -->
                     <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
