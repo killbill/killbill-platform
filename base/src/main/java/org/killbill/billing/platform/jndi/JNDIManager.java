@@ -36,11 +36,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.sun.jndi.rmi.registry.RegistryContextFactory;
 
 public class JNDIManager {
 
     private static final Logger logger = LoggerFactory.getLogger(JNDIManager.class);
+
+    private static final String REGISTRY_CONTEXT_FACTORY = "com.sun.jndi.rmi.registry.RegistryContextFactory";
 
     private final int port;
 
@@ -59,7 +60,7 @@ public class JNDIManager {
 
         // Set these properties globally, so individual plugins don't have to worry about it
         System.setProperty(Context.PROVIDER_URL, "rmi://127.0.0.1:" + port);
-        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, RegistryContextFactory.class.getName());
+        System.setProperty(Context.INITIAL_CONTEXT_FACTORY, REGISTRY_CONTEXT_FACTORY);
     }
 
     public void export(final String name, final Object object) {
@@ -130,7 +131,7 @@ public class JNDIManager {
     private Context getContext() throws NamingException {
         final Hashtable<String, String> environment = new Hashtable<String, String>();
         environment.put(Context.PROVIDER_URL, "rmi://127.0.0.1:" + port);
-        environment.put(Context.INITIAL_CONTEXT_FACTORY, RegistryContextFactory.class.getName());
+        environment.put(Context.INITIAL_CONTEXT_FACTORY, REGISTRY_CONTEXT_FACTORY);
 
         return new InitialContext(environment);
     }
