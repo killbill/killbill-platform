@@ -151,6 +151,8 @@ public class DefaultOSGIService implements OSGIService {
         config.put("org.osgi.framework.system.packages.extra", systemExtraPackages.toString());
         config.put("felix.cache.rootdir", osgiConfig.getOSGIBundleRootDir());
         config.put("org.osgi.framework.storage", osgiConfig.getOSGIBundleCacheName());
+        // Use the ext class loader as parent so that bundles can load java.sql.* on JDK 11
+        config.put("org.osgi.framework.bundle.parent", "ext");
         return createAndInitFelixFrameworkWithSystemBundle(config);
     }
 
