@@ -33,6 +33,13 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- 2.0.0-alpha1 is somehow pulled on JDK 11 -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -58,6 +65,13 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
+            <exclusions>
+                <!-- https://github.com/brettwooldridge/HikariCP/issues/1746 -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
@@ -266,15 +280,15 @@
                 <executions>
                     <execution>
                         <id>copy</id>
-                        <phase>initialize</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
+                        <phase>initialize</phase>
                         <configuration>
                             <tasks>
-                                <copy file="${basedir}/../osgi-bundles/tests/beatrix/target/killbill-platform-osgi-bundles-test-beatrix-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-beatrix-jar-with-dependencies.jar" />
-                                <copy file="${basedir}/../osgi-bundles/tests/payment/target/killbill-platform-osgi-bundles-test-payment-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-payment-jar-with-dependencies.jar" />
-                                <copy file="${basedir}/../osgi-bundles/bundles/jruby/target/killbill-platform-osgi-bundles-jruby-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-jruby.jar" />
+                                <copy file="${basedir}/../osgi-bundles/tests/beatrix/target/killbill-platform-osgi-bundles-test-beatrix-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-beatrix-jar-with-dependencies.jar"/>
+                                <copy file="${basedir}/../osgi-bundles/tests/payment/target/killbill-platform-osgi-bundles-test-payment-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-payment-jar-with-dependencies.jar"/>
+                                <copy file="${basedir}/../osgi-bundles/bundles/jruby/target/killbill-platform-osgi-bundles-jruby-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-jruby.jar"/>
                             </tasks>
                         </configuration>
                     </execution>

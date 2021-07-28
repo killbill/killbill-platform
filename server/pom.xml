@@ -82,52 +82,52 @@
             <!-- We're not quite yet ready to upgrade these... -->
             <exclusions>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
                     <artifactId>jackson-datatype-joda</artifactId>
-                    <groupId>com.fasterxml.jackson.datatype</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
                     <artifactId>jackson-datatype-guava</artifactId>
-                    <groupId>com.fasterxml.jackson.datatype</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
                     <artifactId>jackson-datatype-jsr310</artifactId>
-                    <groupId>com.fasterxml.jackson.datatype</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.datatype</groupId>
                     <artifactId>jackson-datatype-jdk8</artifactId>
-                    <groupId>com.fasterxml.jackson.datatype</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jackson-module-afterburner</artifactId>
                     <groupId>com.fasterxml.jackson.module</groupId>
+                    <artifactId>jackson-module-afterburner</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-annotations</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-core</artifactId>
-                    <groupId>com.fasterxml.jackson.core</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-io</artifactId>
-                    <groupId>org.eclipse.jetty</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-server</artifactId>
-                    <groupId>org.eclipse.jetty</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.eclipse.jetty</groupId>
                     <artifactId>jetty-http</artifactId>
-                    <groupId>org.eclipse.jetty</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jetty-util</artifactId>
                     <groupId>org.eclipse.jetty</groupId>
+                    <artifactId>jetty-util</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -140,6 +140,13 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <scope>runtime</scope>
+            <exclusions>
+                <!-- https://github.com/brettwooldridge/HikariCP/issues/1746 -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
