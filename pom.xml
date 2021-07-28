@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-oss-parent</artifactId>
-        <version>0.144.53-SNAPSHOT</version>
+        <version>0.144.56</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
     <version>0.40.8-SNAPSHOT</version>
@@ -55,8 +55,6 @@
     </issueManagement>
     <properties>
         <check.fail-spotbugs>true</check.fail-spotbugs>
-        <killbill-base-plugin.version>4.2.13-SNAPSHOT</killbill-base-plugin.version>
-        <killbill-commons.version>0.24.15-SNAPSHOT</killbill-commons.version>
     </properties>
     <dependencyManagement>
         <dependencies>
