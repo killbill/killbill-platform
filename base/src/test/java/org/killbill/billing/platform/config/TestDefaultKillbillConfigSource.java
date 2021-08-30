@@ -1,8 +1,8 @@
 /*
  * Copyright 2010-2014 Ning, Inc.
  * Copyright 2014-2020 Groupon, Inc
- * Copyright 2020-2020 Equinix, Inc
- * Copyright 2014-2020 The Billing Project, LLC
+ * Copyright 2020-2021 Equinix, Inc
+ * Copyright 2014-2021 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -55,95 +55,95 @@ public class TestDefaultKillbillConfigSource {
 
     @Test(groups = "fast")
     public void testJasyptDisabledByDefault() throws IOException, URISyntaxException {
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource();
+        final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource();
 
-        String enableJasyptString = configSource.getString(ENABLE_JASYPT_PROPERTY);
+        final String enableJasyptString = configSource.getString(ENABLE_JASYPT_PROPERTY);
 
         Assert.assertFalse(Boolean.parseBoolean(enableJasyptString));
     }
 
     @Test(groups = "fast")
     public void testDecyptionExplicitlyDisabled() throws IOException, URISyntaxException {
-        String unencryptedValue = "myPropertyValue";
-        String encryptedValue = encString(unencryptedValue);
+        final String unencryptedValue = "myPropertyValue";
+        final String encryptedValue = encString(unencryptedValue);
 
-        Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "false",
-                                                         ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                         JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                         JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "false",
+                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
+        final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
 
-        String actualValue = configSource.getString(ENCRYPTED_PROPERTY_1);
+        final String actualValue = configSource.getString(ENCRYPTED_PROPERTY_1);
 
         Assert.assertEquals(encryptedValue, actualValue);
     }
 
     @Test(groups = "fast", expectedExceptions = IllegalArgumentException.class)
     public void testDecryptEmptyPassword() throws IOException, URISyntaxException {
-        String encryptedValue = encString("myPropertyValue");
+        final String encryptedValue = encString("myPropertyValue");
 
-        Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                         ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                         JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, "",
-                                                         JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, "",
+                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         new DefaultKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast", expectedExceptions = IllegalArgumentException.class)
     public void testDecryptEmptyAlgorithm() throws IOException, URISyntaxException {
-        String encryptedValue = encString("myPropertyValue");
+        final String encryptedValue = encString("myPropertyValue");
 
-        Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                         ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                         JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                         JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, "");
+        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, "");
 
         new DefaultKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast", expectedExceptions = EncryptionOperationNotPossibleException.class)
     public void testDecryptInvalidJasyptString() throws IOException, URISyntaxException {
-        String encryptedValue = "ENC(notAValidEncryptedString!)";
+        final String encryptedValue = "ENC(notAValidEncryptedString!)";
 
-        Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                         ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                         JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                         JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         new DefaultKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast", expectedExceptions = EncryptionOperationNotPossibleException.class)
     public void testDecryptEmptyJasyptString() throws IOException, URISyntaxException {
-        String encryptedValue = "ENC()";
+        final String encryptedValue = "ENC()";
 
-        Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                         ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                         JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                         JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         new DefaultKillbillConfigSource(properties);
     }
 
     @Test(groups = "fast")
     public void testDecryptJasyptPropertySuccessfully() throws IOException, URISyntaxException {
-        String unencryptedValue1 = "myPropertyValue";
-        String encryptedValue1 = encString(unencryptedValue1);
-        String unencryptedValue2 = "myOtherPropertyValue";
-        String encryptedValue2 = encString(unencryptedValue2);
+        final String unencryptedValue1 = "myPropertyValue";
+        final String encryptedValue1 = encString(unencryptedValue1);
+        final String unencryptedValue2 = "myOtherPropertyValue";
+        final String encryptedValue2 = encString(unencryptedValue2);
 
-        Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                         ENCRYPTED_PROPERTY_1, encryptedValue1,
-                                                         ENCRYPTED_PROPERTY_2, encryptedValue2,
-                                                         JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                         JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                               ENCRYPTED_PROPERTY_1, encryptedValue1,
+                                                               ENCRYPTED_PROPERTY_2, encryptedValue2,
+                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
+        final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
 
-        String actualValue1 = configSource.getString(ENCRYPTED_PROPERTY_1);
-        String actualValue2 = configSource.getString(ENCRYPTED_PROPERTY_2);
+        final String actualValue1 = configSource.getString(ENCRYPTED_PROPERTY_1);
+        final String actualValue2 = configSource.getString(ENCRYPTED_PROPERTY_2);
 
         Assert.assertEquals(unencryptedValue1, actualValue1);
         Assert.assertEquals(unencryptedValue2, actualValue2);
@@ -158,7 +158,7 @@ public class TestDefaultKillbillConfigSource {
         return encryptor.encrypt(unencryptedValue);
     }
 
-    private StandardPBEStringEncryptor setupEncryptor(String password, String algorithm) {
+    private StandardPBEStringEncryptor setupEncryptor(final String password, final String algorithm) {
         final StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
         encryptor.setPassword(password);
         encryptor.setAlgorithm(algorithm);
