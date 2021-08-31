@@ -50,6 +50,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static final String PROPERTIES_FILE = "org.killbill.server.properties";
     private static final String GMT_ID = "GMT";
 
+    private static final String LOOKUP_ENVIRONMENT_VARIABLES = "org.killbill.server.lookupEnvironmentVariables";
+
     private static final String ENABLE_JASYPT_DECRYPTION = "org.killbill.server.enableJasypt";
     private static final String JASYPT_ENCRYPTOR_PASSWORD_KEY = "JASYPT_ENCRYPTOR_PASSWORD";
     private static final String JASYPT_ENCRYPTOR_ALGORITHM_KEY = "JASYPT_ENCRYPTOR_ALGORITHM";
@@ -91,6 +93,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         populateDefaultProperties();
+
+        if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
+            overrideWithEnvironmentVariables();
+        }
 
         if (Boolean.parseBoolean(getString(ENABLE_JASYPT_DECRYPTION))) {
             decryptJasyptProperties();
@@ -195,6 +201,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         properties.put("org.killbill.persistent.bus.external.tableName", "bus_ext_events");
         properties.put("org.killbill.persistent.bus.external.historyTableName", "bus_ext_events_history");
         properties.put(ENABLE_JASYPT_DECRYPTION, "false");
+        properties.put(LOOKUP_ENVIRONMENT_VARIABLES, "true");
         return properties;
     }
 
@@ -213,11 +220,44 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return properties;
     }
 
+    private void overrideWithEnvironmentVariables() {
+        // Try to find all Kill Bill properties in the environment variables (best guess)
+        final Map<String, String> env = System.getenv();
+        for (final Entry<String, String> entry : env.entrySet()) {
+            if (!entry.getKey().startsWith("org_killbill_")) {
+                continue;
+            }
+
+            final String propertyName = fromEnvVariableName(entry.getKey());
+            final String value = entry.getValue();
+            properties.setProperty(propertyName, value);
+        }
+
+        // Override known keys with known environment overrides
+        final Enumeration<Object> keys = properties.keys();
+        while (keys.hasMoreElements()) {
+            final String propertyName = (String) keys.nextElement();
+            final String currentValue = (String) properties.get(propertyName);
+            final String finalValue = getEnvironmentVariable(buildEnvVariableName(propertyName), currentValue);
+            properties.setProperty(propertyName, finalValue);
+        }
+    }
+
+    @VisibleForTesting
+    String buildEnvVariableName(final String key) {
+        return key.replaceAll("\\.", "_");
+    }
+
+    @VisibleForTesting
+    String fromEnvVariableName(final String key) {
+        return key.replaceAll("_", "\\.");
+    }
+
     private void decryptJasyptProperties() {
         final String password = getEnvironmentVariable(JASYPT_ENCRYPTOR_PASSWORD_KEY, System.getProperty(JASYPT_ENCRYPTOR_PASSWORD_KEY));
         final String algorithm = getEnvironmentVariable(JASYPT_ENCRYPTOR_ALGORITHM_KEY, System.getProperty(JASYPT_ENCRYPTOR_ALGORITHM_KEY));
 
-        final Enumeration keys = properties.keys();
+        final Enumeration<Object> keys = properties.keys();
         final StandardPBEStringEncryptor encryptor = initializeEncryptor(password, algorithm);
         // Iterate over all properties and decrypt ones that match
         while (keys.hasMoreElements()) {

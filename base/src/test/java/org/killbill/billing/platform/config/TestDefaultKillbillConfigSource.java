@@ -54,6 +54,22 @@ public class TestDefaultKillbillConfigSource {
     }
 
     @Test(groups = "fast")
+    public void testBuildEnvVariableName() throws IOException, URISyntaxException {
+        final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource();
+
+        Assert.assertEquals(configSource.buildEnvVariableName(""), "");
+        Assert.assertEquals(configSource.buildEnvVariableName("org.killbill.billing.osgi.dao.prepStmtCacheSize"), "org_killbill_billing_osgi_dao_prepStmtCacheSize");
+        Assert.assertEquals(configSource.buildEnvVariableName("org.killbill.billing.osgi.dao_prepStmtCacheSize"), "org_killbill_billing_osgi_dao_prepStmtCacheSize");
+        Assert.assertEquals(configSource.buildEnvVariableName("org.killbill.billing.osgi.dao..prepStmtCacheSize"), "org_killbill_billing_osgi_dao__prepStmtCacheSize");
+
+        Assert.assertEquals(configSource.fromEnvVariableName(""), "");
+        Assert.assertEquals(configSource.fromEnvVariableName("org_killbill_billing_osgi_dao_prepStmtCacheSize"), "org.killbill.billing.osgi.dao.prepStmtCacheSize");
+        // Note! This won't work
+        //Assert.assertEquals(configSource.fromEnvVariableName("org_killbill_billing_osgi_dao_prepStmtCacheSize"), "org.killbill.billing.osgi.dao_prepStmtCacheSize");
+        Assert.assertEquals(configSource.fromEnvVariableName("org_killbill_billing_osgi_dao__prepStmtCacheSize"), "org.killbill.billing.osgi.dao..prepStmtCacheSize");
+    }
+
+    @Test(groups = "fast")
     public void testJasyptDisabledByDefault() throws IOException, URISyntaxException {
         final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource();
 
