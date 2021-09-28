@@ -22,10 +22,10 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-oss-parent</artifactId>
-        <version>0.144.56</version>
+        <version>0.144.61</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
-    <version>0.40.9-SNAPSHOT</version>
+    <version>0.40.10-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>killbill-platform</name>
     <description>Platform to build billing and payment infrastructures</description>

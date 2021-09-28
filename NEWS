@@ -1,3 +1,6 @@
+0.40.9
+    Update to killbill-oss-parent 0.144.61
+
 0.40.8
     Add support for JDK 11
     Update to killbill-oss-parent 0.144.56
