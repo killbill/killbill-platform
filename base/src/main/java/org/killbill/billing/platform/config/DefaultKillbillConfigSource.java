@@ -51,6 +51,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static final String GMT_ID = "GMT";
 
     private static final String LOOKUP_ENVIRONMENT_VARIABLES = "org.killbill.server.lookupEnvironmentVariables";
+    static final String ENVIRONMENT_VARIABLE_PREFIX = "KB_";
 
     private static final String ENABLE_JASYPT_DECRYPTION = "org.killbill.server.enableJasypt";
     private static final String JASYPT_ENCRYPTOR_PASSWORD_KEY = "JASYPT_ENCRYPTOR_PASSWORD";
@@ -221,10 +222,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     private void overrideWithEnvironmentVariables() {
-        // Try to find all Kill Bill properties in the environment variables (best guess)
+        // Find all Kill Bill properties in the environment variables
         final Map<String, String> env = System.getenv();
         for (final Entry<String, String> entry : env.entrySet()) {
-            if (!entry.getKey().startsWith("org_killbill_")) {
+            if (!entry.getKey().startsWith(ENVIRONMENT_VARIABLE_PREFIX)) {
                 continue;
             }
 
@@ -232,25 +233,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             final String value = entry.getValue();
             properties.setProperty(propertyName, value);
         }
-
-        // Override known keys with known environment overrides
-        final Enumeration<Object> keys = properties.keys();
-        while (keys.hasMoreElements()) {
-            final String propertyName = (String) keys.nextElement();
-            final String currentValue = (String) properties.get(propertyName);
-            final String finalValue = getEnvironmentVariable(buildEnvVariableName(propertyName), currentValue);
-            properties.setProperty(propertyName, finalValue);
-        }
-    }
-
-    @VisibleForTesting
-    String buildEnvVariableName(final String key) {
-        return key.replaceAll("\\.", "_");
     }
 
     @VisibleForTesting
     String fromEnvVariableName(final String key) {
-        return key.replaceAll("_", "\\.");
+        return key.replace(ENVIRONMENT_VARIABLE_PREFIX, "").replaceAll("_", "\\.");
     }
 
     private void decryptJasyptProperties() {

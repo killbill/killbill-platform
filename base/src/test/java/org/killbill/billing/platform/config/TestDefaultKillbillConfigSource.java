@@ -31,6 +31,8 @@ import org.testng.Assert;
 
 import com.google.common.collect.ImmutableMap;
 
+import static org.killbill.billing.platform.config.DefaultKillbillConfigSource.ENVIRONMENT_VARIABLE_PREFIX;
+
 public class TestDefaultKillbillConfigSource {
 
     private static final String ENABLE_JASYPT_PROPERTY = "org.killbill.server.enableJasypt";
@@ -54,19 +56,14 @@ public class TestDefaultKillbillConfigSource {
     }
 
     @Test(groups = "fast")
-    public void testBuildEnvVariableName() throws IOException, URISyntaxException {
+    public void testFromEnvVariableName() throws IOException, URISyntaxException {
         final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource();
 
-        Assert.assertEquals(configSource.buildEnvVariableName(""), "");
-        Assert.assertEquals(configSource.buildEnvVariableName("org.killbill.billing.osgi.dao.prepStmtCacheSize"), "org_killbill_billing_osgi_dao_prepStmtCacheSize");
-        Assert.assertEquals(configSource.buildEnvVariableName("org.killbill.billing.osgi.dao_prepStmtCacheSize"), "org_killbill_billing_osgi_dao_prepStmtCacheSize");
-        Assert.assertEquals(configSource.buildEnvVariableName("org.killbill.billing.osgi.dao..prepStmtCacheSize"), "org_killbill_billing_osgi_dao__prepStmtCacheSize");
-
         Assert.assertEquals(configSource.fromEnvVariableName(""), "");
-        Assert.assertEquals(configSource.fromEnvVariableName("org_killbill_billing_osgi_dao_prepStmtCacheSize"), "org.killbill.billing.osgi.dao.prepStmtCacheSize");
-        // Note! This won't work
+        Assert.assertEquals(configSource.fromEnvVariableName(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_billing_osgi_dao_prepStmtCacheSize"), "org.killbill.billing.osgi.dao.prepStmtCacheSize");
+        // Note! This won't work: we don't support underscores in property keys
         //Assert.assertEquals(configSource.fromEnvVariableName("org_killbill_billing_osgi_dao_prepStmtCacheSize"), "org.killbill.billing.osgi.dao_prepStmtCacheSize");
-        Assert.assertEquals(configSource.fromEnvVariableName("org_killbill_billing_osgi_dao__prepStmtCacheSize"), "org.killbill.billing.osgi.dao..prepStmtCacheSize");
+        Assert.assertEquals(configSource.fromEnvVariableName(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_billing_osgi_dao__prepStmtCacheSize"), "org.killbill.billing.osgi.dao..prepStmtCacheSize");
     }
 
     @Test(groups = "fast")
