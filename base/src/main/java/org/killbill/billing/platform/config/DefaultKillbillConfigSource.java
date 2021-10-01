@@ -1,8 +1,8 @@
 /*
  * Copyright 2010-2014 Ning, Inc.
  * Copyright 2014-2020 Groupon, Inc
- * Copyright 2020-2020 Equinix, Inc
- * Copyright 2014-2020 The Billing Project, LLC
+ * Copyright 2020-2021 Equinix, Inc
+ * Copyright 2014-2021 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -50,6 +50,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static final String PROPERTIES_FILE = "org.killbill.server.properties";
     private static final String GMT_ID = "GMT";
 
+    private static final String LOOKUP_ENVIRONMENT_VARIABLES = "org.killbill.server.lookupEnvironmentVariables";
+    static final String ENVIRONMENT_VARIABLE_PREFIX = "KB_";
+
     private static final String ENABLE_JASYPT_DECRYPTION = "org.killbill.server.enableJasypt";
     private static final String JASYPT_ENCRYPTOR_PASSWORD_KEY = "JASYPT_ENCRYPTOR_PASSWORD";
     private static final String JASYPT_ENCRYPTOR_ALGORITHM_KEY = "JASYPT_ENCRYPTOR_ALGORITHM";
@@ -91,6 +94,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         populateDefaultProperties();
+
+        if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
+            overrideWithEnvironmentVariables();
+        }
 
         if (Boolean.parseBoolean(getString(ENABLE_JASYPT_DECRYPTION))) {
             decryptJasyptProperties();
@@ -195,6 +202,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         properties.put("org.killbill.persistent.bus.external.tableName", "bus_ext_events");
         properties.put("org.killbill.persistent.bus.external.historyTableName", "bus_ext_events_history");
         properties.put(ENABLE_JASYPT_DECRYPTION, "false");
+        properties.put(LOOKUP_ENVIRONMENT_VARIABLES, "true");
         return properties;
     }
 
@@ -213,25 +221,44 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return properties;
     }
 
-    private void decryptJasyptProperties() {
-        String password = getEnvironmentVariable(JASYPT_ENCRYPTOR_PASSWORD_KEY, System.getProperty(JASYPT_ENCRYPTOR_PASSWORD_KEY));
-        String algorithm = getEnvironmentVariable(JASYPT_ENCRYPTOR_ALGORITHM_KEY, System.getProperty(JASYPT_ENCRYPTOR_ALGORITHM_KEY));
+    private void overrideWithEnvironmentVariables() {
+        // Find all Kill Bill properties in the environment variables
+        final Map<String, String> env = System.getenv();
+        for (final Entry<String, String> entry : env.entrySet()) {
+            if (!entry.getKey().startsWith(ENVIRONMENT_VARIABLE_PREFIX)) {
+                continue;
+            }
 
-        Enumeration keys = properties.keys();
-        StandardPBEStringEncryptor encryptor = initializeEncryptor(password, algorithm);
+            final String propertyName = fromEnvVariableName(entry.getKey());
+            final String value = entry.getValue();
+            properties.setProperty(propertyName, value);
+        }
+    }
+
+    @VisibleForTesting
+    String fromEnvVariableName(final String key) {
+        return key.replace(ENVIRONMENT_VARIABLE_PREFIX, "").replaceAll("_", "\\.");
+    }
+
+    private void decryptJasyptProperties() {
+        final String password = getEnvironmentVariable(JASYPT_ENCRYPTOR_PASSWORD_KEY, System.getProperty(JASYPT_ENCRYPTOR_PASSWORD_KEY));
+        final String algorithm = getEnvironmentVariable(JASYPT_ENCRYPTOR_ALGORITHM_KEY, System.getProperty(JASYPT_ENCRYPTOR_ALGORITHM_KEY));
+
+        final Enumeration<Object> keys = properties.keys();
+        final StandardPBEStringEncryptor encryptor = initializeEncryptor(password, algorithm);
         // Iterate over all properties and decrypt ones that match
         while (keys.hasMoreElements()) {
             final String key = (String) keys.nextElement();
             final String value = (String) properties.get(key);
-            Optional<String> decryptableValue = decryptableValue(value);
+            final Optional<String> decryptableValue = decryptableValue(value);
             if (decryptableValue.isPresent()) {
                 properties.setProperty(key, encryptor.decrypt(decryptableValue.get()));
             }
         }
     }
 
-    private StandardPBEStringEncryptor initializeEncryptor(String password, String algorithm) {
-        StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
+    private StandardPBEStringEncryptor initializeEncryptor(final String password, final String algorithm) {
+        final StandardPBEStringEncryptor encryptor = new StandardPBEStringEncryptor();
 
         if (Strings.isNullOrEmpty(password)) {
             logger.error(JASYPT_ENCRYPTOR_PASSWORD_KEY + " is not set. Decrypting properties via Jasypt will likely fail.");
@@ -244,7 +271,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return encryptor;
     }
 
-    private String getEnvironmentVariable(String name, String defaultValue) {
+    private String getEnvironmentVariable(final String name, final String defaultValue) {
         String value = System.getenv(name);
         if (!Strings.isNullOrEmpty(value)) {
             return value;
@@ -254,14 +281,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Strings.isNullOrEmpty(value) ? defaultValue : value;
     }
 
-    private Optional<String> decryptableValue(String value) {
+    private Optional<String> decryptableValue(final String value) {
         if (value == null) {
             return Optional.absent();
         }
 
-        int start = value.indexOf(ENC_PREFIX);
+        final int start = value.indexOf(ENC_PREFIX);
         if (start != -1) {
-            int end = value.lastIndexOf(ENC_SUFFIX);
+            final int end = value.lastIndexOf(ENC_SUFFIX);
             if (end != -1) {
                 return Optional.of(value.substring(start + ENC_PREFIX.length(), end));
             }
