@@ -63,7 +63,9 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Inject;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class KillbillActivator implements BundleActivator, ServiceListener {
 
     static final int PLUGIN_NAME_MAX_LENGTH = 40;

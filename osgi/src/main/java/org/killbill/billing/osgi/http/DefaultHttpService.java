@@ -33,7 +33,9 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
 import com.codahale.metrics.MetricRegistry;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings("EI_EXPOSE_REP")
 @Singleton
 public class DefaultHttpService implements HttpService {
 

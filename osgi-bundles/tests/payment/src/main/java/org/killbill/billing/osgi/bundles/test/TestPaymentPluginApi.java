@@ -43,6 +43,7 @@ import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.entity.Pagination;
 
 import com.google.common.collect.ImmutableList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
 
@@ -278,12 +279,14 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
         }
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Override
     public void setPaymentPluginApiExceptionOnNextCalls(final PaymentPluginApiException e) {
         resetToNormalBehavior();
         paymentPluginApiExceptionOnNextCalls = e;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Override
     public void setPaymentRuntimeExceptionOnNextCalls(final RuntimeException e) {
         resetToNormalBehavior();

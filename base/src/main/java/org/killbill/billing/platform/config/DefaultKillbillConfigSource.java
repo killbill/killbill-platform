@@ -40,6 +40,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
@@ -109,6 +110,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return properties.getProperty(propertyName);
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     @Override
     public Properties getProperties() {
         return properties;

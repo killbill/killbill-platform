@@ -31,12 +31,14 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 import com.google.common.collect.ImmutableMap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
 
     private final ServiceTracker<LogService, LogService> logTracker;
     private final ServiceReference SR;
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public OSGIAppender(final ServiceTracker<LogService, LogService> logTracker, final Bundle bundle) {
         this.logTracker = logTracker;
         this.SR = new RootBundleLogbackServiceReference(bundle);

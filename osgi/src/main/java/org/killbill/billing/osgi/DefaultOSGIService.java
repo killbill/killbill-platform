@@ -42,7 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class DefaultOSGIService implements OSGIService {
 
 
@@ -130,6 +132,7 @@ public class DefaultOSGIService implements OSGIService {
         }
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public List<BundleWithConfig> getInstalledBundles() {
         return installedBundles;
     }

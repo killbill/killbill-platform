@@ -25,6 +25,8 @@ import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class KillbillServiceListener implements ServiceListener {
 
     private final BundleContext context;
@@ -45,6 +47,7 @@ public class KillbillServiceListener implements ServiceListener {
         return killbillServiceListener;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public KillbillServiceListener(final BundleContext context, final KillbillServiceListenerCallback killbillServiceListenerCallback) {
         this.context = context;
         this.killbillServiceListenerCallback = killbillServiceListenerCallback;

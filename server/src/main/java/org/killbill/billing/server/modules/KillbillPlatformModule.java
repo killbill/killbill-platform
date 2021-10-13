@@ -60,6 +60,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
@@ -73,6 +74,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     protected EmbeddedDB mainRoEmbeddedDB;
     protected EmbeddedDB shiroEmbeddedDB;
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public KillbillPlatformModule(final ServletContext servletContext, final KillbillServerConfig serverConfig, final KillbillConfigSource configSource) {
         super(configSource);
         this.servletContext = servletContext;

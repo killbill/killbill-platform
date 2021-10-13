@@ -43,6 +43,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import com.google.inject.Inject;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
@@ -166,6 +167,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         private final PluginState state;
         private final boolean isSelectedForStart;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public DefaultPluginInfo(final String pluginKey, final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final boolean isSelectedForStart, final Set<PluginServiceInfo> services) {
             this.pluginKey = pluginKey;
             this.pluginSymbolicName = pluginSymbolicName;
@@ -196,6 +198,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             return version;
         }
 
+        @SuppressFBWarnings("EI_EXPOSE_REP")
         @Override
         public Set<PluginServiceInfo> getServices() {
             return services;

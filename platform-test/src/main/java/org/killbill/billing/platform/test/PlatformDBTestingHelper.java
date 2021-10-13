@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Resources;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class PlatformDBTestingHelper {
 
@@ -94,6 +95,7 @@ public class PlatformDBTestingHelper {
     }
 
     // Those 3 getters should only be used for setup until the Guice binding happen
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public EmbeddedDB getInstance() {
         return instance;
     }

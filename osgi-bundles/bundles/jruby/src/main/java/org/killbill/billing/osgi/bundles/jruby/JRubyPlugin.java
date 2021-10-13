@@ -43,6 +43,8 @@ import org.osgi.framework.ServiceRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 // Bridge between the OSGI bundle and the ruby plugin
 public abstract class JRubyPlugin {
 
@@ -77,6 +79,7 @@ public abstract class JRubyPlugin {
     private ServiceRegistration httpServletServiceRegistration = null;
     private String cachedRequireLine = null;
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public JRubyPlugin(final PluginRubyConfig config, final BundleContext bundleContext, final OSGIConfigPropertiesService configProperties) {
         this.bundleContext = bundleContext;
         this.pluginGemName = config.getPluginName();

@@ -51,6 +51,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressFBWarnings("EI_EXPOSE_REP")
 public class PluginFinder {
 
     static final String SELECTED_VERSION_LINK_NAME = "SET_DEFAULT";
