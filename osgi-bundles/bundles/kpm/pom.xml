@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
-        <version>0.40.11-SNAPSHOT</version>
+        <version>0.40.11</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
