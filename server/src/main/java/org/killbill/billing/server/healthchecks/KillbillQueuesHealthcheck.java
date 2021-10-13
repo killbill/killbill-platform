@@ -46,6 +46,7 @@ import com.codahale.metrics.health.annotation.Async.InitialState;
 import com.codahale.metrics.health.annotation.Async.ScheduleType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.EvictingQueue;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 // Run this check asynchronously as it executes database queries: when the healthcheck is integrated with a load balancer,
 // we don't want to DDOS the database as the polling interval is most likely in the order of a few seconds (or less).
@@ -75,6 +76,7 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
     private final PersistentBus externalBus;
     private final NotificationQueueService notificationQueueService;
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject
     public KillbillQueuesHealthcheck(final Clock clock,
                                      final NotificationQueueService notificationQueueService,
@@ -241,7 +243,9 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
             if (smoothedSizesRegression.getN() >= slidingWindowSize) {
                 final Long oldestTimestamp = timestamps.peek();
                 final Double oldestSmoothedSize = smoothedSizes.peek();
-                smoothedSizesRegression.removeData(oldestTimestamp, oldestSmoothedSize);
+                if (oldestTimestamp != null && oldestSmoothedSize != null) {
+                    smoothedSizesRegression.removeData(oldestTimestamp, oldestSmoothedSize);
+                }
             }
 
             // Compute the next smoothed value to filter out noise

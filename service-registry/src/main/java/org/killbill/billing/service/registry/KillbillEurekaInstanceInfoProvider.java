@@ -38,6 +38,7 @@ import com.netflix.appinfo.LeaseInfo;
 import com.netflix.appinfo.UniqueIdentifier;
 import com.netflix.appinfo.providers.Archaius1VipAddressResolver;
 import com.netflix.appinfo.providers.VipAddressResolver;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Singleton
 public class KillbillEurekaInstanceInfoProvider implements Provider<InstanceInfo> {
@@ -56,6 +57,7 @@ public class KillbillEurekaInstanceInfoProvider implements Provider<InstanceInfo
         this.eurekaConfig = eurekaConfig;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     @Override
     public synchronized InstanceInfo get() {
         if (instanceInfo == null) {

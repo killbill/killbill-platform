@@ -31,6 +31,7 @@ import org.weakref.jmx.Managed;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.google.inject.Inject;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Singleton
 public class KillbillHealthcheck extends HealthCheck {
@@ -43,6 +44,7 @@ public class KillbillHealthcheck extends HealthCheck {
     private final AtomicBoolean outOfRotation = new AtomicBoolean(true);
     private Set<ServiceRegistry> serviceRegistries = Collections.emptySet();
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject(optional=true)
     public void setServiceRegistries(final Set<ServiceRegistry> serviceRegistries) {
         this.serviceRegistries = serviceRegistries;

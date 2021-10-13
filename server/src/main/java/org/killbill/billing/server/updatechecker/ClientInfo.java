@@ -28,6 +28,7 @@ import org.skife.config.ConfigSource;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.StandardSystemProperty;
 import com.google.common.base.Strings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Gather client-side information
@@ -53,6 +54,7 @@ public class ClientInfo {
     private final ServletContext servletContext;
     private final ConfigSource props;
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public ClientInfo(final ConfigSource configSource, final ServletContext servletContext) {
         this.servletContext = servletContext;
         this.props = configSource;

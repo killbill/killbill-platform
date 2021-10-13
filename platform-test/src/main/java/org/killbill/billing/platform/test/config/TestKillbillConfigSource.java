@@ -34,6 +34,7 @@ import org.killbill.commons.embeddeddb.EmbeddedDB;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
@@ -50,6 +51,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this(file, dbTestingHelperKlass, ImmutableMap.<String, String>of());
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file);
 

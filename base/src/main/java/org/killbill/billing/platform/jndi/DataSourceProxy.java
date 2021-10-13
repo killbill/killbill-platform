@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import com.google.common.base.Preconditions;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DataSourceProxy implements DataSource {
 
@@ -50,6 +51,7 @@ public class DataSourceProxy implements DataSource {
         Preconditions.checkNotNull(delegate, "DataSource delegate for id " + dataSourceId + " hasn't been configured!");
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DataSource getDelegate() {
         return delegate;
     }

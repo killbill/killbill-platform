@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class PersistentBusProvider implements Provider<PersistentBus> {
 
@@ -51,6 +52,7 @@ public class PersistentBusProvider implements Provider<PersistentBus> {
         this.busConfig = busConfig;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject
     public void initialize(@Named(DefaultQueueLifecycle.QUEUE_NAME) final IDBI dbi, final DatabaseTransactionNotificationApi observable, final Clock clock, final MetricRegistry metricRegistry) {
         this.dbi = dbi;

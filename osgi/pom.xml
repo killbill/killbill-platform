@@ -166,6 +166,10 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.commons</groupId>
+            <artifactId>killbill-config-magic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.commons</groupId>
             <artifactId>killbill-embeddeddb-common</artifactId>
         </dependency>
         <dependency>
@@ -195,10 +199,6 @@
             <!-- Required for org.osgi.service.log.LogService and org.osgi.service.http.HttpService -->
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.skife.config</groupId>
-            <artifactId>config-magic</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
