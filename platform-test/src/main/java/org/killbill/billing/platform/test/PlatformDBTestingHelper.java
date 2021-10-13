@@ -104,6 +104,7 @@ public class PlatformDBTestingHelper {
         return idbi;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DataSource getDataSource() {
         return dataSource;
     }

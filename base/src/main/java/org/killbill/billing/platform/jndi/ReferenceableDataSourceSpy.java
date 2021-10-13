@@ -28,6 +28,7 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 import javax.sql.DataSource;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.sf.log4jdbc.sql.jdbcapi.DataSourceSpy;
 
 public class ReferenceableDataSourceSpy extends DataSourceSpy implements Referenceable {
@@ -41,6 +42,7 @@ public class ReferenceableDataSourceSpy extends DataSourceSpy implements Referen
         this.dataSourceId = dataSourceId;
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public ReferenceableDataSourceSpy(final DataSource realDataSource, final String dataSourceId) {
         super(realDataSource);
         this.dataSource = realDataSource;
@@ -49,6 +51,7 @@ public class ReferenceableDataSourceSpy extends DataSourceSpy implements Referen
         DataSourceProxy.addDelegate(dataSourceId, realDataSource);
     }
 
+    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DataSource getDataSource() {
         return dataSource;
     }
