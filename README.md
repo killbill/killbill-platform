@@ -21,6 +21,7 @@ The platform is billing and payment agnostic, and can be used to create other se
 | 0.38.y           | 0.20.z            |
 | 0.39.y           | 0.22.z            |
 | 0.40.y           | 0.22.z            |
+| 0.41.y           | 0.23.z            |
 
 We've upgraded numerous dependencies in 0.40.x (required for Java 11 support).
 
