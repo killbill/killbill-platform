@@ -72,12 +72,12 @@ public class OSGIKillbillServiceReference implements ServiceReference {
 
     @Override
     public Dictionary<String, Object> getProperties() {
-        return null;
+        throw new UnsupportedOperationException("Not supported yet for OSGIKillbillServiceReference");
     }
 
     @Override
     public Object adapt(final Class type) {
-        return null;
+        throw new UnsupportedOperationException("Not supported yet for OSGIKillbillServiceReference");
     }
 
     @Override
