@@ -19,6 +19,7 @@
 
 package org.killbill.billing.osgi;
 
+import java.util.Dictionary;
 import java.util.Map;
 
 import org.osgi.framework.Bundle;
@@ -122,7 +123,12 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         }
 
         @Override
-        public Object adapt(Class type) {
+        public Object adapt(final Class type) {
+            throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+        }
+
+        @Override
+        public Dictionary getProperties() {
             throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
         }
 
