@@ -122,6 +122,11 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         }
 
         @Override
+        public Object adapt(Class type) {
+            throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+        }
+
+        @Override
         public boolean equals(final Object o) {
             if (this == o) {
                 return true;
