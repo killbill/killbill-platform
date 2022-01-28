@@ -1,0 +1,222 @@
+/*
+ * Copyright 2010-2014 Ning, Inc.
+ * Copyright 2014-2020 Groupon, Inc
+ * Copyright 2020-2020 Equinix, Inc
+ * Copyright 2014-2020 The Billing Project, LLC
+ *
+ * The Billing Project licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.killbill.billing.osgi.bundles.jruby;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.killbill.billing.osgi.api.config.PluginConfig;
+import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.billing.osgi.api.config.PluginRubyConfig;
+import org.killbill.billing.osgi.api.config.PluginType;
+import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.osgi.libs.killbill.KillbillServiceListener;
+import org.killbill.billing.osgi.libs.killbill.KillbillServiceListenerCallback;
+import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher.OSGIKillbillEventHandler;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.MoreObjects;
+
+/**
+ * Nomenclature:
+ * - 'plugin' is the java wrapper that in this jar (JRubyPlugin and sub-classes)
+ * - 'pluginMain' is the auto-generated api that is charge of the ruby <-> java translation
+ * - config.getRubyMainClass() (i.e: pluginMainClass in JRubyPlugin) is the delegate, that is the real ruby plugin code, which in some case (PaymentPluginApi )is also pseudo-generated)
+ */
+public class JRubyActivator extends KillbillActivatorBase {
+
+    private static final Logger logger = LoggerFactory.getLogger(JRubyActivator.class);
+
+    private static final String JRUBY_PLUGINS_CONF_DIR = "org.killbill.billing.osgi.bundles.jruby.conf.dir";
+
+    private JRubyPlugin plugin = null;
+
+    private static final String KILLBILL_PLUGIN_JPAYMENT = "Killbill::Plugin::Api::PaymentPluginApi";
+    private static final String KILLBILL_PLUGIN_JNOTIFICATION = "Killbill::Plugin::Api::NotificationPluginApi";
+    private static final String KILLBILL_PLUGIN_JINVOICE = "Killbill::Plugin::Api::InvoicePluginApi";
+    private static final String KILLBILL_PLUGIN_JCURRENCY = "Killbill::Plugin::Api::CurrencyPluginApi";
+    private static final String KILLBILL_PLUGIN_JPAYMENT_CONTROL = "Killbill::Plugin::Api::PaymentControlPluginApi";
+    private static final String KILLBILL_PLUGIN_JCATALOG = "Killbill::Plugin::Api::CatalogPluginApi";
+    private static final String KILLBILL_PLUGIN_JENTITLEMENT = "Killbill::Plugin::Api::EntitlementPluginApi";
+    private static final String KILLBILL_PLUGIN_JUSAGE = "Killbill::Plugin::Api::UsagePluginApi";
+
+    public void start(final BundleContext context) throws Exception {
+        super.start(context);
+
+        final String osgiKillbillClass = "org.killbill.billing.osgi.api.OSGIKillbill";
+        final KillbillServiceListenerCallback listenerCallback = new KillbillServiceListenerCallback() {
+            @Override
+            public void isRegistered(final BundleContext context) {
+                startWithContextClassLoader(context);
+            }
+        };
+        KillbillServiceListener.listenForService(context, osgiKillbillClass, listenerCallback);
+    }
+
+    private void startWithContextClassLoader(final BundleContext context) {
+        if (shouldStopPlugin()) {
+            return;
+        }
+
+        withContextClassLoader(new PluginCall() {
+            @Override
+            public void doCall() {
+
+                // Retrieve the plugin config
+                final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
+
+                logger.info("JRuby plugin {} activated (symbolicName = {})", rubyConfig.getPluginName(), context.getBundle().getSymbolicName());
+
+                // Setup JRuby
+                final String pluginMain;
+                if (PluginType.NOTIFICATION.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyNotificationPlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JNOTIFICATION;
+                } else if (PluginType.PAYMENT.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyPaymentPlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JPAYMENT;
+                } else if (PluginType.INVOICE.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyInvoicePlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JINVOICE;
+                } else if (PluginType.CURRENCY.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyCurrencyPlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JCURRENCY;
+                } else if (PluginType.PAYMENT_CONTROL.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyPaymentControlPlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JPAYMENT_CONTROL;
+                } else if (PluginType.CATALOG.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyCatalogPlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JCATALOG;
+                } else if (PluginType.ENTITLEMENT.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyEntitlementPlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JENTITLEMENT;
+                } else if (PluginType.USAGE.equals(rubyConfig.getPluginType())) {
+                    plugin = new JRubyUsagePlugin(rubyConfig, context, configProperties);
+                    pluginMain = KILLBILL_PLUGIN_JUSAGE;
+                } else {
+                    throw new IllegalStateException("Unsupported plugin type " + rubyConfig.getPluginType());
+                }
+
+                // Validate and instantiate the plugin
+                startPlugin(rubyConfig, pluginMain, context);
+
+                // All plugin types can now receive event notifications (register the handler only after the plugin has started)
+                dispatcher.registerEventHandlers((OSGIKillbillEventHandler) plugin);
+            }
+        }, this.getClass().getClassLoader());
+    }
+
+    private void startPlugin(final PluginRubyConfig rubyConfig, final String pluginMain, final BundleContext context) {
+        final Map<String, Object> killbillServices = new HashMap<String, Object>();
+
+        final Map<String, Object> killbillApis = retrieveKillbillApis(context);
+        killbillServices.put("kb_apis", killbillApis);
+        killbillServices.put("root", rubyConfig.getPluginVersionRoot().getAbsolutePath());
+        killbillServices.put("logger", logService);
+        killbillServices.put("clock", clock);
+        // Default to the plugin root dir if no jruby plugins specific configuration directory was specified
+        killbillServices.put("conf_dir", MoreObjects.firstNonNull(configProperties.getString(JRUBY_PLUGINS_CONF_DIR), rubyConfig.getPluginVersionRoot().getAbsolutePath()));
+
+
+
+        // Start the plugin synchronously
+        doStartPlugin(rubyConfig.getPluginName(), pluginMain, context, killbillServices);
+    }
+
+    @Override
+    protected PluginConfig retrievePluginConfig(final BundleContext context) {
+        final PluginConfigServiceApi pluginConfigServiceApi = killbillAPI.getPluginConfigServiceApi();
+        return pluginConfigServiceApi.getPluginRubyConfig(context.getBundle().getBundleId());
+    }
+
+    public void stop(final BundleContext context) throws Exception {
+        withContextClassLoader(new PluginCall() {
+            @Override
+            public void doCall() {
+                if (plugin != null) {
+                    dispatcher.unregisterEventHandler((OSGIKillbillEventHandler) plugin);
+                    doStopPlugin(context);
+                }
+            }
+        }, this.getClass().getClassLoader());
+
+        super.stop(context);
+    }
+
+    private void doStartPlugin(final String pluginName, final String pluginMain, final BundleContext context, final Map<String, Object> killbillServices) {
+        logger.info("Starting JRuby plugin {} (symbolicName = {}, pluginMain={})", pluginName, context.getBundle().getSymbolicName(), pluginMain);
+        // Make sure to copy the services map in case the plugin modifies it (we'll need it for restarts)
+        plugin.instantiatePlugin(new HashMap<String, Object>(killbillServices), pluginMain);
+        plugin.startPlugin(context);
+        logger.info("JRuby plugin {} (symbolicName = {}) started", pluginName, context.getBundle().getSymbolicName());
+    }
+
+    private void doStopPlugin(final BundleContext context) {
+        final PluginRubyConfig rubyConfig = (PluginRubyConfig) retrievePluginConfig(context);
+        logger.info("Stopping JRuby plugin {} (symbolicName = {})", rubyConfig.getPluginName(), context.getBundle().getSymbolicName());
+        plugin.stopPlugin(context);
+        plugin.unInstantiatePlugin();
+        logger.info("JRuby plugin {} (symbolicName = {}) stopped", rubyConfig.getPluginName(), context.getBundle().getSymbolicName());
+    }
+
+
+    private Map<String, Object> retrieveKillbillApis(final BundleContext context) {
+        final Map<String, Object> killbillUserApis = new HashMap<String, Object>();
+
+        // See killbill/killbill_api.rb for the naming convention magic
+        killbillUserApis.put("account_user_api", killbillAPI.getAccountUserApi());
+        killbillUserApis.put("catalog_user_api", killbillAPI.getCatalogUserApi());
+        killbillUserApis.put("subscription_api", killbillAPI.getSubscriptionApi());
+        killbillUserApis.put("invoice_user_api", killbillAPI.getInvoiceUserApi());
+        killbillUserApis.put("invoice_payment_api", killbillAPI.getInvoicePaymentApi());
+        killbillUserApis.put("payment_api", killbillAPI.getPaymentApi());
+        killbillUserApis.put("tenant_user_api", killbillAPI.getTenantUserApi());
+        killbillUserApis.put("usage_user_api", killbillAPI.getUsageUserApi());
+        killbillUserApis.put("custom_field_user_api", killbillAPI.getCustomFieldUserApi());
+        killbillUserApis.put("tag_user_api", killbillAPI.getTagUserApi());
+        killbillUserApis.put("entitlement_api", killbillAPI.getEntitlementApi());
+        killbillUserApis.put("currency_conversion_api", killbillAPI.getCurrencyConversionApi());
+        killbillUserApis.put("security_api", killbillAPI.getSecurityApi());
+        killbillUserApis.put("plugins_info_api", killbillAPI.getPluginsInfoApi());
+        killbillUserApis.put("overdue_api", killbillAPI.getOverdueApi());
+        killbillUserApis.put("killbill_nodes_api", killbillAPI.getKillbillNodesApi());
+        return killbillUserApis;
+    }
+
+    private static interface PluginCall {
+
+        public void doCall();
+    }
+
+    // JRuby/Felix specifics, it works out of the box on Equinox.
+    // Other OSGI frameworks are untested.
+    private void withContextClassLoader(final PluginCall call, final ClassLoader pluginClassLoader) {
+        final ClassLoader enteringContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(pluginClassLoader);
+            call.doCall();
+        } finally {
+            // We want to make sure that calling thread gets back its original callcontext class loader when it returns
+            Thread.currentThread().setContextClassLoader(enteringContextClassLoader);
+        }
+    }
+}
