@@ -19,6 +19,7 @@
 
 package org.killbill.killbill.osgi.libs.killbill;
 
+import java.util.Dictionary;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,16 @@ public class OSGIKillbillServiceReference implements ServiceReference {
     @Override
     public boolean isAssignableTo(final Bundle bundle, final String className) {
         return delegate != null && delegate.isAssignableTo(bundle, className);
+    }
+
+    @Override
+    public Dictionary<String, Object> getProperties() {
+        throw new UnsupportedOperationException("Not supported yet for OSGIKillbillServiceReference");
+    }
+
+    @Override
+    public Object adapt(final Class type) {
+        throw new UnsupportedOperationException("Not supported yet for OSGIKillbillServiceReference");
     }
 
     @Override
