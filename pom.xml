@@ -55,7 +55,7 @@
     </issueManagement>
     <properties>
         <check.fail-spotbugs>true</check.fail-spotbugs>
-        <killbill-commons.version>0.25.1-c87f14f-SNAPSHOT</killbill-commons.version>
+        <killbill-commons.version>0.25.1-85c41dd-SNAPSHOT</killbill-commons.version>
     </properties>
     <dependencyManagement>
         <dependencies>
