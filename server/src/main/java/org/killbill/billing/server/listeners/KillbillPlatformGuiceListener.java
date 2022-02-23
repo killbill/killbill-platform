@@ -60,7 +60,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.util.StatusViaSLF4JLoggerFactory;
 import ch.qos.logback.core.spi.ContextAware;
 import ch.qos.logback.core.spi.ContextAwareBase;
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
@@ -71,12 +70,14 @@ import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.codahale.metrics.servlet.InstrumentedFilter;
+import com.codahale.metrics.servlets.AdminServlet;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -275,6 +276,10 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         event.getServletContext().setAttribute(HealthCheckServlet.HEALTH_CHECK_REGISTRY, injector.getInstance(HealthCheckRegistry.class));
         event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, metricRegistry);
         event.getServletContext().setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE, metricRegistry);
+        event.getServletContext().setInitParameter(AdminServlet.HEALTHCHECK_URI_PARAM_KEY, METRICS_SERVLETS_PATHS.get(0));
+        event.getServletContext().setInitParameter(AdminServlet.METRICS_URI_PARAM_KEY, METRICS_SERVLETS_PATHS.get(1));
+        event.getServletContext().setInitParameter(AdminServlet.PING_URI_PARAM_KEY, METRICS_SERVLETS_PATHS.get(2));
+        event.getServletContext().setInitParameter(AdminServlet.THREADS_URI_PARAM_KEY, METRICS_SERVLETS_PATHS.get(3));
     }
 
     private void registerAll(final String prefix, final MetricSet metricSet, final MetricRegistry registry) {

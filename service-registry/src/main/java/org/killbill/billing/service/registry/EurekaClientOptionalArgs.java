@@ -19,14 +19,15 @@
 
 package org.killbill.billing.service.registry;
 
+import javax.ws.rs.client.ClientRequestFilter;
+
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.sun.jersey.api.client.filter.ClientFilter;
 
 /**
- * Default to a Jersey1 client. This can be overriden and injected with Guice
+ * Default to a Jersey2 client. This can be overriden and injected with Guice
  * using bind(EurekaClientOptionalArgs.class).to(MySubclassOptionalArgs.class).in(Scopes.SINGLETON);
  */
-public class EurekaClientOptionalArgs extends AbstractDiscoveryClientOptionalArgs<ClientFilter> {
+public class EurekaClientOptionalArgs extends AbstractDiscoveryClientOptionalArgs<ClientRequestFilter> {
     public EurekaClientOptionalArgs() {
     }
 }
