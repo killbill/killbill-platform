@@ -57,6 +57,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     protected OSGIKillbillClock clock;
     protected OSGIKillbillEventDispatcher dispatcher;
     protected OSGIConfigPropertiesService configProperties;
+    protected OSGIMetricRegistry metricRegistry;
 
     protected File tmpDir = null;
 
@@ -76,14 +77,17 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
         clock = new OSGIKillbillClock(context);
+        metricRegistry = new OSGIMetricRegistry(context);
 
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
 
         final PluginConfig pluginConfig = retrievePluginConfig(context);
-        tmpDir = setupTmpDir(pluginConfig);
-
-        setupRestartMechanism(pluginConfig, context);
+        // pluginConfig is null for pure OSGI bundles
+        if (pluginConfig != null) {
+            tmpDir = setupTmpDir(pluginConfig);
+            setupRestartMechanism(pluginConfig, context);
+        }
     }
 
     @Override

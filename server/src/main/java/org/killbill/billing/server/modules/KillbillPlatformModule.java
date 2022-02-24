@@ -24,6 +24,9 @@ import javax.sql.DataSource;
 
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.lifecycle.glue.LifecycleModule;
+import org.killbill.billing.osgi.api.Healthcheck;
+import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.ServiceRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
@@ -33,15 +36,19 @@ import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.server.config.KillbillServerConfig;
+import org.killbill.billing.server.metrics.KillbillPluginsMetricRegistry;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
 import org.killbill.clock.DefaultClock;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
 import org.killbill.commons.jdbi.guice.DaoConfig;
+import org.killbill.commons.jdbi.metrics.KillBillTimingCollector;
 import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi;
 import org.killbill.commons.jdbi.transaction.NotificationTransactionHandler;
 import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
+import org.killbill.commons.metrics.api.MetricRegistry;
+import org.killbill.commons.metrics.impl.NoOpMetricRegistry;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
@@ -49,8 +56,6 @@ import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.TimingCollector;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jdbi.InstrumentedTimingCollector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -93,6 +98,14 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
         configureNotificationQ();
         configureOSGI();
         configureJNDI();
+    }
+
+    @Provides
+    @Singleton
+    protected MetricRegistry provideMetricRegistry(final OSGIServiceRegistration<MetricRegistry> pluginMetricRegistries) {
+        return new KillbillPluginsMetricRegistry(pluginMetricRegistries);
+        // TODO
+        //install(MetricsInstrumentationModule.builder().withMetricRegistry(metricRegistry).build());
     }
 
     protected void configureJackson() {
@@ -171,7 +184,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     @Singleton
     protected TimingCollector provideTimingCollector(final MetricRegistry metricRegistry) {
         // Metrics / jDBI integration
-        return new InstrumentedTimingCollector(metricRegistry);
+        return new KillBillTimingCollector(metricRegistry);
     }
 
     protected void configureConfig() {

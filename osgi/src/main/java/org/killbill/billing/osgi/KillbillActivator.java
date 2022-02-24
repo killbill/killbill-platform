@@ -44,15 +44,17 @@ import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.ServiceRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.clock.Clock;
+import org.killbill.commons.metrics.api.MetricRegistry;
+import org.osgi.framework.AllServiceListener;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
-import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.event.Event;
 import org.osgi.service.http.HttpService;
@@ -61,12 +63,11 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public class KillbillActivator implements BundleActivator, ServiceListener {
+public class KillbillActivator implements BundleActivator, AllServiceListener {
 
     static final int PLUGIN_NAME_MAX_LENGTH = 40;
     static final Pattern PLUGIN_NAME_PATTERN = Pattern.compile("\\p{Lower}(?:\\p{Lower}|\\d|-|_)*");
@@ -163,6 +164,16 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         allRegistrationHandlers.add(healthcheckRegistry);
     }
 
+    @Inject(optional = true)
+    public void addServiceRegistryOSGIServiceRegistration(final OSGIServiceRegistration<ServiceRegistry> serviceRegistry) {
+        allRegistrationHandlers.add(serviceRegistry);
+    }
+
+    @Inject(optional = true)
+    public void addMetricRegistryOSGIServiceRegistration(final OSGIServiceRegistration<MetricRegistry> metricRegistry) {
+        allRegistrationHandlers.add(metricRegistry);
+    }
+
     @Override
     public void start(final BundleContext context) throws Exception {
         this.context = context;
@@ -191,6 +202,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         registrar.registerService(context, DataSource.class, dataSource, props);
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
         registrar.registerService(context, Clock.class, clock, props);
+        registrar.registerService(context, MetricRegistry.class, metricsRegistry, props);
 
         context.addServiceListener(this);
 
@@ -269,6 +281,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
             default:
                 break;
         }
+
         return true;
     }
 

@@ -34,16 +34,16 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.joda.time.DateTime;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.Clock;
+import org.killbill.commons.health.api.HealthCheck;
+import org.killbill.commons.health.api.Result;
+import org.killbill.commons.health.impl.HealthyResultBuilder;
+import org.killbill.commons.health.impl.UnhealthyResultBuilder;
 import org.killbill.notificationq.api.NotificationQueue;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import com.codahale.metrics.health.HealthCheck;
-import com.codahale.metrics.health.annotation.Async;
-import com.codahale.metrics.health.annotation.Async.InitialState;
-import com.codahale.metrics.health.annotation.Async.ScheduleType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.EvictingQueue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -56,9 +56,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 // (e.g. cloud deployment), all nodes behave the same (the healthcheck will fail on all nodes at the same time): in that case,
 // instead of taking the nodes out of rotation, new nodes should be deployed instead (i.e. Auto Scaling should be enabled), provided
 // the database is able to sustain the additional load.
-@Async(initialState = InitialState.HEALTHY, initialDelay = 0, period = 1, unit = TimeUnit.MINUTES, scheduleType = ScheduleType.FIXED_DELAY)
+//@Async(initialState = InitialState.HEALTHY, initialDelay = 0, period = 1, unit = TimeUnit.MINUTES, scheduleType = ScheduleType.FIXED_DELAY)
 @Singleton
-public class KillbillQueuesHealthcheck extends HealthCheck {
+// TODO
+public class KillbillQueuesHealthcheck implements HealthCheck {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillQueuesHealthcheck.class);
 
@@ -171,12 +172,11 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
     }
 
     private Result buildHealthcheckResponse() {
-        final ResultBuilder resultBuilder = Result.builder();
-
         final StringBuilder stringBuilderForMessage = new StringBuilder("Growing queues: ");
         boolean healthy = true;
         int i = 0;
 
+        final Map<String, Object> details = new HashMap<>();
         for (final Entry<String, QueueStats> entry : statsPerQueue.entrySet()) {
             final QueueStats queueStats = entry.getValue();
             if (queueStats.isGrowing()) {
@@ -194,17 +194,14 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
             }
 
             // Display the stats, regardless of the health status
-            resultBuilder.withDetail(entry.getKey(), queueStats);
+            details.put(entry.getKey(), queueStats);
         }
 
         if (healthy || !healthcheckActive.get()) {
-            resultBuilder.healthy();
+            return new HealthyResultBuilder().setDetails(details).createHealthyResult();
         } else {
-            resultBuilder.unhealthy()
-                         .withMessage(stringBuilderForMessage.toString());
+            return new UnhealthyResultBuilder().setDetails(details).setMessage(stringBuilderForMessage.toString()).createUnhealthyResult();
         }
-
-        return resultBuilder.build();
     }
 
     @VisibleForTesting

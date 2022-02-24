@@ -28,11 +28,11 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
 import org.killbill.billing.osgi.ContextClassLoaderHelper;
+import org.killbill.commons.metrics.api.MetricRegistry;
 import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
-import com.codahale.metrics.MetricRegistry;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("EI_EXPOSE_REP")
@@ -49,7 +49,7 @@ public class DefaultHttpService implements HttpService {
     }
 
     @Override
-    public void registerServlet(final String alias, final Servlet servlet, final Dictionary initparams, final HttpContext httpContext) throws ServletException, NamespaceException {
+    public void registerServlet(final String alias, final Servlet servlet, final Dictionary initparams, final HttpContext httpContext) throws ServletException {
 
         if (alias == null) {
             throw new IllegalArgumentException("Invalid alias (null)");

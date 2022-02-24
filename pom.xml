@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-oss-parent</artifactId>
-        <version>0.145.3-7887e89-SNAPSHOT</version>
+        <version>0.145.3-3d4cab7-SNAPSHOT</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
     <version>0.41.0-SNAPSHOT</version>
@@ -41,7 +41,6 @@
         <module>osgi-bundles</module>
         <module>platform-test</module>
         <module>server</module>
-        <module>service-registry</module>
     </modules>
     <scm>
         <connection>scm:git:git://github.com/killbill/killbill-platform.git</connection>
@@ -55,7 +54,8 @@
     </issueManagement>
     <properties>
         <check.fail-spotbugs>true</check.fail-spotbugs>
-        <killbill-commons.version>0.25.1-22ceb56-SNAPSHOT</killbill-commons.version>
+        <killbill-api.version>0.54.0-f599b13-SNAPSHOT</killbill-api.version>
+        <killbill-commons.version>0.25.1-3fe48d1-SNAPSHOT</killbill-commons.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -113,6 +113,21 @@
             </dependency>
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>
+                <artifactId>killbill-platform-osgi-bundles-eureka</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kill-bill.billing</groupId>
+                <artifactId>killbill-platform-osgi-bundles-graphite</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kill-bill.billing</groupId>
+                <artifactId>killbill-platform-osgi-bundles-influxdb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -134,6 +149,11 @@
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kill-bill.billing</groupId>
+                <artifactId>killbill-platform-osgi-bundles-metrics</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -166,11 +186,6 @@
                 <artifactId>killbill-platform-server</artifactId>
                 <version>${project.version}</version>
                 <classifier>classes</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.kill-bill.billing</groupId>
-                <artifactId>killbill-platform-service-registry</artifactId>
-                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>

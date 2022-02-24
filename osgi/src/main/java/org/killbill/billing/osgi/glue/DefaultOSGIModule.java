@@ -1,8 +1,8 @@
 /*
  * Copyright 2010-2014 Ning, Inc.
  * Copyright 2014-2020 Groupon, Inc
- * Copyright 2020-2020 Equinix, Inc
- * Copyright 2014-2020 The Billing Project, LLC
+ * Copyright 2020-2022 Equinix, Inc
+ * Copyright 2014-2022 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -30,14 +30,17 @@ import org.killbill.billing.osgi.FileInstall;
 import org.killbill.billing.osgi.KillbillActivator;
 import org.killbill.billing.osgi.KillbillEventObservable;
 import org.killbill.billing.osgi.KillbillEventRetriableBusHandler;
+import org.killbill.billing.osgi.MetricRegistryServiceRegistration;
 import org.killbill.billing.osgi.OSGIListener;
 import org.killbill.billing.osgi.PureOSGIBundleFinder;
+import org.killbill.billing.osgi.ServiceRegistryServiceRegistration;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
 import org.killbill.billing.osgi.api.KillbillEventRetriableBusHandlerService;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
+import org.killbill.billing.osgi.api.ServiceRegistry;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.config.OSGIConfig;
 import org.killbill.billing.osgi.http.DefaultHttpService;
@@ -51,6 +54,7 @@ import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DaoConfig;
+import org.killbill.commons.metrics.api.MetricRegistry;
 import org.osgi.service.http.HttpService;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -115,6 +119,10 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         // Required, because KillbillActivator will inject the class directly (KillbillEventRetriableBusHandlerService is injected by the lifecycle)
         bind(KillbillEventRetriableBusHandler.class).asEagerSingleton();
         bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
+        bind(new TypeLiteral<OSGIServiceRegistration<ServiceRegistry>>() {
+        }).to(ServiceRegistryServiceRegistration.class).asEagerSingleton();
+        bind(new TypeLiteral<OSGIServiceRegistration<MetricRegistry>>() {
+        }).to(MetricRegistryServiceRegistration.class).asEagerSingleton();
     }
 
     protected void installHttpService() {

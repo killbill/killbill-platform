@@ -25,17 +25,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
+import org.killbill.commons.metrics.api.Meter;
+import org.killbill.commons.metrics.api.MetricRegistry;
+import org.killbill.commons.metrics.api.Timer;
 import org.killbill.commons.profiling.Profiling;
 import org.killbill.commons.profiling.Profiling.WithProfilingCallback;
 import org.killbill.commons.profiling.ProfilingFeature.ProfilingFeatureType;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.Timer.Context;
 import com.google.common.base.Joiner;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -120,18 +121,21 @@ public class ContextClassLoaderHelper {
                                             final MetricRegistry metricRegistry) {
             this.service = service;
             this.serviceName = serviceName;
-            this.metricRegistry = metricRegistry;
+            // Don't instrument the MetricRegistry itself to avoid infinite recursion
+            this.metricRegistry = serviceInterface == MetricRegistry.class ? null : metricRegistry;
 
             this.serviceClass = service.getClass();
             this.serviceInterfaceName = serviceInterface.getSimpleName();
 
-            initializeMetricCaches();
+            if (this.metricRegistry != null) {
+                initializeMetricCaches();
+            }
         }
 
         @Override
         protected Object handleInvocation(final Object proxy, final Method method, final Object[] args) throws Throwable {
             final ClassLoader initialContextClassLoader = Thread.currentThread().getContextClassLoader();
-            final Context timerContext = timer(method).time();
+            final long start = System.nanoTime();
             try {
                 Thread.currentThread().setContextClassLoader(serviceClass.getClassLoader());
                 final String methodName = method.getName();
@@ -145,25 +149,26 @@ public class ContextClassLoaderHelper {
                     }
                 });
             } catch (final InvocationTargetException e) {
-                final Meter errors = errorMeter(method);
-                errors.mark();
+                final Optional<Meter> errors = errorMeter(method);
+                errors.ifPresent(meter -> meter.mark(1));
                 if (e.getCause() != null) {
                     throw e.getCause();
                 } else {
                     throw new RuntimeException(e);
                 }
             } finally {
-                timerContext.stop();
+                final Optional<Timer> times = timer(method);
+                times.ifPresent(timer -> timer.update(System.nanoTime() - start, TimeUnit.NANOSECONDS));
                 Thread.currentThread().setContextClassLoader(initialContextClassLoader);
             }
         }
 
-        private Timer timer(final Method method) {
-            return timerMetricCache.getUnchecked(method.getName());
+        private Optional<Timer> timer(final Method method) {
+            return timerMetricCache == null ? Optional.empty() : Optional.of(timerMetricCache.getUnchecked(method.getName()));
         }
 
-        private Meter errorMeter(final Method method) {
-            return errorMetricCache.getUnchecked(method.getName());
+        private Optional<Meter> errorMeter(final Method method) {
+            return errorMetricCache == null ? Optional.empty() : Optional.of(errorMetricCache.getUnchecked(method.getName()));
         }
 
         private void initializeMetricCaches() {

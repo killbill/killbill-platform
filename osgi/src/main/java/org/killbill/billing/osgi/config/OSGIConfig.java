@@ -89,6 +89,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.security," +
              "org.killbill.billing.security.api," +
              "org.killbill.billing.osgi.libs.killbill," +
+             "org.killbill.commons.health.api," +
+             "org.killbill.commons.metrics.api," +
              //
              // We also add the dependencies from own set of APIs and some osgi compendium thingies...
              //

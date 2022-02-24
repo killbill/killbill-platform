@@ -37,6 +37,8 @@ import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
 import org.killbill.billing.platform.test.glue.TestPlatformModuleWithEmbeddedDB;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
+import org.killbill.commons.metrics.api.MetricRegistry;
+import org.killbill.commons.metrics.impl.NoOpMetricRegistry;
 
 import com.google.inject.TypeLiteral;
 
@@ -50,6 +52,7 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
     protected void configure() {
         install(new TestPlatformModuleWithEmbeddedDB(configSource, true, (TestKillbillConfigSource) configSource));
 
+        bind(MetricRegistry.class).to(NoOpMetricRegistry.class);
         bind(Clock.class).to(ClockMock.class);
         // Make sure we have a unique clock if one requests ClockMock explicitly
         bind(ClockMock.class).asEagerSingleton();
