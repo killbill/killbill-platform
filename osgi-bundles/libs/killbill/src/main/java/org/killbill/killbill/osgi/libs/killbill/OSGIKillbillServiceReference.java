@@ -20,6 +20,7 @@
 package org.killbill.killbill.osgi.libs.killbill;
 
 import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +73,15 @@ public class OSGIKillbillServiceReference implements ServiceReference {
 
     @Override
     public Dictionary<String, Object> getProperties() {
-        throw new UnsupportedOperationException("Not supported yet for OSGIKillbillServiceReference");
+        final Hashtable<String, Object> hashtable = new Hashtable<>();
+
+        for (final Map.Entry<String, Object> entry : properties.entrySet()) {
+            if (entry.getKey() != null && entry.getValue() != null) {
+                hashtable.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return hashtable;
     }
 
     @Override
