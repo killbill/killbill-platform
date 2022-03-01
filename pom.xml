@@ -55,6 +55,7 @@
     </issueManagement>
     <properties>
         <check.fail-spotbugs>true</check.fail-spotbugs>
+        <killbill-api.version>0.54.0-0010563-SNAPSHOT</killbill-api.version>
     </properties>
     <dependencyManagement>
         <dependencies>
