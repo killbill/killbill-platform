@@ -54,6 +54,8 @@
     </issueManagement>
     <properties>
         <check.fail-spotbugs>true</check.fail-spotbugs>
+        <!-- Bug with maven-deploy-plugin -->
+        <deploy.deploy-at-end>false</deploy.deploy-at-end>
         <killbill-api.version>0.54.0-f599b13-SNAPSHOT</killbill-api.version>
         <killbill-commons.version>0.25.1-3fe48d1-SNAPSHOT</killbill-commons.version>
     </properties>
@@ -191,11 +193,6 @@
                 <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-test</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <!-- For mariadb-java-client -->
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
             </dependency>
         </dependencies>
     </dependencyManagement>
