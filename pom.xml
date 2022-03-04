@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-oss-parent</artifactId>
-        <version>0.145.3-cafd642-SNAPSHOT</version>
+        <version>0.145.3-f937c5e-SNAPSHOT</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
     <version>0.41.0-SNAPSHOT</version>
@@ -56,9 +56,6 @@
         <check.fail-spotbugs>true</check.fail-spotbugs>
         <!-- Bug with maven-deploy-plugin -->
         <deploy.deploy-at-end>false</deploy.deploy-at-end>
-        <killbill-api.version>0.54.0-f599b13-SNAPSHOT</killbill-api.version>
-        <killbill-commons.version>0.25.1-3fe48d1-SNAPSHOT</killbill-commons.version>
-        <killbill-plugin-api.version>0.27.0-fc6ef42-SNAPSHOT</killbill-plugin-api.version>
     </properties>
     <dependencyManagement>
         <dependencies>
