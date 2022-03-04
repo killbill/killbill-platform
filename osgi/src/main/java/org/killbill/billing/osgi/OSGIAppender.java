@@ -19,6 +19,8 @@
 
 package org.killbill.billing.osgi;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Map;
 
 import org.osgi.framework.Bundle;
@@ -119,6 +121,24 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         @Override
         public boolean isAssignableTo(final Bundle bundle, final String className) {
             throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+        }
+
+        @Override
+        public Object adapt(final Class type) {
+            throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+        }
+
+        @Override
+        public Dictionary getProperties() {
+            final Hashtable<String, String> hashtable = new Hashtable<>();
+
+            for (final Map.Entry<String, String> entry : SERVICE_KEYS.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    hashtable.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            return hashtable;
         }
 
         @Override
