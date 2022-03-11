@@ -51,6 +51,8 @@ public class Activator extends KillbillActivatorBase {
 
     private static final Logger logger = LoggerFactory.getLogger(Activator.class);
 
+    private static final String KILL_BILL_NAMESPACE = "org.killbill.";
+
     public static final String BUNDLE_NAME = "killbill-eureka";
 
     private EurekaClient client;
@@ -59,30 +61,37 @@ public class Activator extends KillbillActivatorBase {
     public void start(final BundleContext context) throws Exception {
         super.start(context);
 
-        // Load properties
-        ConfigurationManager.loadProperties(configProperties.getProperties());
-        final String namespace = MoreObjects.firstNonNull(configProperties.getProperties().getProperty("eureka.namespace"), CommonConstants.DEFAULT_CONFIG_NAMESPACE);
+        final boolean eurekaEnabled = "true".equals(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "eureka"), "false"));
+        if (eurekaEnabled) {
+            // Load properties
+            ConfigurationManager.loadProperties(configProperties.getProperties());
+            final String namespace = MoreObjects.firstNonNull(configProperties.getProperties().getProperty("eureka.namespace"), CommonConstants.DEFAULT_CONFIG_NAMESPACE);
 
-        final KillbillEurekaInstanceConfig eurekaInstanceConfig = new KillbillEurekaInstanceConfig(namespace);
-        final DefaultEurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig(namespace);
-        // TODO: Remove this when DiscoveryManager is finally no longer used
-        DiscoveryManager.getInstance().setEurekaInstanceConfig(eurekaInstanceConfig);
-        DiscoveryManager.getInstance().setEurekaClientConfig(eurekaClientConfig);
+            final KillbillEurekaInstanceConfig eurekaInstanceConfig = new KillbillEurekaInstanceConfig(namespace);
+            final DefaultEurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig(namespace);
+            // TODO: Remove this when DiscoveryManager is finally no longer used
+            DiscoveryManager.getInstance().setEurekaInstanceConfig(eurekaInstanceConfig);
+            DiscoveryManager.getInstance().setEurekaClientConfig(eurekaClientConfig);
 
-        final InstanceInfo instanceInfo = createInstanceInfo(eurekaInstanceConfig);
+            final InstanceInfo instanceInfo = createInstanceInfo(eurekaInstanceConfig);
 
-        final ApplicationInfoManager applicationInfoManager = new ApplicationInfoManager(eurekaInstanceConfig, instanceInfo);
+            final ApplicationInfoManager applicationInfoManager = new ApplicationInfoManager(eurekaInstanceConfig, instanceInfo);
 
-        client = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
+            client = new DiscoveryClient(applicationInfoManager, eurekaClientConfig);
 
-        final EurekaServiceRegistry serviceRegistry = new EurekaServiceRegistry(applicationInfoManager);
-        registerServiceRegistry(context, serviceRegistry);
+            final EurekaServiceRegistry serviceRegistry = new EurekaServiceRegistry(applicationInfoManager);
+            registerServiceRegistry(context, serviceRegistry);
+        } else {
+            logger.info("Eureka integration disabled");
+        }
     }
 
     @Override
     public void stop(final BundleContext context) throws Exception {
         try {
-            client.shutdown();
+            if (client != null) {
+                client.shutdown();
+            }
         } finally {
             super.stop(context);
         }
