@@ -52,12 +52,12 @@ public class InstrumentedAppender extends UnsynchronizedAppenderBase<ILoggingEve
 
     @Override
     public void start() {
-        this.all = registry.meter(getName() + "all");
-        this.trace = registry.meter(getName() + "trace");
-        this.debug = registry.meter(getName() + "debug");
-        this.info = registry.meter(getName() + "info");
-        this.warn = registry.meter(getName() + "warn");
-        this.error = registry.meter(getName() + "error");
+        this.all = registry.meter(getName() + ".all");
+        this.trace = registry.meter(getName() + ".trace");
+        this.debug = registry.meter(getName() + ".debug");
+        this.info = registry.meter(getName() + ".info");
+        this.warn = registry.meter(getName() + ".warn");
+        this.error = registry.meter(getName() + ".error");
         super.start();
     }
 
