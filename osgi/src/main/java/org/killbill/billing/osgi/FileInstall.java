@@ -139,8 +139,12 @@ public class FileInstall {
                 continue;
             }
 
-            final Bundle bundle = installOSGIBundle(context, cur);
-            installedBundles.add(new BundleWithConfig(bundle, null));
+            try {
+                final Bundle bundle = installOSGIBundle(context, cur);
+                installedBundles.add(new BundleWithConfig(bundle, null));
+            } catch (final BundleException e) {
+                logger.error("Error while installing bundle {}, ignoring", cur, e);
+            }
         }
     }
 

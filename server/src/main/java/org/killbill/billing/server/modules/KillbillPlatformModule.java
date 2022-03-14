@@ -26,6 +26,7 @@ import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.lifecycle.glue.LifecycleModule;
 import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
 import org.killbill.billing.osgi.api.ServiceRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
@@ -48,6 +49,7 @@ import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi
 import org.killbill.commons.jdbi.transaction.NotificationTransactionHandler;
 import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
 import org.killbill.commons.metrics.api.MetricRegistry;
+import org.killbill.commons.metrics.guice.MetricsInstrumentationModule;
 import org.killbill.commons.metrics.impl.NoOpMetricRegistry;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
@@ -102,7 +104,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
     @Provides
     @Singleton
-    protected MetricRegistry provideMetricRegistry(final OSGIServiceRegistration<MetricRegistry> pluginMetricRegistries) {
+    protected MetricRegistry provideMetricRegistry(final OSGISingleServiceRegistration<MetricRegistry> pluginMetricRegistries) {
         return new KillbillPluginsMetricRegistry(pluginMetricRegistries);
         // TODO
         //install(MetricsInstrumentationModule.builder().withMetricRegistry(metricRegistry).build());

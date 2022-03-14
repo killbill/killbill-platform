@@ -39,6 +39,7 @@ import org.killbill.billing.osgi.api.KillbillEventRetriableBusHandlerService;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.ServiceRegistry;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
@@ -121,7 +122,7 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
         bind(new TypeLiteral<OSGIServiceRegistration<ServiceRegistry>>() {
         }).to(ServiceRegistryServiceRegistration.class).asEagerSingleton();
-        bind(new TypeLiteral<OSGIServiceRegistration<MetricRegistry>>() {
+        bind(new TypeLiteral<OSGISingleServiceRegistration<MetricRegistry>>() {
         }).to(MetricRegistryServiceRegistration.class).asEagerSingleton();
     }
 
