@@ -24,7 +24,8 @@ import javax.sql.DataSource;
 
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.lifecycle.glue.LifecycleModule;
-import org.killbill.billing.osgi.api.Healthcheck;
+import org.killbill.billing.osgi.MetricRegistryServiceRegistration;
+import org.killbill.billing.osgi.ServiceRegistryServiceRegistration;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
 import org.killbill.billing.osgi.api.ServiceRegistry;
@@ -50,7 +51,6 @@ import org.killbill.commons.jdbi.transaction.NotificationTransactionHandler;
 import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.guice.MetricsInstrumentationModule;
-import org.killbill.commons.metrics.impl.NoOpMetricRegistry;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
@@ -65,6 +65,7 @@ import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -100,14 +101,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
         configureNotificationQ();
         configureOSGI();
         configureJNDI();
-    }
-
-    @Provides
-    @Singleton
-    protected MetricRegistry provideMetricRegistry(final OSGISingleServiceRegistration<MetricRegistry> pluginMetricRegistries) {
-        return new KillbillPluginsMetricRegistry(pluginMetricRegistries);
-        // TODO
-        //install(MetricsInstrumentationModule.builder().withMetricRegistry(metricRegistry).build());
+        configureMetrics();
     }
 
     protected void configureJackson() {
@@ -232,5 +226,18 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
 
     protected void configureJNDI() {
         bind(JNDIManager.class).asEagerSingleton();
+    }
+
+    protected void configureMetrics() {
+        bind(new TypeLiteral<OSGIServiceRegistration<ServiceRegistry>>() {
+        }).to(ServiceRegistryServiceRegistration.class).asEagerSingleton();
+
+        final MetricRegistryServiceRegistration metricRegistryServiceRegistration = new MetricRegistryServiceRegistration();
+        bind(new TypeLiteral<OSGISingleServiceRegistration<MetricRegistry>>() {
+        }).toInstance(metricRegistryServiceRegistration);
+
+        final MetricRegistry metricRegistry = new KillbillPluginsMetricRegistry(metricRegistryServiceRegistration);
+        bind(MetricRegistry.class).toInstance(metricRegistry);
+        install(MetricsInstrumentationModule.builder().withMetricRegistry(metricRegistry).build());
     }
 }

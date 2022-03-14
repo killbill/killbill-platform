@@ -34,6 +34,7 @@ import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
 import org.killbill.billing.server.healthchecks.KillbillPluginsHealthcheck;
 import org.killbill.billing.server.healthchecks.KillbillQueuesHealthcheck;
+import org.killbill.billing.server.metrics.InstrumentedAppender;
 import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
@@ -42,6 +43,7 @@ import org.killbill.commons.health.api.HealthCheckRegistry;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.modules.StatsModule;
 import org.killbill.commons.metrics.servlets.HealthCheckServlet;
+import org.killbill.commons.metrics.servlets.InstrumentedFilter;
 import org.killbill.commons.metrics.servlets.MetricsServlet;
 import org.killbill.commons.skeleton.listeners.GuiceServletContextListener;
 import org.killbill.commons.skeleton.modules.BaseServerModuleBuilder;
@@ -178,8 +180,22 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     }
 
     protected void initializeMetrics(final ServletContextEvent event) {
-        event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, injector.getInstance(MetricRegistry.class));
         event.getServletContext().setAttribute(HealthCheckServlet.HEALTH_CHECK_REGISTRY, injector.getInstance(HealthCheckRegistry.class));
+
+        final MetricRegistry metricRegistry = injector.getInstance(MetricRegistry.class);
+        event.getServletContext().setAttribute(MetricsServlet.METRICS_REGISTRY, metricRegistry);
+        event.getServletContext().setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE, metricRegistry);
+
+        // Instrument Logback
+        final Object factory = LoggerFactory.getILoggerFactory();
+        if ("ch.qos.logback.classic.LoggerContext".equals(factory.getClass().getName())) {
+            final ch.qos.logback.classic.Logger root = ((ch.qos.logback.classic.LoggerContext) factory).getLogger(Logger.ROOT_LOGGER_NAME);
+
+            final InstrumentedAppender metrics = new InstrumentedAppender(metricRegistry);
+            metrics.setContext(root.getLoggerContext());
+            metrics.start();
+            root.addAppender(metrics);
+        }
     }
 
     protected void registerEhcacheMBeans() {
