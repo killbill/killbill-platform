@@ -34,6 +34,8 @@ public interface OSGIServiceRegistrable<T> {
      */
     void unregisterService(String serviceName);
 
+    default void addRegistrationListener(final Runnable listener) { throw new UnsupportedOperationException(); }
+
     /**
      * @return the type of service that is registered under that OSGIServiceRegistration
      */

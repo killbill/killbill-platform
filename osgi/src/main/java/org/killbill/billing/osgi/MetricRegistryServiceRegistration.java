@@ -18,6 +18,8 @@
 package org.killbill.billing.osgi;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.inject.Singleton;
@@ -34,6 +36,7 @@ public class MetricRegistryServiceRegistration implements OSGISingleServiceRegis
     private static final Logger logger = LoggerFactory.getLogger(MetricRegistryServiceRegistration.class);
 
     private Entry<String, MetricRegistry> pluginRegistration;
+    private final List<Runnable> listeners = new LinkedList<>();
 
     @Override
     public void registerService(final OSGIServiceDescriptor desc, final MetricRegistry service) {
@@ -42,6 +45,7 @@ public class MetricRegistryServiceRegistration implements OSGISingleServiceRegis
         } else {
             logger.info("Registering MetricRegistry {}", desc.getRegistrationName());
             pluginRegistration = new SimpleEntry<>(desc.getRegistrationName(), service);
+            onServiceChange();
         }
     }
 
@@ -52,6 +56,7 @@ public class MetricRegistryServiceRegistration implements OSGISingleServiceRegis
         }
 
         pluginRegistration = null;
+        onServiceChange();
     }
 
     @Override
@@ -65,5 +70,20 @@ public class MetricRegistryServiceRegistration implements OSGISingleServiceRegis
     @Override
     public Class<MetricRegistry> getServiceType() {
         return MetricRegistry.class;
+    }
+
+    @Override
+    public void addRegistrationListener(final Runnable listener) {
+        listeners.add(listener);
+    }
+
+    private void onServiceChange() {
+        for (final Runnable runnable : listeners) {
+            try {
+                runnable.run();
+            } catch (final RuntimeException e) {
+                logger.warn("Ignoring Service Listener exception", e);
+            }
+        }
     }
 }

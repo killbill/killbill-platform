@@ -26,7 +26,6 @@ import org.killbill.commons.metrics.api.Counter;
 import org.killbill.commons.metrics.api.Gauge;
 import org.killbill.commons.metrics.api.Histogram;
 import org.killbill.commons.metrics.api.Meter;
-import org.killbill.commons.metrics.api.Metric;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.api.Snapshot;
 import org.killbill.commons.metrics.api.Timer;
@@ -63,12 +62,22 @@ public class KillbillPluginsMetricRegistry implements MetricRegistry {
     }
 
     @Override
-    public <T> Gauge<T> gauge(final String name) {
+    public <T> Gauge<T> gauge(final String name, final Gauge<T> gauge) {
+        // Unlike other metrics, Gauges are usually created once and callers don't keep a reference to it
+        pluginMetricRegistry.addRegistrationListener(new Runnable() {
+            @Override
+            public void run() {
+                final MetricRegistry service = pluginMetricRegistry.getService();
+                if (service != null) {
+                    service.gauge(name, gauge);
+                } // else: race condition? We should be picked up again
+            }
+        });
         return new Gauge<T>() {
             @Override
             public T getValue() {
                 final MetricRegistry service = pluginMetricRegistry.getService();
-                return service != null ? (T) service.gauge(name).getValue() : null;
+                return service != null ? service.gauge(name, gauge).getValue() : null;
             }
         };
     }
@@ -188,12 +197,6 @@ public class KillbillPluginsMetricRegistry implements MetricRegistry {
                 return service != null ? service.timer(name).getSnapshot() : null;
             }
         };
-    }
-
-    @Override
-    public <T extends Metric> T register(final String name, final T metric) {
-        final MetricRegistry service = pluginMetricRegistry.getService();
-        return service != null ? service.register(name, metric) : null;
     }
 
     @Override
