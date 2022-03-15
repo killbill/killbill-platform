@@ -25,7 +25,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 public class OSGIMetricRegistry extends OSGIKillbillLibraryBase {
 
-    private static final String METRICS_REGISTRY_SERVICE_NAME = "org.killbill.billing.osgi.api.metrics.MetricRegistry";
+    private static final String METRICS_REGISTRY_SERVICE_NAME = "org.killbill.commons.metrics.api.MetricRegistry";
 
     private final ServiceTracker<MetricRegistry, MetricRegistry> metricRegistryServiceTracker;
 
