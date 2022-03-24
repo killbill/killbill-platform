@@ -28,7 +28,7 @@ import org.killbill.billing.osgi.MetricRegistryServiceRegistration;
 import org.killbill.billing.osgi.ServiceRegistryServiceRegistration;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
-import org.killbill.billing.osgi.api.ServiceRegistry;
+import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
@@ -229,7 +229,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureMetrics() {
-        bind(new TypeLiteral<OSGIServiceRegistration<ServiceRegistry>>() {
+        bind(new TypeLiteral<OSGIServiceRegistration<ServiceDiscoveryRegistry>>() {
         }).to(ServiceRegistryServiceRegistration.class).asEagerSingleton();
 
         final MetricRegistryServiceRegistration metricRegistryServiceRegistration = new MetricRegistryServiceRegistration();

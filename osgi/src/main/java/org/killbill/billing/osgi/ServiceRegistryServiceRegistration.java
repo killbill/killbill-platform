@@ -25,19 +25,19 @@ import javax.inject.Singleton;
 
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
-import org.killbill.billing.osgi.api.ServiceRegistry;
+import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-public class ServiceRegistryServiceRegistration implements OSGIServiceRegistration<ServiceRegistry> {
+public class ServiceRegistryServiceRegistration implements OSGIServiceRegistration<ServiceDiscoveryRegistry> {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceRegistryServiceRegistration.class);
 
-    private final Map<String, ServiceRegistry> pluginRegistrations = new HashMap<String, ServiceRegistry>();
+    private final Map<String, ServiceDiscoveryRegistry> pluginRegistrations = new HashMap<String, ServiceDiscoveryRegistry>();
 
     @Override
-    public void registerService(final OSGIServiceDescriptor desc, final ServiceRegistry service) {
+    public void registerService(final OSGIServiceDescriptor desc, final ServiceDiscoveryRegistry service) {
         logger.info("Registering ServiceRegistry {}", desc.getRegistrationName());
         pluginRegistrations.put(desc.getRegistrationName(), service);
     }
@@ -49,7 +49,7 @@ public class ServiceRegistryServiceRegistration implements OSGIServiceRegistrati
     }
 
     @Override
-    public ServiceRegistry getServiceForName(final String serviceName) {
+    public ServiceDiscoveryRegistry getServiceForName(final String serviceName) {
         return pluginRegistrations.get(serviceName);
     }
 
@@ -59,7 +59,7 @@ public class ServiceRegistryServiceRegistration implements OSGIServiceRegistrati
     }
 
     @Override
-    public Class<ServiceRegistry> getServiceType() {
-        return ServiceRegistry.class;
+    public Class<ServiceDiscoveryRegistry> getServiceType() {
+        return ServiceDiscoveryRegistry.class;
     }
 }

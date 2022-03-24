@@ -46,7 +46,7 @@ import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistrable;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
-import org.killbill.billing.osgi.api.ServiceRegistry;
+import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
@@ -167,7 +167,7 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
     }
 
     @Inject(optional = true)
-    public void addServiceRegistryOSGIServiceRegistration(final OSGIServiceRegistration<ServiceRegistry> serviceRegistry) {
+    public void addServiceRegistryOSGIServiceRegistration(final OSGIServiceRegistration<ServiceDiscoveryRegistry> serviceRegistry) {
         allRegistrationHandlers.add(serviceRegistry);
     }
 

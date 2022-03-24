@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.killbill.CreatorName;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
-import org.killbill.billing.osgi.api.ServiceRegistry;
+import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -97,10 +97,10 @@ public class Activator extends KillbillActivatorBase {
         }
     }
 
-    private void registerServiceRegistry(final BundleContext context, final ServiceRegistry serviceRegistry) {
+    private void registerServiceRegistry(final BundleContext context, final ServiceDiscoveryRegistry serviceRegistry) {
         final Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, BUNDLE_NAME);
-        registrar.registerService(context, ServiceRegistry.class, serviceRegistry, props);
+        registrar.registerService(context, ServiceDiscoveryRegistry.class, serviceRegistry, props);
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP")

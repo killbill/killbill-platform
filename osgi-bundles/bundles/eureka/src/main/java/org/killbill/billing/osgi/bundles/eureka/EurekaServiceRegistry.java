@@ -19,7 +19,7 @@
 
 package org.killbill.billing.osgi.bundles.eureka;
 
-import org.killbill.billing.osgi.api.ServiceRegistry;
+import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public class EurekaServiceRegistry implements ServiceRegistry {
+public class EurekaServiceRegistry implements ServiceDiscoveryRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(EurekaServiceRegistry.class);
 
