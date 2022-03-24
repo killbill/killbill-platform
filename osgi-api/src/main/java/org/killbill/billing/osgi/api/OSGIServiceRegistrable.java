@@ -19,23 +19,25 @@
 
 package org.killbill.billing.osgi.api;
 
-import java.util.Set;
-
 /**
- * Register within Kill Bill multiple OSGI services of the same type
+ * The purpose is to register within Kill Bill OSGI services
+ * that were exported by specific Kill Bill plugins
  *
  * @param <T> The OSGI service exported by Kill Bill bundles
  */
-public interface OSGIServiceRegistration<T> extends OSGIServiceRegistrable<T> {
+public interface OSGIServiceRegistrable<T> {
+
+    void registerService(OSGIServiceDescriptor desc, T service);
 
     /**
      * @param serviceName the name of the service as it was registered
-     * @return the instance that was registered under that name
      */
-    T getServiceForName(String serviceName);
+    void unregisterService(String serviceName);
+
+    default void addRegistrationListener(final Runnable listener) { throw new UnsupportedOperationException(); }
 
     /**
-     * @return the set of all the service registered
+     * @return the type of service that is registered under that OSGIServiceRegistration
      */
-    Set<String> getAllServices();
+    Class<T> getServiceType();
 }

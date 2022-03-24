@@ -257,8 +257,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "sun.misc.unsafe," +
              "sun.security," +
              "sun.security.util," +
-             "javax.servlet;version=3.1," +
-             "javax.servlet.http;version=3.1")
+             "javax.servlet;version=4.0," +
+             "javax.servlet.http;version=4.0")
     @Description("Java extension/platform Packages to export from the system bundle")
     public String getSystemBundleExportPackagesJava();
 

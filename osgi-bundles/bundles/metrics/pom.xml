@@ -27,7 +27,6 @@
     <packaging>bundle</packaging>
     <name>killbill-platform-osgi-bundles-metrics</name>
     <properties>
-        <metrics-influxdb.version>1.3.4</metrics-influxdb.version>
         <osgi.private>org.killbill.billing.osgi.bundles.metrics.*</osgi.private>
     </properties>
     <dependencies>
