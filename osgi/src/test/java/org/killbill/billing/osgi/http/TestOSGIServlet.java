@@ -32,11 +32,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.killbill.billing.osgi.ContextClassLoaderHelper;
+import org.killbill.commons.metrics.api.MetricRegistry;
+import org.killbill.commons.metrics.impl.NoOpMetricRegistry;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import com.codahale.metrics.MetricRegistry;
 
 public class TestOSGIServlet {
 
@@ -72,7 +72,7 @@ public class TestOSGIServlet {
         final OSGIServlet osgiServlet = new OSGIServlet();
         osgiServlet.servletRouter = new DefaultServletRouter();
         if (withWrapping) {
-            final MetricRegistry metricRegistry = new MetricRegistry();
+            final MetricRegistry metricRegistry = new NoOpMetricRegistry();
             osgiServlet.servletRouter.registerServiceFromPath("/payment-retries-plugin", ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(paymentRetriesPluginServlet, Servlet.class, "/payment-retries-plugin", metricRegistry));
             osgiServlet.servletRouter.registerServiceFromPath("/another-plugin", ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(anotherPluginServlet, Servlet.class, "/another-plugin", metricRegistry));
         } else {

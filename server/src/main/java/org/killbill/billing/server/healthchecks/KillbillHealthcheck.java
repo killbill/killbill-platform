@@ -1,8 +1,8 @@
 /*
  * Copyright 2010-2014 Ning, Inc.
  * Copyright 2014-2020 Groupon, Inc
- * Copyright 2020-2020 Equinix, Inc
- * Copyright 2014-2020 The Billing Project, LLC
+ * Copyright 2020-2022 Equinix, Inc
+ * Copyright 2014-2022 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -25,16 +25,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Singleton;
 
+import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.ServiceRegistry;
+import org.killbill.commons.health.api.HealthCheck;
+import org.killbill.commons.health.api.Result;
+import org.killbill.commons.health.impl.HealthyResultBuilder;
+import org.killbill.commons.health.impl.UnhealthyResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import com.codahale.metrics.health.HealthCheck;
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Singleton
-public class KillbillHealthcheck extends HealthCheck {
+public class KillbillHealthcheck implements HealthCheck {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillHealthcheck.class);
 
@@ -43,11 +48,17 @@ public class KillbillHealthcheck extends HealthCheck {
 
     private final AtomicBoolean outOfRotation = new AtomicBoolean(true);
     private Set<ServiceRegistry> serviceRegistries = Collections.emptySet();
+    private OSGIServiceRegistration<ServiceRegistry> pluginServiceRegistries = null;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    @Inject(optional=true)
+    @Inject(optional = true)
     public void setServiceRegistries(final Set<ServiceRegistry> serviceRegistries) {
         this.serviceRegistries = serviceRegistries;
+    }
+
+    @Inject
+    public void setPluginServiceRegistries(final OSGIServiceRegistration<ServiceRegistry> pluginServiceRegistries) {
+        this.pluginServiceRegistries = pluginServiceRegistries;
     }
 
     @Override
@@ -69,12 +80,28 @@ public class KillbillHealthcheck extends HealthCheck {
         logger.warn("Putting host in rotation");
         outOfRotation.set(false);
 
-        for (ServiceRegistry serviceRegistry : serviceRegistries) {
+        for (final ServiceRegistry serviceRegistry : serviceRegistries) {
             logger.info("Registering ServiceRegistry {}", serviceRegistry);
             try {
                 serviceRegistry.register();
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
                 logger.warn("Failed to register ServiceRegistry {}. Exception: {}", serviceRegistry, e);
+            }
+        }
+
+        if (pluginServiceRegistries != null) {
+            for (final String pluginServiceRegistryService : pluginServiceRegistries.getAllServices()) {
+                final ServiceRegistry pluginServiceRegistry = pluginServiceRegistries.getServiceForName(pluginServiceRegistryService);
+                if (pluginServiceRegistry == null) {
+                    continue;
+                }
+
+                logger.info("Registering Plugin ServiceRegistry {}", pluginServiceRegistry);
+                try {
+                    pluginServiceRegistry.register();
+                } catch (final RuntimeException e) {
+                    logger.warn("Failed to register Plugin ServiceRegistry {}. Exception: {}", pluginServiceRegistry, e);
+                }
             }
         }
     }
@@ -84,23 +111,37 @@ public class KillbillHealthcheck extends HealthCheck {
         logger.warn("Putting host out of rotation");
         outOfRotation.set(true);
 
-        for (ServiceRegistry serviceRegistry : serviceRegistries) {
+        for (final ServiceRegistry serviceRegistry : serviceRegistries) {
             logger.info("Unregistering ServiceRegistry {}", serviceRegistry);
             try {
                 serviceRegistry.unregister();
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
                 logger.warn("Failed to unregister ServiceRegistry {}. Exception: {}", serviceRegistry, e);
+            }
+        }
+
+        if (pluginServiceRegistries != null) {
+            for (final String pluginServiceRegistryService : pluginServiceRegistries.getAllServices()) {
+                final ServiceRegistry pluginServiceRegistry = pluginServiceRegistries.getServiceForName(pluginServiceRegistryService);
+                if (pluginServiceRegistry == null) {
+                    continue;
+                }
+
+                logger.info("Unregistering Plugin ServiceRegistry {}", pluginServiceRegistry);
+                try {
+                    pluginServiceRegistry.unregister();
+                } catch (final RuntimeException e) {
+                    logger.warn("Failed to unregister Plugin ServiceRegistry {}. Exception: {}", pluginServiceRegistry, e);
+                }
             }
         }
     }
 
     private Result buildHealthcheckResponse(final boolean healthy, final String message) {
-        final ResultBuilder resultBuilder = Result.builder();
         if (healthy) {
-            resultBuilder.healthy();
+            return new HealthyResultBuilder().setMessage(message).createHealthyResult();
         } else {
-            resultBuilder.unhealthy();
+            return new UnhealthyResultBuilder().setMessage(message).createUnhealthyResult();
         }
-        return resultBuilder.withMessage(message).build();
     }
 }

@@ -89,6 +89,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.security," +
              "org.killbill.billing.security.api," +
              "org.killbill.billing.osgi.libs.killbill," +
+             "org.killbill.commons.health.api," +
+             "org.killbill.commons.metrics.api," +
              //
              // We also add the dependencies from own set of APIs and some osgi compendium thingies...
              //
@@ -255,8 +257,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "sun.misc.unsafe," +
              "sun.security," +
              "sun.security.util," +
-             "javax.servlet;version=3.1," +
-             "javax.servlet.http;version=3.1")
+             "javax.servlet;version=4.0," +
+             "javax.servlet.http;version=4.0")
     @Description("Java extension/platform Packages to export from the system bundle")
     public String getSystemBundleExportPackagesJava();
 

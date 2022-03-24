@@ -43,16 +43,20 @@ import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
+import org.killbill.billing.osgi.api.OSGIServiceRegistrable;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
+import org.killbill.billing.osgi.api.ServiceRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.clock.Clock;
+import org.killbill.commons.metrics.api.MetricRegistry;
+import org.osgi.framework.AllServiceListener;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
-import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.event.Event;
 import org.osgi.service.http.HttpService;
@@ -61,12 +65,11 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.MetricRegistry;
 import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public class KillbillActivator implements BundleActivator, ServiceListener {
+public class KillbillActivator implements BundleActivator, AllServiceListener {
 
     static final int PLUGIN_NAME_MAX_LENGTH = 40;
     static final Pattern PLUGIN_NAME_PATTERN = Pattern.compile("\\p{Lower}(?:\\p{Lower}|\\d|-|_)*");
@@ -87,7 +90,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
     private final JNDIManager jndiManager;
     private final MetricRegistry metricsRegistry;
     private final BundleRegistry bundleRegistry;
-    private final List<OSGIServiceRegistration> allRegistrationHandlers;
+    private final List<OSGIServiceRegistrable> allRegistrationHandlers;
 
     private BundleContext context = null;
     private ServiceTracker<LogService, LogService> logTracker;
@@ -115,7 +118,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         this.jndiManager = jndiManager;
         this.metricsRegistry = metricsRegistry;
         this.registrar = new OSGIKillbillRegistrar();
-        this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistration>();
+        this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistrable>();
     }
 
     @Inject(optional = true)
@@ -163,6 +166,16 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         allRegistrationHandlers.add(healthcheckRegistry);
     }
 
+    @Inject(optional = true)
+    public void addServiceRegistryOSGIServiceRegistration(final OSGIServiceRegistration<ServiceRegistry> serviceRegistry) {
+        allRegistrationHandlers.add(serviceRegistry);
+    }
+
+    @Inject(optional = true)
+    public void addMetricRegistryOSGIServiceRegistration(final OSGISingleServiceRegistration<MetricRegistry> metricRegistry) {
+        allRegistrationHandlers.add(metricRegistry);
+    }
+
     @Override
     public void start(final BundleContext context) throws Exception {
         this.context = context;
@@ -191,6 +204,7 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         registrar.registerService(context, DataSource.class, dataSource, props);
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
         registrar.registerService(context, Clock.class, clock, props);
+        registrar.registerService(context, MetricRegistry.class, metricsRegistry, props);
 
         context.addServiceListener(this);
 
@@ -222,8 +236,8 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
             return;
         }
         final ServiceReference<?> serviceReference = event.getServiceReference();
-        for (final OSGIServiceRegistration cur : allRegistrationHandlers) {
-            if (listenForServiceType(serviceReference, event.getType(), cur.getServiceType(), cur)) {
+        for (final OSGIServiceRegistrable cur : allRegistrationHandlers) {
+            if (listenForServiceType(serviceReference, event.getType(), cur)) {
                 break;
             }
         }
@@ -233,11 +247,9 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
         observable.setChangedAndNotifyObservers(new Event(topic, properties));
     }
 
-    public List<OSGIServiceRegistration> getAllRegistrationHandlers() {
-        return allRegistrationHandlers;
-    }
+    private <T> boolean listenForServiceType(final ServiceReference<?> serviceReference, final int eventType, final OSGIServiceRegistrable<T> registration) {
+        final Class<T> claz = registration.getServiceType();
 
-    private <T> boolean listenForServiceType(final ServiceReference<?> serviceReference, final int eventType, final Class<T> claz, final OSGIServiceRegistration<T> registration) {
         // Make sure we can retrieve the plugin name
         final String serviceName = (String) serviceReference.getProperty(OSGIPluginProperties.PLUGIN_NAME_PROP);
         if (serviceName == null || !checkSanityPluginRegistrationName(serviceName)) {
@@ -258,17 +270,18 @@ public class KillbillActivator implements BundleActivator, ServiceListener {
                                                                             serviceName);
         switch (eventType) {
             case ServiceEvent.REGISTERED:
-                final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, registration.getServiceType(), serviceName, metricsRegistry);
+                final T wrappedService = ContextClassLoaderHelper.getWrappedServiceWithCorrectContextClassLoader(theService, claz, serviceName, metricsRegistry);
                 registration.registerService(desc, wrappedService);
-                bundleRegistry.registerService(desc, registration.getServiceType().getName());
+                bundleRegistry.registerService(desc, claz.getName());
                 break;
             case ServiceEvent.UNREGISTERING:
                 registration.unregisterService(desc.getRegistrationName());
-                bundleRegistry.unregisterService(desc, registration.getServiceType().getName());
+                bundleRegistry.unregisterService(desc, claz.getName());
                 break;
             default:
                 break;
         }
+
         return true;
     }
 

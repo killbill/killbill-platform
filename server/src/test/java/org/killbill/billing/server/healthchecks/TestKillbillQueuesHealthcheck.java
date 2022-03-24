@@ -27,6 +27,7 @@ import org.joda.time.Period;
 import org.killbill.billing.server.healthchecks.KillbillQueuesHealthcheck.QueueStats;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
+import org.killbill.commons.health.api.Result;
 import org.killbill.notificationq.api.NotificationQueue;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.mockito.Mockito;
@@ -36,7 +37,6 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.codahale.metrics.health.HealthCheck.Result;
 import com.google.common.collect.ImmutableList;
 
 public class TestKillbillQueuesHealthcheck {

@@ -4,34 +4,63 @@
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/base" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/base/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/base/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/lifecycle" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/lifecycle/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/lifecycle/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-api" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-api/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/eureka/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/eureka/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/graphite/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/graphite/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/influxdb/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/influxdb/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/jruby" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/jruby/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/jruby/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/logger" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/logger/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/logger/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/metrics/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/metrics/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/defaultbundles" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/defaultbundles/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/defaultbundles/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs/killbill" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs/killbill/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/libs/killbill/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs/slf4j-osgi" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/libs/slf4j-osgi/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/libs/slf4j-osgi/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/libs/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/libs/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/beatrix" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/beatrix/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/tests/beatrix/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/payment" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/tests/payment/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/tests/payment/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/tests/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/tests/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-api" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/platform-api/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-test/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/platform-test/src/main/resources" charset="UTF-8" />
@@ -40,6 +69,8 @@
     <file url="file://$PROJECT_DIR$/server/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/service-registry" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/service-registry/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

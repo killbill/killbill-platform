@@ -29,12 +29,12 @@ import org.killbill.bus.api.PersistentBus;
 import org.killbill.bus.api.PersistentBusConfig;
 import org.killbill.clock.Clock;
 import org.killbill.commons.jdbi.notification.DatabaseTransactionNotificationApi;
+import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.MetricRegistry;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class PersistentBusProvider implements Provider<PersistentBus> {

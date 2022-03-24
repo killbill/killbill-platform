@@ -19,19 +19,25 @@
 
 package org.killbill.billing.server.healthchecks;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.inject.Singleton;
 
 import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.Healthcheck.HealthStatus;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
+import org.killbill.commons.health.api.HealthCheck;
+import org.killbill.commons.health.api.Result;
+import org.killbill.commons.health.impl.HealthyResultBuilder;
+import org.killbill.commons.health.impl.UnhealthyResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.codahale.metrics.health.HealthCheck;
 import com.google.inject.Inject;
 
 @Singleton
-public class KillbillPluginsHealthcheck extends HealthCheck {
+public class KillbillPluginsHealthcheck implements HealthCheck {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillPluginsHealthcheck.class);
 
@@ -44,8 +50,7 @@ public class KillbillPluginsHealthcheck extends HealthCheck {
 
     @Override
     public Result check() {
-        final ResultBuilder resultBuilder = Result.builder();
-
+        final Map<String, Object> details = new HashMap<>();
         boolean isHealthy = true;
         if (pluginHealthchecks != null) {
             for (final String pluginHealthcheckService : pluginHealthchecks.getAllServices()) {
@@ -54,11 +59,15 @@ public class KillbillPluginsHealthcheck extends HealthCheck {
                     continue;
                 }
                 final HealthStatus pluginStatus = pluginHealthcheck.getHealthStatus(null, null);
-                resultBuilder.withDetail(pluginHealthcheckService, pluginStatus.getDetails());
+                details.put(pluginHealthcheckService, pluginStatus.getDetails());
                 isHealthy = isHealthy && pluginStatus.isHealthy();
             }
         }
 
-        return isHealthy ? resultBuilder.healthy().build() : resultBuilder.unhealthy().build();
+        if (isHealthy) {
+            return new HealthyResultBuilder().setDetails(details).createHealthyResult();
+        } else {
+            return new UnhealthyResultBuilder().setDetails(details).createUnhealthyResult();
+        }
     }
 }
