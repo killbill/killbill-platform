@@ -31,6 +31,8 @@
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/logger/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/metrics/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/metrics/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/prometheus/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/prometheus/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/bundles/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/osgi-bundles/defaultbundles" charset="UTF-8" />
