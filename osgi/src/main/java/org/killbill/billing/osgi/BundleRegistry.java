@@ -103,9 +103,8 @@ public class BundleRegistry {
     }
 
     public void startBundles() {
-        boolean isBundleStarted;
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
-            isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
+            final boolean isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
 
             if (!isBundleStarted) {
                 registry.remove(getPluginName(bundleWithConfig));
