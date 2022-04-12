@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-oss-parent</artifactId>
-        <version>0.145.3-a1b2a1f-SNAPSHOT</version>
+        <version>0.145.3-e07acbf-SNAPSHOT</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
     <version>0.41.0-SNAPSHOT</version>
@@ -124,11 +124,6 @@
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-osgi-bundles-influxdb</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.kill-bill.billing</groupId>
-                <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
