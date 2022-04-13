@@ -72,6 +72,26 @@ Add the relevant submodule(s) to a project:
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-eureka</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-graphite</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-influxdb</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
     <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
     <version>... release version ...</version>
 </dependency>
@@ -87,17 +107,17 @@ Add the relevant submodule(s) to a project:
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-metrics</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
     <artifactId>killbill-platform-osgi-bundles-test-beatrix</artifactId>
     <version>... release version ...</version>
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
     <artifactId>killbill-platform-osgi-bundles-test-payment</artifactId>
-    <version>... release version ...</version>
-</dependency>
-<dependency>
-    <groupId>org.kill-bill.billing</groupId>
-    <artifactId>killbill-platform-osgi-bundles-webconsolebranding</artifactId>
     <version>... release version ...</version>
 </dependency>
 <dependency>
