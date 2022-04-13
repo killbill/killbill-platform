@@ -29,7 +29,6 @@
     <packaging>pom</packaging>
     <name>killbill-platform-osgi-bundles</name>
     <modules>
-        <module>jruby</module>
         <module>logger</module>
         <module>kpm</module>
         <module>eureka</module>

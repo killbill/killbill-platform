@@ -31,10 +31,6 @@
     <dependencies>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
         </dependency>
         <dependency>
