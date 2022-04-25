@@ -63,7 +63,7 @@ public class Activator extends KillbillActivatorBase {
 
             scheduledReporter = reporterFactory.build(new CodahaleMetricRegistry(this.metricRegistry.getMetricRegistry()));
 
-            logger.info("Starts the reporter polling at the interval of {} seconds", reportingFrequency);
+            logger.info("Starts the Graphite reporter polling at the interval of {} seconds", reportingFrequency);
 
             scheduledReporter.start(reportingFrequency, TimeUnit.SECONDS);
         } else {
