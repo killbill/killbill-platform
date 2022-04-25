@@ -21,6 +21,7 @@ package org.killbill.billing.osgi.bundles.graphite;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.commons.metrics.dropwizard.CodahaleMetricRegistry;
@@ -52,13 +53,19 @@ public class Activator extends KillbillActivatorBase {
                                                                     Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.port"), "2003")));
             final Graphite graphite = new Graphite(address);
 
+            final int reportingFrequency = Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.interval"), "30"));
+
             final GraphiteReporterFactory reporterFactory = new GraphiteReporterFactory().setPrefix(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.prefix"), "killbill"))
                                                                                          .setGraphite(graphite);
-            reporterFactory.setFrequency(Optional.of(Duration.seconds(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.interval"), "30")))));
+            reporterFactory.setFrequency(Optional.of(Duration.seconds(reportingFrequency)));
 
             logger.info("Reporting metrics to Graphite {}", address);
 
             scheduledReporter = reporterFactory.build(new CodahaleMetricRegistry(this.metricRegistry.getMetricRegistry()));
+
+            logger.info("Starts the Graphite reporter polling at the interval of {} seconds", reportingFrequency);
+
+            scheduledReporter.start(reportingFrequency, TimeUnit.SECONDS);
         } else {
             logger.info("Reporting metrics to Graphite disabled");
         }
