@@ -44,6 +44,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
+    private static final Object lock = new Object();
+
     private static final String PROP_USER_TIME_ZONE = "user.timezone";
     private static final String PROP_SECURITY_EGD = "java.security.egd";
 
@@ -153,7 +155,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             if (propertyName.equals(PROP_USER_TIME_ZONE)) {
                 if (!"GMT".equals(System.getProperty(propertyName))) {
                     if (GMT_WARNING == NOT_SHOWN) {
-                        synchronized (DefaultKillbillConfigSource.class) {
+                        synchronized (lock) {
                             if (GMT_WARNING == NOT_SHOWN) {
                                 GMT_WARNING = SHOWN;
                                 logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
@@ -183,7 +185,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         // WARN for missing PROP_SECURITY_EGD
         if (System.getProperty(PROP_SECURITY_EGD) == null) {
             if (ENTROPY_WARNING == NOT_SHOWN) {
-                synchronized (DefaultKillbillConfigSource.class) {
+                synchronized (lock) {
                     if (ENTROPY_WARNING == NOT_SHOWN) {
                         ENTROPY_WARNING = SHOWN;
                         logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
