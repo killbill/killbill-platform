@@ -38,6 +38,13 @@
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-metrics</artifactId>
             <version>${dropwizard-metrics.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- From Jetty (https://github.com/eclipse/jetty.project/issues/5943) -->
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
