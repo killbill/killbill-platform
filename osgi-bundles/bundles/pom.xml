@@ -34,6 +34,7 @@
         <module>eureka</module>
         <module>graphite</module>
         <module>influxdb</module>
+        <module>prometheus</module>
         <module>metrics</module>
     </modules>
     <properties>
