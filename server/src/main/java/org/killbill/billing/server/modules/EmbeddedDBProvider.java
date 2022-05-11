@@ -26,6 +26,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -103,7 +105,14 @@ public class EmbeddedDBProvider implements Provider<EmbeddedDB> {
 
     protected Iterable<String> getDDLFiles() {
         final String seedFile = System.getProperty("org.killbill.dao.seedFile");
-        return seedFile == null ? ImmutableList.<String>of() : ImmutableList.<String>of(seedFile);
+        if (seedFile == null) {
+            return ImmutableList.<String>of();
+        }
+        final List<String> ddlFiles = new LinkedList<>();
+        ddlFiles.add(seedFile);
+        ddlFiles.addAll(List.of(System.getProperty("org.killbill.dao.additionalSeedFiles", "").split(",")));
+        ddlFiles.removeIf(String::isEmpty);
+        return ddlFiles;
     }
 
     protected String streamToString(final InputStream inputStream) throws IOException {

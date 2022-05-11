@@ -325,18 +325,9 @@
                 <configuration>
                     <webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>
                     <systemProperties>
-                        <systemProperty>
-                            <name>logback.configurationFile</name>
-                            <value>file:${basedir}/src/main/webapp/logback.xml</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.killbill.dao.seedFile</name>
-                            <value>file:${basedir}/src/main/resources/org/killbill/billing/server/ddl.sql</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.killbill.server.updateCheck.skip</name>
-                            <value>true</value>
-                        </systemProperty>
+                        <logback.configurationFile>file:${basedir}/src/main/webapp/logback.xml</logback.configurationFile>
+                        <org.killbill.dao.seedFile>file:${basedir}/src/main/resources/org/killbill/billing/server/ddl.sql</org.killbill.dao.seedFile>
+                        <org.killbill.server.updateCheck.skip>true</org.killbill.server.updateCheck.skip>
                     </systemProperties>
                 </configuration>
             </plugin>
