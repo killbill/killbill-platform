@@ -42,7 +42,6 @@ import javax.inject.Inject;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
 import org.killbill.billing.osgi.api.config.PluginLanguage;
-import org.killbill.billing.osgi.api.config.PluginRubyConfig;
 import org.killbill.billing.osgi.config.OSGIConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,10 +75,6 @@ public class PluginFinder {
 
     public List<PluginJavaConfig> getLatestJavaPlugins() throws PluginConfigException, IOException {
         return getLatestPluginForLanguage(PluginLanguage.JAVA);
-    }
-
-    public List<PluginRubyConfig> getLatestRubyPlugins() throws PluginConfigException, IOException {
-        return getLatestPluginForLanguage(PluginLanguage.RUBY);
     }
 
     public List<PluginConfig> getVersionsForPlugin(final String lookupName, @Nullable final String version) throws PluginConfigException, IOException {
@@ -142,7 +137,6 @@ public class PluginFinder {
 
             readPluginIdentifiers();
 
-            loadPluginsForLanguage(PluginLanguage.RUBY);
             loadPluginsForLanguage(PluginLanguage.JAVA);
 
             // Order for each plugin  based on DefaultPluginConfig sort method:
@@ -161,9 +155,10 @@ public class PluginFinder {
                 Collections.sort(versionsForPlugin);
                 // Make sure first entry is set with isSelectedForStart = true
                 final PluginConfig firstValue = versionsForPlugin.removeFirst();
-                final PluginConfig newFirstValue = firstValue.getPluginLanguage() == PluginLanguage.RUBY ?
-                                                   new DefaultPluginRubyConfig((DefaultPluginRubyConfig) firstValue, true) :
-                                                   new DefaultPluginJavaConfig((DefaultPluginJavaConfig) firstValue, true);
+                if (firstValue.getPluginLanguage() != PluginLanguage.JAVA) {
+                    throw new UnsupportedOperationException("Non-Java plugins aren't supported anymore");
+                }
+                final PluginConfig newFirstValue = new DefaultPluginJavaConfig((DefaultPluginJavaConfig) firstValue, true);
                 versionsForPlugin.addFirst(newFirstValue);
             }
         }
@@ -294,9 +289,6 @@ public class PluginFinder {
 
         final String pluginKey = findPluginKey(pluginName, pluginLanguage);
         switch (pluginLanguage) {
-            case RUBY:
-                result = new DefaultPluginRubyConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
-                break;
             case JAVA:
                 result = new DefaultPluginJavaConfig(pluginKey, pluginName, pluginVersion, pluginVersionDir, (props == null) ? new Properties() : props, isVersionToStartLink, isPluginDisabled(pluginVersionDir));
                 break;
