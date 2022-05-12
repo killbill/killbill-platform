@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!--
+  ~ Copyright 2020-2022 Equinix, Inc
+  ~ Copyright 2014-2022 The Billing Project, LLC
+  ~
+  ~ The Billing Project licenses this file to you under the Apache License, version 2.0
+  ~ (the "License"); you may not use this file except in compliance with the
+  ~ License.  You may obtain a copy of the License at:
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+  ~ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+  ~ License for the specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure_9_0.dtd">
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+    <!-- Related: https://github.com/eclipse/jetty.project/issues/5372 -->
+    <Set name="configurationClasses">
+        <Array type="java.lang.String">
+            <Item>org.eclipse.jetty.annotations.AnnotationConfiguration</Item>
+            <Item>org.eclipse.jetty.maven.plugin.MavenMetaInfConfiguration</Item>
+            <Item>org.eclipse.jetty.maven.plugin.MavenWebInfConfiguration</Item>
+            <Item>org.eclipse.jetty.plus.webapp.EnvConfiguration</Item>
+            <!-- Vanilla configuration minus this one, which throws a javax.naming.InvalidNameException on redeploy -->
+            <!-- <Item>org.eclipse.jetty.plus.webapp.PlusConfiguration</Item> -->
+            <Item>org.eclipse.jetty.quickstart.QuickStartConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.FragmentConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.JaasConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.JettyWebXmlConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.JmxConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.JndiConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.JspConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.WebAppConfiguration</Item>
+            <Item>org.eclipse.jetty.webapp.WebXmlConfiguration</Item>
+            <Item>org.eclipse.jetty.websocket.javax.server.config.JavaxWebSocketConfiguration</Item>
+            <Item>org.eclipse.jetty.websocket.server.config.JettyWebSocketConfiguration</Item>
+        </Array>
+    </Set>
+</Configure>

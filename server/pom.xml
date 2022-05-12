@@ -178,6 +178,12 @@
             <artifactId>killbill-platform-osgi-api</artifactId>
         </dependency>
         <dependency>
+            <!-- Required to start plugins -->
+            <groupId>org.kill-bill.billing</groupId>
+            <artifactId>killbill-platform-osgi-bundles-lib-killbill</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>org.kill-bill.billing.plugin</groupId>
             <artifactId>killbill-plugin-api-catalog</artifactId>
             <scope>runtime</scope>
@@ -325,19 +331,20 @@
                 <configuration>
                     <webAppSourceDirectory>${basedir}/src/main/webapp</webAppSourceDirectory>
                     <systemProperties>
-                        <systemProperty>
-                            <name>logback.configurationFile</name>
-                            <value>file:${basedir}/src/main/webapp/logback.xml</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.killbill.dao.seedFile</name>
-                            <value>file:${basedir}/src/main/resources/org/killbill/billing/server/ddl.sql</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.killbill.server.updateCheck.skip</name>
-                            <value>true</value>
-                        </systemProperty>
+                        <logback.configurationFile>file:${basedir}/src/main/webapp/logback.xml</logback.configurationFile>
+                        <org.killbill.dao.seedFile>file:${basedir}/src/main/resources/org/killbill/billing/server/ddl.sql</org.killbill.dao.seedFile>
+                        <org.killbill.server.updateCheck.skip>true</org.killbill.server.updateCheck.skip>
                     </systemProperties>
+                    <scan>2</scan>
+                    <scanTargetPatterns>
+                        <scanTargetPattern>
+                            <directory>/var/tmp/bundles</directory>
+                            <includes>
+                                <include>**/restart.txt</include>
+                            </includes>
+                        </scanTargetPattern>
+                    </scanTargetPatterns>
+                    <contextXml>${basedir}/src/main/jetty/jetty-context.xml</contextXml>
                 </configuration>
             </plugin>
         </plugins>
