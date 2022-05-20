@@ -104,9 +104,8 @@
             <artifactId>killbill-concurrent</artifactId>
         </dependency>
         <dependency>
-            <!-- Required for org.osgi.service.log.LogService -->
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
+            <artifactId>org.osgi.service.log</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
