@@ -196,9 +196,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <!-- Required for org.osgi.service.log.LogService and org.osgi.service.http.HttpService -->
             <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
+            <artifactId>org.osgi.service.event</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.log</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

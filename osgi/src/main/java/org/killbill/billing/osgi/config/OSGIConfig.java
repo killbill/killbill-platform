@@ -102,11 +102,11 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.slf4j.helpers;version=1.7.2," +
              "org.slf4j.spi;version=1.7.2," +
              "org.osgi.service.log;version=1.3," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (osgi.wiring.package=org.osgi.service.http)
+             // Let the world know the System bundle exposes the requirement (osgi.wiring.package=org.osgi.service.http)
              "org.osgi.service.http;version=1.2.0," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
+             // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
              "org.osgi.service.deploymentadmin;version=1.1.0," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
+             // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
              "org.osgi.service.event;version=1.2.0")
     @Description("Kill Bill API packages to export from the system bundle")
     public String getSystemBundleExportPackagesApi();
