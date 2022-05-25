@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.ScheduledReporter;
 import com.google.common.base.MoreObjects;
-import com.izettle.metrics.dw.InfluxDbReporterFactory;
 import com.izettle.metrics.dw.SenderType;
 import io.dropwizard.util.Duration;
 
@@ -49,7 +48,7 @@ public class Activator extends KillbillActivatorBase {
         final boolean influxDBEnabled = "true".equals(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb"), "false"));
         if (influxDBEnabled) {
             // Stream metric values to a InfluxDB server
-            final InfluxDbReporterFactory influxDbReporterFactory = new InfluxDbReporterFactory();
+            final CustomInfluxDbReporterFactory influxDbReporterFactory = new CustomInfluxDbReporterFactory();
             influxDbReporterFactory.setRateUnit(TimeUnit.SECONDS);
             influxDbReporterFactory.setDurationUnit(TimeUnit.NANOSECONDS);
             influxDbReporterFactory.setHost(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.host"), "localhost"));
@@ -62,6 +61,10 @@ public class Activator extends KillbillActivatorBase {
 
             logger.info("Reporting metrics to InfluxDB {}:{}", influxDbReporterFactory.getHost(), influxDbReporterFactory.getPort());
             scheduledReporter = influxDbReporterFactory.build(new CodahaleMetricRegistry(this.metricRegistry.getMetricRegistry()));
+
+            logger.info("Starts the InfluxDB reporter polling at the interval of {} seconds", 3);
+
+            scheduledReporter.start(3, TimeUnit.SECONDS);
         } else {
             logger.info("Reporting to InfluxDB disabled");
         }
