@@ -148,7 +148,7 @@ public class CustomInfluxDbHttpSender implements InfluxDbSender {
         final byte[] line = linestr.getBytes(UTF_8);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
-        con.setRequestProperty("Authorization", "Token Al6_8e75E-hBQ2aytW_aScHfr-A8nnS_d46ngHESCqWPIl3UB8DgDqDUhDAmErwzJIIVh6VmqW_6io-AgzimRA==");
+        con.setRequestProperty("Authorization", "Token 1tBoZTXvqaTueM6zHD2KQ5lz3RTe4W_JWeACy4lTP-o1-XR-l4lDnqXWEAr8f_8auXznaV3SY-14gI8BGjkqfQ==");
         con.setDoOutput(true);
         con.setConnectTimeout(connectTimeout);
         con.setReadTimeout(readTimeout);

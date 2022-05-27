@@ -52,19 +52,19 @@ public class Activator extends KillbillActivatorBase {
             influxDbReporterFactory.setRateUnit(TimeUnit.SECONDS);
             influxDbReporterFactory.setDurationUnit(TimeUnit.NANOSECONDS);
             influxDbReporterFactory.setHost(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.host"), "localhost"));
-            influxDbReporterFactory.setPort(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.port"), "2003")));
+            influxDbReporterFactory.setPort(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.port"), "8086")));
             influxDbReporterFactory.setReadTimeout(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.socketTimeout"), "1000")));
             influxDbReporterFactory.setDatabase(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.database"), "killbill"));
-            influxDbReporterFactory.setPrefix(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.prefix"), "prefix"));
+            influxDbReporterFactory.setPrefix(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.prefix"), ""));
             influxDbReporterFactory.setSenderType(SenderType.valueOf(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.senderType"), "HTTP")));
             influxDbReporterFactory.setFrequency(Optional.of(Duration.seconds(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.interval"), "30")))));
 
             logger.info("Reporting metrics to InfluxDB {}:{}", influxDbReporterFactory.getHost(), influxDbReporterFactory.getPort());
             scheduledReporter = influxDbReporterFactory.build(new CodahaleMetricRegistry(this.metricRegistry.getMetricRegistry()));
 
-            logger.info("Starts the InfluxDB reporter polling at the interval of {} seconds", 3);
+            logger.info("Starts the InfluxDB reporter polling at the interval of {} seconds", 10);
 
-            scheduledReporter.start(3, TimeUnit.SECONDS);
+            scheduledReporter.start(10, TimeUnit.SECONDS);
         } else {
             logger.info("Reporting to InfluxDB disabled");
         }
