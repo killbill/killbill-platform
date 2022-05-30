@@ -20,24 +20,54 @@ package org.killbill.billing.osgi.bundles.influxdb;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.izettle.metrics.dw.InfluxDbReporterFactory;
+import com.izettle.metrics.dw.SenderType;
 import com.izettle.metrics.influxdb.InfluxDbReporter.Builder;
 
 public class CustomInfluxDbReporterFactory extends InfluxDbReporterFactory {
 
+    private String organization;
+    private String bucket;
+    private String token;
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(final String organization) {
+        this.organization = organization;
+    }
+
+    public String getBucket() {
+        return bucket;
+    }
+
+    public void setBucket(final String bucket) {
+        this.bucket = bucket;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(final String token) {
+        this.token = token;
+    }
+
     @Override
     public ScheduledReporter build(final MetricRegistry registry) {
         try {
-            Builder builder = this.builder(registry);
-            switch (this.getSenderType()) {
-                case HTTP:
-                    return builder.build(new CustomInfluxDbHttpSender(this.getProtocol(), this.getHost(), this.getPort(), this.getDatabase(),
-                                                                      this.getAuth(), this.getPrecision().getUnit(), this.getConnectTimeout(),
-                                                                      this.getReadTimeout(), this.getPrefix()));
-                default:
-                    throw new UnsupportedOperationException("The Sender Type is not supported. ");
+            final Builder builder = this.builder(registry);
+
+            if (this.getSenderType() == SenderType.HTTP) {
+                return builder.build(new CustomInfluxDbHttpSender(this.getProtocol(), this.getHost(), this.getPort(), this.getDatabase(),
+                                                                  this.getPrecision().getUnit(), this.getConnectTimeout(),
+                                                                  this.getReadTimeout(), this.getPrefix(), this.organization,
+                                                                  this.bucket, this.token));
             }
-        } catch (Exception var3) {
-            throw new RuntimeException(var3);
+
+            throw new UnsupportedOperationException(String.format("The Sender Type [%s] is not supported", this.getSenderType()));
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

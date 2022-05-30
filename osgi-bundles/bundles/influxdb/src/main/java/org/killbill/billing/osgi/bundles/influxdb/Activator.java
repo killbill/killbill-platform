@@ -57,14 +57,19 @@ public class Activator extends KillbillActivatorBase {
             influxDbReporterFactory.setDatabase(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.database"), "killbill"));
             influxDbReporterFactory.setPrefix(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.prefix"), ""));
             influxDbReporterFactory.setSenderType(SenderType.valueOf(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.senderType"), "HTTP")));
-            influxDbReporterFactory.setFrequency(Optional.of(Duration.seconds(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.interval"), "30")))));
+            influxDbReporterFactory.setOrganization(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.organization"), "killbill"));
+            influxDbReporterFactory.setBucket(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.bucket"), "killbill"));
+            influxDbReporterFactory.setToken(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.token"), ""));
+
+            final int reportingFrequency = Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.interval"), "30"));
+            influxDbReporterFactory.setFrequency(Optional.of(Duration.seconds(reportingFrequency)));
 
             logger.info("Reporting metrics to InfluxDB {}:{}", influxDbReporterFactory.getHost(), influxDbReporterFactory.getPort());
             scheduledReporter = influxDbReporterFactory.build(new CodahaleMetricRegistry(this.metricRegistry.getMetricRegistry()));
 
-            logger.info("Starts the InfluxDB reporter polling at the interval of {} seconds", 10);
+            logger.info("Starts the InfluxDB reporter polling at the interval of {} seconds", reportingFrequency);
 
-            scheduledReporter.start(10, TimeUnit.SECONDS);
+            scheduledReporter.start(reportingFrequency, TimeUnit.SECONDS);
         } else {
             logger.info("Reporting to InfluxDB disabled");
         }
