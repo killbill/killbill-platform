@@ -41,16 +41,16 @@
             <version>${metrics-influxdb.version}</version>
             <exclusions>
                 <exclusion>
-                    <!-- We use jakarta.activation:jakarta.activation-api instead -->
-                    <groupId>javax.activation</groupId>
-                    <artifactId>activation</artifactId>
-                </exclusion>
-                <exclusion>
                     <!-- From Jetty (https://github.com/eclipse/jetty.project/issues/5943) -->
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.izettle</groupId>
+            <artifactId>metrics-influxdb</artifactId>
+            <version>${metrics-influxdb.version}</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
@@ -62,11 +62,6 @@
             <artifactId>metrics-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
             <scope>provided</scope>
@@ -75,6 +70,13 @@
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-api</artifactId>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- Excluding this to avoid duplication of classes as dropwizard-metrics-influxdb uses javax.activation:activation -->
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
