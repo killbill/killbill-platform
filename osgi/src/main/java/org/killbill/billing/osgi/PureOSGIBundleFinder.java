@@ -21,6 +21,7 @@ package org.killbill.billing.osgi;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +33,6 @@ import org.killbill.billing.osgi.config.OSGIConfig;
 import org.killbill.billing.osgi.pluginconf.PluginConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
 
 @Singleton
 public class PureOSGIBundleFinder {
@@ -57,15 +56,15 @@ public class PureOSGIBundleFinder {
         final File rootDir = new File(rootDirPath);
         if (!rootDir.exists() || !rootDir.isDirectory()) {
             logger.warn("Configuration root dir {} is not a valid directory", rootDirPath);
-            return ImmutableList.<String>of();
+            return Collections.emptyList();
         }
 
         final File[] files = rootDir.listFiles();
         if (files == null) {
-            return ImmutableList.<String>of();
+            return Collections.emptyList();
         }
 
-        final List<String> bundles = new ArrayList<String>();
+        final List<String> bundles = new ArrayList<>();
         for (final File bundleJar : files) {
             if (bundleJar.isFile()) {
                 bundles.add(bundleJar.getAbsolutePath());

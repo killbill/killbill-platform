@@ -21,11 +21,15 @@ package org.killbill.billing.osgi.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.killbill.billing.osgi.BundleRegistry;
 import org.killbill.billing.osgi.BundleRegistry.BundleWithMetadata;
@@ -39,30 +43,11 @@ import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Ordering;
-import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPluginsInfoApi.class);
-
-    private static final Ordering<PluginInfo> PLUGIN_INFO_ORDERING =  Ordering.natural().onResultOf(new Function<PluginInfo, String>() {
-        @Override
-        public String apply(final PluginInfo input) {
-            return input == null ? "" : toPluginFullName(input.getPluginName(), input.getVersion());
-        }
-
-        private String toPluginFullName(final String pluginName, final String pluginVersion) {
-            final StringBuilder tmp = new StringBuilder(pluginName);
-            if (pluginVersion != null) {
-                tmp.append(pluginVersion);
-            }
-            return tmp.toString();
-        }
-    });
 
     private final BundleRegistry bundleRegistry;
     private final PluginFinder pluginFinder;
@@ -78,7 +63,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
     @Override
     public Iterable<PluginInfo> getPluginsInfo() {
 
-        final List<PluginInfo> result = new ArrayList<PluginInfo>();
+        final List<PluginInfo> result = new ArrayList<>();
         for (final String pluginName : pluginFinder.getAllPlugins().keySet()) {
 
             final BundleWithMetadata installedBundleOrNull = bundleRegistry.getBundle(pluginName);
@@ -96,7 +81,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
                                                        isSelectedForStart,
                                                        installedBundleOrNull.getServiceNames());
                 } else {
-                    pluginInfo = new DefaultPluginInfo(curVersion.getPluginKey(), null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+                    pluginInfo = new DefaultPluginInfo(curVersion.getPluginKey(), null, curVersion.getPluginName(), curVersion.getVersion(), toPluginState(null), isSelectedForStart, Collections.emptySet());
                 }
                 isSelectedForStart = false;
                 result.add(pluginInfo);
@@ -104,12 +89,21 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         }
         for (final BundleWithMetadata osgiBundle : bundleRegistry.getPureOSGIBundles()) {
             if (osgiBundle.getBundle().getSymbolicName() != null) {
-                final PluginInfo pluginInfo = new DefaultPluginInfo(null, osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), true, ImmutableSet.<PluginServiceInfo>of());
+                final PluginInfo pluginInfo = new DefaultPluginInfo(null, osgiBundle.getBundle().getSymbolicName(), osgiBundle.getPluginName(), osgiBundle.getVersion(), toPluginState(osgiBundle), true, Collections.emptySet());
                 result.add(pluginInfo);
             }
         }
 
-        return PLUGIN_INFO_ORDERING.sortedCopy(result);
+        return result.stream().sorted(Comparator.comparing(input -> {
+            if (input == null) {
+                return "";
+            }
+            final StringBuilder tmp = new StringBuilder(input.getPluginName());
+            if (input.getVersion() != null) {
+                tmp.append(input.getVersion());
+            }
+            return tmp.toString();
+        })).collect(Collectors.toList());
     }
 
     @Override
@@ -141,7 +135,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
             // Notify KillbillNodesService to update the node_infos table
             if (nodesApi != null) {
-                final PluginInfo pluginInfo = new DefaultPluginInfo(pluginKey, null, resolvedPluginName, pluginVersion, toPluginState(null), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+                final PluginInfo pluginInfo = new DefaultPluginInfo(pluginKey, null, resolvedPluginName, pluginVersion, toPluginState(null), isSelectedForStart, Collections.emptySet());
                 nodesApi.notifyPluginChanged(pluginInfo, getPluginsInfo());
             }
         } catch (final PluginConfigException e) {

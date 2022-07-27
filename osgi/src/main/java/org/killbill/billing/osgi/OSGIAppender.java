@@ -32,7 +32,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.google.common.collect.ImmutableMap;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
@@ -90,7 +90,7 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     private static final class RootBundleLogbackServiceReference implements ServiceReference {
 
         // MAGIC - do not change (see KillbillLogWriter)
-        private static final Map<String, String> SERVICE_KEYS = ImmutableMap.<String, String>of("KILL_BILL_ROOT_LOGGING", "true");
+        private static final Map<String, String> SERVICE_KEYS = Map.of("KILL_BILL_ROOT_LOGGING", "true");
 
         private final Bundle bundle;
 

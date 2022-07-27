@@ -20,6 +20,7 @@
 package org.killbill.billing.osgi.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import javax.servlet.RequestDispatcher;
@@ -30,8 +31,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.http.HttpContext;
-
-import com.google.common.io.Resources;
 
 // Simple servlet to serve OSGI resources
 public class StaticServlet extends HttpServlet {
@@ -46,9 +45,11 @@ public class StaticServlet extends HttpServlet {
     protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         final URL url = findResourceURL(req);
         if (url != null) {
-            Resources.copy(url, resp.getOutputStream());
-            resp.setStatus(200);
-            return;
+            try (final InputStream is = url.openStream()) {
+                is.transferTo(resp.getOutputStream());
+                resp.setStatus(200);
+                return;
+            }
         }
 
         // If we can't find it, the container might

@@ -41,7 +41,6 @@ import org.osgi.framework.launch.Framework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -168,7 +167,7 @@ public class DefaultOSGIService implements OSGIService {
         // Note! Think twice before adding a bundle here as it will run inside the System bundle. This means the bundle
         // callcontext that the bundle will see is the System bundle one, which will break e.g. resources lookup
         felixConfig.put(FelixConstants.SYSTEMBUNDLE_ACTIVATORS_PROP,
-                        ImmutableList.<BundleActivator>of(killbillActivator));
+                        List.<BundleActivator>of(killbillActivator));
 
         final Framework felix = new Felix(felixConfig);
         felix.init();

@@ -20,7 +20,10 @@
 package org.killbill.billing.osgi;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -32,7 +35,6 @@ import org.killbill.billing.osgi.api.DefaultPluginsInfoApi;
 import org.killbill.billing.osgi.api.DefaultPluginsInfoApi.DefaultPluginInfo;
 import org.killbill.billing.osgi.api.KillbillNodesApiHolder;
 import org.killbill.billing.osgi.api.PluginInfo;
-import org.killbill.billing.osgi.api.PluginServiceInfo;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.pluginconf.PluginFinder;
 import org.killbill.billing.util.nodes.DefaultNodeCommandMetadata;
@@ -40,6 +42,8 @@ import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommandMetadata;
 import org.killbill.billing.util.nodes.PluginNodeCommandMetadata;
 import org.killbill.billing.util.nodes.SystemNodeCommandType;
+import org.killbill.commons.eventbus.AllowConcurrentEvents;
+import org.killbill.commons.eventbus.Subscribe;
 import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +51,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.eventbus.AllowConcurrentEvents;
-import com.google.common.eventbus.Subscribe;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("EI_EXPOSE_REP")
@@ -127,34 +126,30 @@ public class OSGIListener {
         final String symbolicName = (bundleWithMetadata != null &&  bundleWithMetadata.getBundle() != null) ? bundleWithMetadata.getBundle().getSymbolicName() : null;
 
 
-        final HashMap<String, String> eventProperties = new HashMap<String, String>();
+        final Map<String, String> eventProperties = new HashMap<>();
         eventProperties.put("pluginName", pluginName);
         eventProperties.put("pluginKey", nodeCommandMetadata.getPluginKey());
         eventProperties.put("symbolicName", symbolicName);
         killbillActivator.sendEvent("org/killbill/billing/osgi/plugin/" + commandType, eventProperties);
 
 
-        final PluginInfo pluginInfo = new DefaultPluginInfo(nodeCommandMetadata.getPluginKey(), symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, ImmutableSet.<PluginServiceInfo>of());
+        final PluginInfo pluginInfo = new DefaultPluginInfo(nodeCommandMetadata.getPluginKey(), symbolicName, nodeCommandMetadata.getPluginName(), nodeCommandMetadata.getPluginVersion(), DefaultPluginsInfoApi.toPluginState(bundleWithMetadata), isSelectedForStart, Collections.emptySet());
         nodesApi.notifyPluginChanged(pluginInfo, pluginsInfoApi.getPluginsInfo());
     }
 
     private SystemNodeCommandType getSystemNodeCommandTypeOrNull(final String command) {
-        return Iterables.tryFind(ImmutableList.copyOf(SystemNodeCommandType.values()), new Predicate<SystemNodeCommandType>() {
-            @Override
-            public boolean apply(final SystemNodeCommandType input) {
-                return input != null && input.name().equals(command);
-            }
-        }).orNull();
+        return Stream.of(SystemNodeCommandType.values())
+                .filter(input -> input != null && command.equals(input.name()))
+                .findFirst()
+                .orElse(null);
     }
 
     private NodeCommandMetadata deserializeNodeCommand(final String nodeCommand, final String type) throws IOException {
+        final SystemNodeCommandType systemType = Stream.of(SystemNodeCommandType.values())
+                .filter(input -> input != null && type.equals(input.name()))
+                .findFirst()
+                .orElse(null);
 
-        final SystemNodeCommandType systemType = Iterables.tryFind(ImmutableList.copyOf(SystemNodeCommandType.values()), new Predicate<SystemNodeCommandType>() {
-            @Override
-            public boolean apply(final SystemNodeCommandType input) {
-                return input != null && input.name().equals(type);
-            }
-        }).orNull();
         return (systemType != null) ?
                objectMapper.readValue(nodeCommand, systemType.getCommandMetadataClass()) :
                objectMapper.readValue(nodeCommand, DefaultNodeCommandMetadata.class);

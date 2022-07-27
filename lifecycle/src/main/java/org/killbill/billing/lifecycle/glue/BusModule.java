@@ -19,6 +19,8 @@
 
 package org.killbill.billing.lifecycle.glue;
 
+import java.util.Map;
+
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.ExternalBusService;
 import org.killbill.billing.lifecycle.bus.DefaultBusService;
@@ -31,7 +33,6 @@ import org.killbill.bus.api.PersistentBusConfig;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
@@ -60,7 +61,7 @@ public class BusModule extends AbstractModule {
 
         final SkifePersistentBusConfigSource skifePersistentBusConfigSource = new SkifePersistentBusConfigSource();
         final PersistentBusConfig busConfig = new ConfigurationObjectFactory(skifePersistentBusConfigSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                                                   ImmutableMap.<String, String>of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
+                                                                                                                                   Map.of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
 
         if (isExternal) {
             bind(ExternalBusService.class).to(DefaultExternalBusService.class).asEagerSingleton();
