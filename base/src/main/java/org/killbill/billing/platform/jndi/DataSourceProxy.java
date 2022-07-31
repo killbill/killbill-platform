@@ -29,7 +29,8 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import com.google.common.base.Preconditions;
+import org.killbill.commons.utils.Preconditions;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DataSourceProxy implements DataSource {

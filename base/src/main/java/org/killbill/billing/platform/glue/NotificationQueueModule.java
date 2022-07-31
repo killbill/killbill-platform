@@ -19,13 +19,13 @@
 
 package org.killbill.billing.platform.glue;
 
+import java.util.Map;
+
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.notificationq.DefaultNotificationQueueService;
 import org.killbill.notificationq.api.NotificationQueueConfig;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.skife.config.ConfigurationObjectFactory;
-
-import com.google.common.collect.ImmutableMap;
 
 public class NotificationQueueModule extends KillBillPlatformModuleBase {
 
@@ -45,7 +45,7 @@ public class NotificationQueueModule extends KillBillPlatformModuleBase {
 
     protected void configureNotificationQueueConfig() {
         final NotificationQueueConfig config = new ConfigurationObjectFactory(skifeConfigSource).buildWithReplacements(NotificationQueueConfig.class,
-                                                                                                                       ImmutableMap.<String, String>of("instanceName", "main"));
+                                                                                                                       Map.of("instanceName", "main"));
         bind(NotificationQueueConfig.class).toInstance(config);
     }
 }

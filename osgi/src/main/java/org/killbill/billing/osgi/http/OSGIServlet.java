@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 
 @Singleton
 public class OSGIServlet extends HttpServlet {
@@ -40,7 +40,7 @@ public class OSGIServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     @VisibleForTesting
-    final Vector<Servlet> initializedServlets = new Vector<Servlet>();
+    final Vector<Servlet> initializedServlets = new Vector<>();
     private final Object servletsMonitor = new Object();
 
     @Inject

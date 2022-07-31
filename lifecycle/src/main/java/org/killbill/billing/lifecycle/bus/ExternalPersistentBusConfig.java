@@ -19,14 +19,14 @@
 
 package org.killbill.billing.lifecycle.bus;
 
+import java.util.Map;
+
 import org.killbill.bus.api.PersistentBusConfig;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
 import org.skife.config.TimeSpan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
 
 // Hack to make sure the external and internal buses don't share the same tables names.
 // See discussion https://groups.google.com/forum/#!msg/killbilling-users/x3o1-EjR3V0/ZJ-PJYFM_M0J
@@ -49,9 +49,9 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     public ExternalPersistentBusConfig(final ConfigSource configSource) {
         // See org.killbill.billing.util.glue.BusModule
         internalPersistentBusConfig = new ConfigurationObjectFactory(configSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                         ImmutableMap.<String, String>of("instanceName", MAIN_BUS_NAME));
+                                                                                                         Map.of("instanceName", MAIN_BUS_NAME));
         externalPersistentBusConfig = new ConfigurationObjectFactory(configSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                         ImmutableMap.<String, String>of("instanceName", EXTERNAL_BUS_NAME));
+                                                                                                         Map.of("instanceName", EXTERNAL_BUS_NAME));
     }
 
     @Override
