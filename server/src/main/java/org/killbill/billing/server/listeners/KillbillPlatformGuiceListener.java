@@ -21,6 +21,7 @@ package org.killbill.billing.server.listeners;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -38,7 +39,6 @@ import org.killbill.billing.server.metrics.InstrumentedAppender;
 import org.killbill.billing.server.modules.KillbillPlatformModule;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
-import org.killbill.commons.health.api.HealthCheck;
 import org.killbill.commons.health.api.HealthCheckRegistry;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.modules.StatsModule;
@@ -48,6 +48,7 @@ import org.killbill.commons.metrics.servlets.MetricsServlet;
 import org.killbill.commons.skeleton.listeners.GuiceServletContextListener;
 import org.killbill.commons.skeleton.modules.BaseServerModuleBuilder;
 import org.killbill.commons.skeleton.modules.JMXModule;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.skife.config.ConfigSource;
 import org.skife.config.ConfigurationObjectFactory;
@@ -64,8 +65,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -76,7 +76,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillPlatformGuiceListener.class);
 
-    public static final ImmutableList<String> METRICS_SERVLETS_PATHS = ImmutableList.<String>of("/1.0/healthcheck", "/1.0/metrics", "/1.0/threads");
+    public static final List<String> METRICS_SERVLETS_PATHS = List.of("/1.0/healthcheck", "/1.0/metrics", "/1.0/threads");
 
     protected KillbillHealthcheck killbillHealthcheck;
     protected KillbillServerConfig config;
@@ -145,13 +145,13 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-        guiceModules = ImmutableList.<Module>of(getServletModule(),
-                                                new JMXModule(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
-                                                new StatsModule(METRICS_SERVLETS_PATHS.get(0),
-                                                                METRICS_SERVLETS_PATHS.get(1),
-                                                                METRICS_SERVLETS_PATHS.get(2),
-                                                                ImmutableList.<Class<? extends HealthCheck>>of(KillbillHealthcheck.class, KillbillPluginsHealthcheck.class, KillbillQueuesHealthcheck.class)),
-                                                getModule(event.getServletContext()));
+        guiceModules = List.of(getServletModule(),
+                               new JMXModule(KillbillHealthcheck.class, KillbillQueuesHealthcheck.class, NotificationQueueService.class, PersistentBus.class),
+                               new StatsModule(METRICS_SERVLETS_PATHS.get(0),
+                                               METRICS_SERVLETS_PATHS.get(1),
+                                               METRICS_SERVLETS_PATHS.get(2),
+                                               List.of(KillbillHealthcheck.class, KillbillPluginsHealthcheck.class, KillbillQueuesHealthcheck.class)),
+                               getModule(event.getServletContext()));
 
         // Start the Guice machinery
         super.contextInitialized(event);

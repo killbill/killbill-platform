@@ -23,21 +23,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.killbill.commons.utils.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 public class UpdateListProperties {
 
     private static final Logger log = LoggerFactory.getLogger(UpdateListProperties.class);
-
-    private static final Splitter SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
     private final Properties properties = new Properties();
 
@@ -59,7 +55,7 @@ public class UpdateListProperties {
 
     public List<String> getUpdatesForVersion(final String version) {
         final String updates = getProperty(version + ".updates");
-        return updates == null ? ImmutableList.<String>of() : SPLITTER.splitToList(updates);
+        return updates == null ? Collections.emptyList() : Strings.split(updates, ",");
     }
 
     public String getReleaseNotesForVersion(final String version) {

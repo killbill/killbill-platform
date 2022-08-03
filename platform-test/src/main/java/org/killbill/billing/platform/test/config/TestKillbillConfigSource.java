@@ -22,6 +22,7 @@ package org.killbill.billing.platform.test.config;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -31,9 +32,8 @@ import javax.annotation.Nullable;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.killbill.commons.utils.io.Files;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
@@ -48,7 +48,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        this(file, dbTestingHelperKlass, ImmutableMap.<String, String>of());
+        this(file, dbTestingHelperKlass, Collections.emptyMap());
     }
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -113,8 +113,8 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
 
         // Temporary directory for OSGI bundles
-        properties.put("org.killbill.osgi.root.dir", Files.createTempDir().getAbsolutePath());
-        properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDir().getAbsolutePath());
+        properties.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
+        properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
 
         if (extraDefaults != null) {
             for (final Entry<String, String> entry : extraDefaults.entrySet()) {

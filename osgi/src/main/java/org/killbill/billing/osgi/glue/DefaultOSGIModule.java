@@ -95,7 +95,9 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(OSGIDataSourceConfig.class).toInstance(osgiDataSourceConfig);
         bind(DaoConfig.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toInstance(osgiDataSourceConfig);
 
-        final Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID);
+        // FIXME-1615 : killbill-commones use javax.inject instead of Guice. Should we refactor platform-osgi to use
+        //  javax.inject, or revert back DataSourceProvider to use Guava's Provider.
+        final javax.inject.Provider<DataSource> dataSourceSpyProvider = new ReferenceableDataSourceSpyProvider(osgiDataSourceConfig, osgiEmbeddedDB, OSGI_DATA_SOURCE_ID);
         requestInjection(dataSourceSpyProvider);
         bind(DataSource.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toProvider(dataSourceSpyProvider).asEagerSingleton();
     }

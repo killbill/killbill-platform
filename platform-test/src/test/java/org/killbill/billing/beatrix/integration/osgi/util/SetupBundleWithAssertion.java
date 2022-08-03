@@ -39,10 +39,8 @@ import org.killbill.billing.osgi.api.config.PluginJavaConfig;
 import org.killbill.billing.osgi.api.config.PluginLanguage;
 import org.killbill.billing.osgi.api.config.PluginType;
 import org.killbill.billing.osgi.config.OSGIConfig;
+import org.killbill.commons.utils.io.Resources;
 import org.testng.Assert;
-
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Resources;
 
 // Install a JRuby or Java plugin programmatically
 public class SetupBundleWithAssertion {
@@ -86,21 +84,21 @@ public class SetupBundleWithAssertion {
     }
 
     public void setupJavaBundle() {
-        try {
-            // Retrieve PluginConfig info from classpath
-            // test bundle should have been exported under Beatrix resource by the maven maven-dependency-plugin
-            final PluginJavaConfig pluginConfig = extractJavaBundleTestResource();
-            Assert.assertNotNull(pluginConfig);
+        // Retrieve PluginConfig info from classpath
+        // test bundle should have been exported under Beatrix resource by the maven maven-dependency-plugin
+        final PluginJavaConfig pluginConfig = extractJavaBundleTestResource();
+        Assert.assertNotNull(pluginConfig);
 
-            // Create OSGI install bundle directory
-            setupDirectoryStructure(pluginConfig);
+        // Create OSGI install bundle directory
+        setupDirectoryStructure(pluginConfig);
 
+        final File target = new File(pluginConfig.getPluginVersionRoot().getAbsolutePath(), pluginConfig.getPluginVersionnedName() + ".jar");
+        try (final InputStream input = new FileInputStream(pluginConfig.getBundleJarPath()); final OutputStream out = new FileOutputStream(target)) {
             // Copy the jar
-            ByteStreams.copy(new FileInputStream(new File(pluginConfig.getBundleJarPath())), new FileOutputStream(new File(pluginConfig.getPluginVersionRoot().getAbsolutePath(), pluginConfig.getPluginVersionnedName() + ".jar")));
+            input.transferTo(out);
 
             // Create the osgiConfig file
             createConfigFile(pluginConfig);
-
         } catch (final IOException e) {
             Assert.fail(e.getMessage());
         }
@@ -117,7 +115,7 @@ public class SetupBundleWithAssertion {
         try {
             final File configFile = new File(pluginConfig.getPluginVersionRoot(), config.getOSGIKillbillPropertyName());
             Assert.assertTrue(configFile.createNewFile(), "Unable to create file " + configFile.getAbsolutePath());
-            printStream = new PrintStream(new FileOutputStream(configFile), true, StandardCharsets.UTF_8.name());
+            printStream = new PrintStream(new FileOutputStream(configFile), true, StandardCharsets.UTF_8);
             printStream.print("pluginType=" + PluginType.NOTIFICATION);
         } finally {
             if (printStream != null) {
@@ -165,7 +163,7 @@ public class SetupBundleWithAssertion {
         final File rubyJarDestination = new File(platform, "jruby.jar");
         try (final FileInputStream from = new FileInputStream(rubyJarInput);
              final FileOutputStream to = new FileOutputStream(rubyJarDestination)) {
-            ByteStreams.copy(from, to);
+            from.transferTo(to);
         }
     }
 
@@ -268,13 +266,9 @@ public class SetupBundleWithAssertion {
     }
 
     private static void unTar(final File inputFile, final File outputDir) throws IOException, ArchiveException {
-        InputStream is = null;
-        TarArchiveInputStream archiveInputStream = null;
-        TarArchiveEntry entry;
-
-        try {
-            is = new FileInputStream(inputFile);
-            archiveInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", is);
+        try (final InputStream is = new FileInputStream(inputFile)) {
+            TarArchiveEntry entry;
+            final TarArchiveInputStream archiveInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", is);
             while ((entry = (TarArchiveEntry) archiveInputStream.getNextEntry()) != null) {
                 final File outputFile = new File(outputDir, entry.getName());
                 if (entry.isDirectory()) {
@@ -285,16 +279,8 @@ public class SetupBundleWithAssertion {
                     }
                 } else {
                     final OutputStream outputFileStream = new FileOutputStream(outputFile);
-                    ByteStreams.copy(archiveInputStream, outputFileStream);
-                    outputFileStream.close();
+                    is.transferTo(outputFileStream);
                 }
-            }
-        } finally {
-            if (archiveInputStream != null) {
-                archiveInputStream.close();
-            }
-            if (is != null) {
-                is.close();
             }
         }
     }

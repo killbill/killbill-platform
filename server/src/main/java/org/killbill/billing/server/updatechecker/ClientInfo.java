@@ -20,14 +20,14 @@
 package org.killbill.billing.server.updatechecker;
 
 import java.net.InetAddress;
+import java.util.Objects;
 
 import javax.servlet.ServletContext;
 
+import org.killbill.commons.utils.StandardSystemProperty;
+import org.killbill.commons.utils.Strings;
 import org.skife.config.ConfigSource;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.StandardSystemProperty;
-import com.google.common.base.Strings;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
@@ -157,7 +157,7 @@ public class ClientInfo {
     }
 
     private String getProperty(final StandardSystemProperty standardKey) {
-        return getSanitizedString(MoreObjects.firstNonNull(props.getString(standardKey.key()), UNKNOWN));
+        return getSanitizedString(Objects.requireNonNullElse(props.getString(standardKey.key()), UNKNOWN));
     }
 
     private String getSanitizedString(final String string) {
