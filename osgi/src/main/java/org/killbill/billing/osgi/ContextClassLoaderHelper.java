@@ -40,7 +40,7 @@ import org.killbill.commons.utils.Joiner;
 import org.killbill.commons.utils.cache.Cache;
 import org.killbill.commons.utils.cache.DefaultCache;
 import org.killbill.commons.utils.cache.DefaultSynchronizedCache;
-import org.killbill.commons.util.reflect.AbstractInvocationHandler;
+import org.killbill.commons.utils.reflect.AbstractInvocationHandler;
 
 public class ContextClassLoaderHelper {
 
