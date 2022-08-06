@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
 import org.killbill.billing.osgi.config.OSGIConfig;
-import org.killbill.commons.util.io.Files;
+import org.killbill.commons.utils.io.Files;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

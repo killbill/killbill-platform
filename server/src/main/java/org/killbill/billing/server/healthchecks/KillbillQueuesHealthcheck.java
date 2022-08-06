@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
@@ -38,14 +38,14 @@ import org.killbill.commons.health.api.HealthCheck;
 import org.killbill.commons.health.api.Result;
 import org.killbill.commons.health.impl.HealthyResultBuilder;
 import org.killbill.commons.health.impl.UnhealthyResultBuilder;
+import org.killbill.commons.util.collect.EvictingQueue;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.notificationq.api.NotificationQueue;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.EvictingQueue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 // Run this check asynchronously as it executes database queries: when the healthcheck is integrated with a load balancer,
@@ -211,11 +211,11 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
         // Number of samples to consider for our sliding window
         private final double slidingWindowSize;
         // X axis: timestamps
-        private final EvictingQueue<Long> timestamps;
+        private final Queue<Long> timestamps;
         // Y axis: sizes measured
-        private final EvictingQueue<Long> rawSizes;
+        private final Queue<Long> rawSizes;
         // Y axis: exponential moving average of the sizes measured
-        private final EvictingQueue<Double> smoothedSizes;
+        private final Queue<Double> smoothedSizes;
         private final SimpleRegression smoothedSizesRegression;
         private final HoltWintersComputer holtWintersComputer;
         // Linear regression to check for current trend over the slidingWindowSize
@@ -227,9 +227,9 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
         public QueueStats(final String queueId, final int slidingWindowSize, final double alpha) {
             this.queueId = queueId;
             this.slidingWindowSize = slidingWindowSize;
-            this.timestamps = EvictingQueue.<Long>create(slidingWindowSize);
-            this.rawSizes = EvictingQueue.<Long>create(slidingWindowSize);
-            this.smoothedSizes = EvictingQueue.<Double>create(slidingWindowSize);
+            this.timestamps = new EvictingQueue<>(slidingWindowSize);
+            this.rawSizes = new EvictingQueue<>(slidingWindowSize);
+            this.smoothedSizes = new EvictingQueue<>(slidingWindowSize);
 
             this.smoothedSizesRegression = new SimpleRegression(true);
             this.holtWintersComputer = new HoltWintersComputer(alpha);
@@ -273,17 +273,17 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
         }
 
         @VisibleForTesting
-        EvictingQueue<Long> getTimestamps() {
+        Queue<Long> getTimestamps() {
             return timestamps;
         }
 
         @VisibleForTesting
-        EvictingQueue<Long> getRawSizes() {
+        Queue<Long> getRawSizes() {
             return rawSizes;
         }
 
         @VisibleForTesting
-        EvictingQueue<Double> getSmoothedSizes() {
+        Queue<Double> getSmoothedSizes() {
             return smoothedSizes;
         }
 

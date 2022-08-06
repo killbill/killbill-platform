@@ -22,6 +22,7 @@ package org.killbill.billing.platform.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -35,13 +36,12 @@ import org.killbill.commons.embeddeddb.mysql.MySQLStandaloneDB;
 import org.killbill.commons.embeddeddb.postgresql.PostgreSQLEmbeddedDB;
 import org.killbill.commons.embeddeddb.postgresql.PostgreSQLStandaloneDB;
 import org.killbill.commons.jdbi.guice.DBIProvider;
+import org.killbill.commons.utils.io.ByteStreams;
+import org.killbill.commons.utils.io.Resources;
 import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Resources;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class PlatformDBTestingHelper {
@@ -164,7 +164,7 @@ public class PlatformDBTestingHelper {
 
     protected String streamToString(final InputStream inputStream) throws IOException {
         try {
-            return new String(ByteStreams.toByteArray(inputStream), Charsets.UTF_8);
+            return new String(ByteStreams.toByteArray(inputStream), StandardCharsets.UTF_8);
         } finally {
             inputStream.close();
         }

@@ -20,6 +20,7 @@
 package org.killbill.billing.server.healthchecks;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.joda.time.DateTime;
@@ -28,7 +29,6 @@ import org.killbill.billing.server.healthchecks.KillbillQueuesHealthcheck.QueueS
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
 import org.killbill.commons.health.api.Result;
-import org.killbill.notificationq.api.NotificationQueue;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -36,8 +36,6 @@ import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import com.google.common.collect.ImmutableList;
 
 public class TestKillbillQueuesHealthcheck {
 
@@ -50,7 +48,7 @@ public class TestKillbillQueuesHealthcheck {
     @BeforeMethod(groups = "fast")
     public void setUp() throws Exception {
         final NotificationQueueService notificationQueueService = Mockito.mock(NotificationQueueService.class);
-        Mockito.when(notificationQueueService.getNotificationQueues()).thenReturn(ImmutableList.<NotificationQueue>of());
+        Mockito.when(notificationQueueService.getNotificationQueues()).thenReturn(Collections.emptyList());
 
         final PersistentBus externalBus = Mockito.mock(PersistentBus.class);
         Mockito.when(externalBus.getNbReadyEntries(Mockito.any(DateTime.class))).thenThrow(UnsupportedOperationException.class);

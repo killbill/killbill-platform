@@ -22,6 +22,7 @@ package org.killbill.billing.beatrix.integration.osgi;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -44,8 +45,6 @@ import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import com.google.common.collect.ImmutableList;
 
 import static org.awaitility.Awaitility.await;
 
@@ -94,7 +93,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         final UUID paymentMethodId = UUID.randomUUID();
         final BigDecimal paymentAmount = new BigDecimal("14.32");
         final Currency currency = Currency.USD;
-        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.purchasePayment(event.getAccountId(), paymentId, transactionId, paymentMethodId, paymentAmount, currency, ImmutableList.<PluginProperty>of(), callContext);
+        final PaymentTransactionInfoPlugin PaymentTransactionInfoPlugin = paymentPluginApi.purchasePayment(event.getAccountId(), paymentId, transactionId, paymentMethodId, paymentAmount, currency, Collections.emptyList(), callContext);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getKbPaymentId(), paymentId);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getKbTransactionPaymentId(), transactionId);
         Assert.assertEquals(PaymentTransactionInfoPlugin.getAmount().compareTo(paymentAmount), 0);

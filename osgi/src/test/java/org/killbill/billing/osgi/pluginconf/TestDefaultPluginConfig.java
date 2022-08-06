@@ -19,15 +19,13 @@
 
 package org.killbill.billing.osgi.pluginconf;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
-import org.killbill.commons.util.io.Files;
+import org.killbill.commons.utils.io.Files;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

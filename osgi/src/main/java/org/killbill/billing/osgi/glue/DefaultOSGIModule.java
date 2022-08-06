@@ -19,6 +19,7 @@
 
 package org.killbill.billing.osgi.glue;
 
+import javax.inject.Provider;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServlet;
 import javax.sql.DataSource;
@@ -54,7 +55,6 @@ import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.osgi.service.http.HttpService;
 import org.skife.config.ConfigurationObjectFactory;
 
-import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

@@ -24,11 +24,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
+import org.killbill.commons.utils.Strings;
+import org.killbill.commons.utils.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
-import com.google.common.io.Resources;
 
 /**
  * Kill Bill specific information
