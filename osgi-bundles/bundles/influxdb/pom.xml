@@ -32,10 +32,6 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.izettle</groupId>
             <artifactId>dropwizard-metrics-influxdb</artifactId>
             <version>${metrics-influxdb.version}</version>
