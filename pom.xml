@@ -56,7 +56,7 @@
         <check.fail-spotbugs>true</check.fail-spotbugs>
         <!-- Bug with maven-deploy-plugin -->
         <deploy.deploy-at-end>false</deploy.deploy-at-end>
-        <killbill-commons.version>0.25.1-3e73c99-SNAPSHOT</killbill-commons.version>
+        <killbill-commons.version>0.25.1-32bcd54-SNAPSHOT</killbill-commons.version>
     </properties>
     <dependencyManagement>
         <dependencies>
