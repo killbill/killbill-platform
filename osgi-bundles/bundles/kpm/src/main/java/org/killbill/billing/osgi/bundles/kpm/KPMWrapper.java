@@ -26,9 +26,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -37,14 +40,11 @@ import java.util.concurrent.TimeUnit;
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
 import org.killbill.billing.plugin.util.http.InvalidRequest;
+import org.killbill.commons.utils.Joiner;
+import org.killbill.commons.utils.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Command;
 import io.airlift.command.CommandFailedException;
@@ -58,7 +58,7 @@ public class KPMWrapper {
     public static final String PROPERTY_PREFIX = "org.killbill.billing.plugin.kpm.";
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(daemonThreadsNamed("kpm-%s"));
-    private static final ImmutableSet<Integer> DEFAULT_SUCCESSFUL_EXIT_CODES = ImmutableSet.of(0);
+    private static final Set<Integer> DEFAULT_SUCCESSFUL_EXIT_CODES = Set.of(0);
     private static final File DEFAULT_DIRECTORY = new File(".").getAbsoluteFile();
     // Be generous
     private static final Duration COMMAND_TIMEOUT = new Duration(5, TimeUnit.MINUTES);
@@ -75,15 +75,15 @@ public class KPMWrapper {
 
     public KPMWrapper(final OSGIKillbillAPI killbillAPI, final Properties properties) throws GeneralSecurityException {
         this.killbillAPI = killbillAPI;
-        this.adminUsername = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
-        this.adminPassword = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
-        this.kpmPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
-        this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/var", "tmp", "bundles").toString());
-        this.nexusUrl = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
-        this.nexusRepository = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
-        this.httpClient = new KPMClient(Boolean.parseBoolean(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
-                                        Integer.parseInt(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60")) * 1000,
-                                        Integer.parseInt(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60")) * 1000);
+        this.adminUsername = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
+        this.adminPassword = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
+        this.kpmPath = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
+        this.bundlesPath = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/var", "tmp", "bundles").toString());
+        this.nexusUrl = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
+        this.nexusRepository = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
+        this.httpClient = new KPMClient(Boolean.parseBoolean(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
+                                        Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60")) * 1000,
+                                        Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60")) * 1000);
     }
 
     public String getAvailablePlugins(final String kbVersion, final Boolean latest) {
@@ -239,7 +239,7 @@ public class KPMWrapper {
             final Command commandToExecute = new Command(commands,
                                                          DEFAULT_SUCCESSFUL_EXIT_CODES,
                                                          DEFAULT_DIRECTORY,
-                                                         ImmutableMap.<String, String>of(),
+                                                         Collections.emptyMap(),
                                                          COMMAND_TIMEOUT);
             logger.info("Executing: {}", SPACE_JOINER.join(commandToExecute.getCommand()));
             final String commandOutput = commandToExecute.execute(executor)

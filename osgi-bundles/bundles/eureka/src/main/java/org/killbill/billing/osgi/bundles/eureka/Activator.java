@@ -21,6 +21,7 @@ package org.killbill.billing.osgi.bundles.eureka;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 
 import org.killbill.CreatorName;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
@@ -30,7 +31,6 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.MoreObjects;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.EurekaInstanceConfig;
@@ -61,11 +61,11 @@ public class Activator extends KillbillActivatorBase {
     public void start(final BundleContext context) throws Exception {
         super.start(context);
 
-        final boolean eurekaEnabled = "true".equals(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "eureka"), "false"));
+        final boolean eurekaEnabled = "true".equals(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "eureka"), "false"));
         if (eurekaEnabled) {
             // Load properties
             ConfigurationManager.loadProperties(configProperties.getProperties());
-            final String namespace = MoreObjects.firstNonNull(configProperties.getProperties().getProperty("eureka.namespace"), CommonConstants.DEFAULT_CONFIG_NAMESPACE);
+            final String namespace = Objects.requireNonNullElse(configProperties.getProperties().getProperty("eureka.namespace"), CommonConstants.DEFAULT_CONFIG_NAMESPACE);
 
             final KillbillEurekaInstanceConfig eurekaInstanceConfig = new KillbillEurekaInstanceConfig(namespace);
             final DefaultEurekaClientConfig eurekaClientConfig = new DefaultEurekaClientConfig(namespace);

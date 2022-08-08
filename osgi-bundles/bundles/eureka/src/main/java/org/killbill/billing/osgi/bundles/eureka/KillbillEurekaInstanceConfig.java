@@ -23,7 +23,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
 
-import com.google.common.base.Strings;
+import org.killbill.commons.utils.Strings;
+
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.PropertiesInstanceConfig;
