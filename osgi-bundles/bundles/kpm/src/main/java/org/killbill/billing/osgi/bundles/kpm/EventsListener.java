@@ -22,6 +22,7 @@ package org.killbill.billing.osgi.bundles.kpm;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.killbill.billing.notification.plugin.api.BroadcastMetadata;
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
@@ -29,13 +30,12 @@ import org.killbill.billing.notification.plugin.api.ExtBusEventType;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillEventDispatcher;
 import org.killbill.billing.util.nodes.NodeCommandProperty;
 import org.killbill.billing.util.nodes.PluginNodeCommandMetadata;
+import org.killbill.commons.utils.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
 
 public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillEventHandler {
 
@@ -103,7 +103,7 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                 }
             } else {
                 // Special property passed by the Kill Bill node which sent the broadcase
-                final String kbVersion = MoreObjects.firstNonNull(props.get("kbVersion"), "LATEST");
+                final String kbVersion = Objects.requireNonNullElse(props.get("kbVersion"), "LATEST");
                 final String pluginArtifactId = props.get("pluginArtifactId");
                 final String pluginGroupId = props.get("pluginGroupId");
                 final String pluginPackaging = props.get("pluginPackaging");

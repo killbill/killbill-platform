@@ -20,6 +20,7 @@
 package org.killbill.billing.osgi.bundles.graphite;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.Graphite;
-import com.google.common.base.MoreObjects;
+
 import io.dropwizard.util.Duration;
 
 public class Activator extends KillbillActivatorBase {
@@ -46,16 +47,16 @@ public class Activator extends KillbillActivatorBase {
     public void start(final BundleContext context) throws Exception {
         super.start(context);
 
-        final boolean graphiteEnabled = "true".equals(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite"), "false"));
+        final boolean graphiteEnabled = "true".equals(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite"), "false"));
         if (graphiteEnabled) {
             // Stream metric values to a Graphite server
-            final InetSocketAddress address = new InetSocketAddress(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.host"), "localhost"),
-                                                                    Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.port"), "2003")));
+            final InetSocketAddress address = new InetSocketAddress(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.host"), "localhost"),
+                                                                    Integer.parseInt(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.port"), "2003")));
             final Graphite graphite = new Graphite(address);
 
-            final int reportingFrequency = Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.interval"), "30"));
+            final int reportingFrequency = Integer.parseInt(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.interval"), "30"));
 
-            final GraphiteReporterFactory reporterFactory = new GraphiteReporterFactory().setPrefix(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.prefix"), "killbill"))
+            final GraphiteReporterFactory reporterFactory = new GraphiteReporterFactory().setPrefix(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.graphite.prefix"), "killbill"))
                                                                                          .setGraphite(graphite);
             reporterFactory.setFrequency(Optional.of(Duration.seconds(reportingFrequency)));
 

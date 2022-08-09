@@ -28,10 +28,9 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.killbill.commons.utils.collect.EvictingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.EvictingQueue;
 
 @SuppressWarnings("UnstableApiUsage")
 public class LogEntriesManager implements Closeable {
@@ -42,7 +41,7 @@ public class LogEntriesManager implements Closeable {
     private final EvictingQueue<LogEntryJson> rootCache;
 
     public LogEntriesManager() {
-        sseIDsCaches = new HashMap<UUID, EvictingQueue<LogEntryJson>>();
+        sseIDsCaches = new HashMap<>();
         final UUID rootCacheId = UUID.randomUUID();
         rootCache = subscribe(rootCacheId, null);
     }
@@ -56,7 +55,7 @@ public class LogEntriesManager implements Closeable {
     }
 
     public EvictingQueue<LogEntryJson> subscribe(final UUID cacheId, @Nullable final UUID lastEventId) {
-        final EvictingQueue<LogEntryJson> cache = EvictingQueue.<LogEntryJson>create(500);
+        final EvictingQueue<LogEntryJson> cache = new EvictingQueue<>(500);
         synchronized (sseIDsCaches) {
             sseIDsCaches.put(cacheId, cache);
             if (rootCache != null) {

@@ -19,6 +19,7 @@
 
 package org.killbill.billing.osgi.bundles.influxdb;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.ScheduledReporter;
-import com.google.common.base.MoreObjects;
 import com.izettle.metrics.dw.SenderType;
 import io.dropwizard.util.Duration;
 
@@ -45,23 +45,23 @@ public class Activator extends KillbillActivatorBase {
     public void start(final BundleContext context) throws Exception {
         super.start(context);
 
-        final boolean influxDBEnabled = "true".equals(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb"), "false"));
+        final boolean influxDBEnabled = "true".equals(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb"), "false"));
         if (influxDBEnabled) {
             // Stream metric values to a InfluxDB server
             final CustomInfluxDbReporterFactory influxDbReporterFactory = new CustomInfluxDbReporterFactory();
             influxDbReporterFactory.setRateUnit(TimeUnit.SECONDS);
             influxDbReporterFactory.setDurationUnit(TimeUnit.NANOSECONDS);
-            influxDbReporterFactory.setHost(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.host"), "localhost"));
-            influxDbReporterFactory.setPort(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.port"), "8086")));
-            influxDbReporterFactory.setReadTimeout(Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.socketTimeout"), "1000")));
-            influxDbReporterFactory.setDatabase(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.database"), "killbill"));
-            influxDbReporterFactory.setPrefix(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.prefix"), ""));
-            influxDbReporterFactory.setSenderType(SenderType.valueOf(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.senderType"), "HTTP")));
-            influxDbReporterFactory.setOrganization(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.organization"), "killbill"));
-            influxDbReporterFactory.setBucket(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.bucket"), "killbill"));
-            influxDbReporterFactory.setToken(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.token"), ""));
+            influxDbReporterFactory.setHost(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.host"), "localhost"));
+            influxDbReporterFactory.setPort(Integer.parseInt(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.port"), "8086")));
+            influxDbReporterFactory.setReadTimeout(Integer.parseInt(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.socketTimeout"), "1000")));
+            influxDbReporterFactory.setDatabase(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.database"), "killbill"));
+            influxDbReporterFactory.setPrefix(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.prefix"), ""));
+            influxDbReporterFactory.setSenderType(SenderType.valueOf(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.senderType"), "HTTP")));
+            influxDbReporterFactory.setOrganization(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.organization"), "killbill"));
+            influxDbReporterFactory.setBucket(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.bucket"), "killbill"));
+            influxDbReporterFactory.setToken(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.token"), ""));
 
-            final int reportingFrequency = Integer.parseInt(MoreObjects.firstNonNull(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.interval"), "30"));
+            final int reportingFrequency = Integer.parseInt(Objects.requireNonNullElse(configProperties.getString(KILL_BILL_NAMESPACE + "metrics.influxDb.interval"), "30"));
             influxDbReporterFactory.setFrequency(Optional.of(Duration.seconds(reportingFrequency)));
 
             logger.info("Reporting metrics to InfluxDB {}:{}", influxDbReporterFactory.getHost(), influxDbReporterFactory.getPort());

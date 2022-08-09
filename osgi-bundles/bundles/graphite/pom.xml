@@ -31,10 +31,6 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
             <groupId>io.dropwizard</groupId>
             <artifactId>dropwizard-metrics</artifactId>
             <version>${dropwizard-metrics.version}</version>
