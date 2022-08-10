@@ -19,14 +19,14 @@
 
 package org.killbill.billing.lifecycle.bus;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.killbill.billing.lifecycle.api.ExternalBusService;
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
 import org.killbill.bus.api.PersistentBus;
-
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 public class DefaultExternalBusService implements ExternalBusService {
 

@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillService;
@@ -41,7 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.ConfigurationException;
-import com.google.inject.Inject;
+
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 
@@ -49,8 +50,7 @@ public class DefaultLifecycle implements Lifecycle {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultLifecycle.class);
 
-    // FIXME-1615: This was SortedSetMultimap<LifecycleLevel, LifecycleHandler<? extends KillbillService>> handlersByLevel
-    //   is it worth it to refactor org.killbill.commons.utils.collect.MultiValueMap just for this?
+    // See https://github.com/killbill/killbill-commons/issues/143
     private final Map<LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> handlersByLevel;
 
     @Inject

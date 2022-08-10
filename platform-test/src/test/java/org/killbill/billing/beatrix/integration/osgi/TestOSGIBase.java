@@ -22,6 +22,7 @@ package org.killbill.billing.beatrix.integration.osgi;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.sql.DataSource;
 
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;
@@ -51,7 +52,6 @@ import org.testng.annotations.BeforeSuite;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
-import com.google.inject.name.Named;
 import org.awaitility.Awaitility;
 import com.zaxxer.hikari.HikariDataSource;
 

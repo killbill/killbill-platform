@@ -28,6 +28,8 @@ import java.util.Observable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.Servlet;
 import javax.sql.DataSource;
@@ -65,7 +67,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
@@ -121,58 +122,58 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistrable>();
     }
 
-    @Inject(optional = true)
-    public void addServletOSGIServiceRegistration(final OSGIServiceRegistration<Servlet> servletRouter) {
+    @Inject
+    public void addServletOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<Servlet> servletRouter) {
         allRegistrationHandlers.add(servletRouter);
     }
 
-    @Inject(optional = true)
-    public void addPaymentPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<PaymentPluginApi> paymentProviderPluginRegistry) {
+    @Inject
+    public void addPaymentPluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<PaymentPluginApi> paymentProviderPluginRegistry) {
         allRegistrationHandlers.add(paymentProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addInvoicePluginApiOSGIServiceRegistration(final OSGIServiceRegistration<InvoicePluginApi> invoiceProviderPluginRegistry) {
+    @Inject
+    public void addInvoicePluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<InvoicePluginApi> invoiceProviderPluginRegistry) {
         allRegistrationHandlers.add(invoiceProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addCurrencyPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<CurrencyPluginApi> currencyProviderPluginRegistry) {
+    @Inject
+    public void addCurrencyPluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<CurrencyPluginApi> currencyProviderPluginRegistry) {
         allRegistrationHandlers.add(currencyProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addPaymentControlPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<PaymentControlPluginApi> paymentControlProviderPluginRegistry) {
+    @Inject
+    public void addPaymentControlPluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<PaymentControlPluginApi> paymentControlProviderPluginRegistry) {
         allRegistrationHandlers.add(paymentControlProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addCatalogPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<CatalogPluginApi> catalogProviderPluginRegistry) {
+    @Inject
+    public void addCatalogPluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<CatalogPluginApi> catalogProviderPluginRegistry) {
         allRegistrationHandlers.add(catalogProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addEntitlementPluginApiOSGIServiceRegistration(final OSGIServiceRegistration<EntitlementPluginApi> entitlementProviderPluginRegistry) {
+    @Inject
+    public void addEntitlementPluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<EntitlementPluginApi> entitlementProviderPluginRegistry) {
         allRegistrationHandlers.add(entitlementProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addUsagePluginApiOSGIServiceRegistration(final OSGIServiceRegistration<UsagePluginApi> usageProviderPluginRegistry) {
+    @Inject
+    public void addUsagePluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<UsagePluginApi> usageProviderPluginRegistry) {
         allRegistrationHandlers.add(usageProviderPluginRegistry);
     }
 
-    @Inject(optional = true)
-    public void addHealthcheckOSGIServiceRegistration(final OSGIServiceRegistration<Healthcheck> healthcheckRegistry) {
+    @Inject
+    public void addHealthcheckOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<Healthcheck> healthcheckRegistry) {
         allRegistrationHandlers.add(healthcheckRegistry);
     }
 
-    @Inject(optional = true)
-    public void addServiceRegistryOSGIServiceRegistration(final OSGIServiceRegistration<ServiceDiscoveryRegistry> serviceRegistry) {
+    @Inject
+    public void addServiceRegistryOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<ServiceDiscoveryRegistry> serviceRegistry) {
         allRegistrationHandlers.add(serviceRegistry);
     }
 
-    @Inject(optional = true)
-    public void addMetricRegistryOSGIServiceRegistration(final OSGISingleServiceRegistration<MetricRegistry> metricRegistry) {
+    @Inject
+    public void addMetricRegistryOSGIServiceRegistration(@Nullable final OSGISingleServiceRegistration<MetricRegistry> metricRegistry) {
         allRegistrationHandlers.add(metricRegistry);
     }
 

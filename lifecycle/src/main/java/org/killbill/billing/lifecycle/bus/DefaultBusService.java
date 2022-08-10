@@ -19,12 +19,12 @@
 
 package org.killbill.billing.lifecycle.bus;
 
+import javax.inject.Inject;
+
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
 import org.killbill.bus.api.PersistentBus;
-
-import com.google.inject.Inject;
 
 public class DefaultBusService implements BusService {
 

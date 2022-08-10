@@ -19,11 +19,12 @@
 
 package org.killbill.billing.osgi.bundles.eureka;
 
+import javax.inject.Inject;
+
 import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

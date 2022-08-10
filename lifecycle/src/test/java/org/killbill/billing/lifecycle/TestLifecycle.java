@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
+import javax.inject.Inject;
+
 import org.killbill.billing.lifecycle.DefaultLifecycle.LifecycleHandler;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
@@ -35,7 +37,7 @@ import org.testng.annotations.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
+
 import com.google.inject.Injector;
 import com.google.inject.Stage;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

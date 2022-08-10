@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;
@@ -35,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @Singleton
@@ -51,8 +52,8 @@ public class KillbillHealthcheck implements HealthCheck {
     private OSGIServiceRegistration<ServiceDiscoveryRegistry> pluginServiceDiscoveryRegistries = null;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    @Inject(optional = true)
-    public void setServiceDiscoveryRegistries(final Set<ServiceDiscoveryRegistry> serviceDiscoveryRegistries) {
+    @Inject
+    public void setServiceDiscoveryRegistries(@Nullable final Set<ServiceDiscoveryRegistry> serviceDiscoveryRegistries) {
         this.serviceDiscoveryRegistries = serviceDiscoveryRegistries;
     }
 

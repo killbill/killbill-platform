@@ -20,14 +20,13 @@
 package org.killbill.billing.server.modules;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.clock.DistributedClockMock;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
-
-import com.google.inject.Provider;
 
 public class DistributedClockProvider implements Provider<DistributedClockMock> {
 
