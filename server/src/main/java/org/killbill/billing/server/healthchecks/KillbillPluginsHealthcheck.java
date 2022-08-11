@@ -22,6 +22,8 @@ package org.killbill.billing.server.healthchecks;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.killbill.billing.osgi.api.Healthcheck;
@@ -34,8 +36,6 @@ import org.killbill.commons.health.impl.UnhealthyResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-
 @Singleton
 public class KillbillPluginsHealthcheck implements HealthCheck {
 
@@ -43,8 +43,8 @@ public class KillbillPluginsHealthcheck implements HealthCheck {
 
     private OSGIServiceRegistration<Healthcheck> pluginHealthchecks = null;
 
-    @Inject(optional = true)
-    public void setPluginHealthchecks(final OSGIServiceRegistration<Healthcheck> pluginHealthchecks) {
+    @Inject
+    public void setPluginHealthchecks(@Nullable final OSGIServiceRegistration<Healthcheck> pluginHealthchecks) {
         this.pluginHealthchecks = pluginHealthchecks;
     }
 

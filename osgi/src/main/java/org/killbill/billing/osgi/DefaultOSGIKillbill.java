@@ -19,6 +19,9 @@
 
 package org.killbill.billing.osgi;
 
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
 import org.killbill.billing.account.api.AccountUserApi;
 import org.killbill.billing.catalog.api.CatalogUserApi;
 import org.killbill.billing.currency.api.CurrencyConversionApi;
@@ -42,7 +45,6 @@ import org.killbill.billing.util.api.RecordIdApi;
 import org.killbill.billing.util.api.TagUserApi;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 
-import com.google.inject.Inject;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressFBWarnings("EI_EXPOSE_REP")
@@ -71,108 +73,108 @@ public class DefaultOSGIKillbill implements OSGIKillbill {
 
     private PluginConfigServiceApi configServiceApi;
 
-    @Inject(optional = true)
-    public void setAccountUserApi(final AccountUserApi accountUserApi) {
+    @Inject
+    public void setAccountUserApi(@Nullable final AccountUserApi accountUserApi) {
         this.accountUserApi = accountUserApi;
     }
 
-    @Inject(optional = true)
-    public void setCatalogUserApi(final CatalogUserApi catalogUserApi) {
+    @Inject
+    public void setCatalogUserApi(@Nullable final CatalogUserApi catalogUserApi) {
         this.catalogUserApi = catalogUserApi;
     }
 
-    @Inject(optional = true)
-    public void setInvoicePaymentApi(final InvoicePaymentApi invoicePaymentApi) {
+    @Inject
+    public void setInvoicePaymentApi(@Nullable final InvoicePaymentApi invoicePaymentApi) {
         this.invoicePaymentApi = invoicePaymentApi;
     }
 
-    @Inject(optional = true)
-    public void setInvoiceUserApi(final InvoiceUserApi invoiceUserApi) {
+    @Inject
+    public void setInvoiceUserApi(@Nullable final InvoiceUserApi invoiceUserApi) {
         this.invoiceUserApi = invoiceUserApi;
     }
 
-    @Inject(optional = true)
-    public void setPaymentApi(final PaymentApi paymentApi) {
+    @Inject
+    public void setPaymentApi(@Nullable final PaymentApi paymentApi) {
         this.paymentApi = paymentApi;
     }
 
-    @Inject(optional = true)
-    public void setTenantUserApi(final TenantUserApi tenantUserApi) {
+    @Inject
+    public void setTenantUserApi(@Nullable final TenantUserApi tenantUserApi) {
         this.tenantUserApi = tenantUserApi;
     }
 
-    @Inject(optional = true)
-    public void setUsageUserApi(final UsageUserApi usageUserApi) {
+    @Inject
+    public void setUsageUserApi(@Nullable final UsageUserApi usageUserApi) {
         this.usageUserApi = usageUserApi;
     }
 
-    @Inject(optional = true)
-    public void setAuditUserApi(final AuditUserApi auditUserApi) {
+    @Inject
+    public void setAuditUserApi(@Nullable final AuditUserApi auditUserApi) {
         this.auditUserApi = auditUserApi;
     }
 
-    @Inject(optional = true)
-    public void setCustomFieldUserApi(final CustomFieldUserApi customFieldUserApi) {
+    @Inject
+    public void setCustomFieldUserApi(@Nullable final CustomFieldUserApi customFieldUserApi) {
         this.customFieldUserApi = customFieldUserApi;
     }
 
-    @Inject(optional = true)
-    public void setExportUserApi(final ExportUserApi exportUserApi) {
+    @Inject
+    public void setExportUserApi(@Nullable final ExportUserApi exportUserApi) {
         this.exportUserApi = exportUserApi;
     }
 
-    @Inject(optional = true)
-    public void setTagUserApi(final TagUserApi tagUserApi) {
+    @Inject
+    public void setTagUserApi(@Nullable final TagUserApi tagUserApi) {
         this.tagUserApi = tagUserApi;
     }
 
-    @Inject(optional = true)
-    public void setEntitlementApi(final EntitlementApi entitlementApi) {
+    @Inject
+    public void setEntitlementApi(@Nullable final EntitlementApi entitlementApi) {
         this.entitlementApi = entitlementApi;
     }
 
-    @Inject(optional = true)
-    public void setSubscriptionApi(final SubscriptionApi subscriptionApi) {
+    @Inject
+    public void setSubscriptionApi(@Nullable final SubscriptionApi subscriptionApi) {
         this.subscriptionApi = subscriptionApi;
     }
 
-    @Inject(optional = true)
-    public void setCurrencyConversionApi(final CurrencyConversionApi currencyConversionApi) {
+    @Inject
+    public void setCurrencyConversionApi(@Nullable final CurrencyConversionApi currencyConversionApi) {
         this.currencyConversionApi = currencyConversionApi;
     }
 
-    @Inject(optional = true)
-    public void setRecordIdApi(final RecordIdApi recordIdApi) {
+    @Inject
+    public void setRecordIdApi(@Nullable final RecordIdApi recordIdApi) {
         this.recordIdApi = recordIdApi;
     }
 
-    @Inject(optional = true)
-    public void setConfigServiceApi(final PluginConfigServiceApi configServiceApi) {
+    @Inject
+    public void setConfigServiceApi(@Nullable final PluginConfigServiceApi configServiceApi) {
         this.configServiceApi = configServiceApi;
     }
 
-    @Inject(optional = true)
-    public void setSecurityApi(final SecurityApi securityApi) {
+    @Inject
+    public void setSecurityApi(@Nullable final SecurityApi securityApi) {
         this.securityApi = securityApi;
     }
 
-    @Inject(optional = true)
-    public void setPluginsInfoApi(final PluginsInfoApi pluginsInfoApi) {
+    @Inject
+    public void setPluginsInfoApi(@Nullable final PluginsInfoApi pluginsInfoApi) {
         this.pluginsInfoApi = pluginsInfoApi;
     }
 
-    @Inject(optional = true)
-    public void setKillbillNodesApi(final KillbillNodesApi killbillNodesApi) {
+    @Inject
+    public void setKillbillNodesApi(@Nullable final KillbillNodesApi killbillNodesApi) {
         this.killbillNodesApi = killbillNodesApi;
     }
 
-    @Inject(optional = true)
-    public void setAdminPaymentApi(final AdminPaymentApi adminPaymentApi) {
+    @Inject
+    public void setAdminPaymentApi(@Nullable final AdminPaymentApi adminPaymentApi) {
         this.adminPaymentApi = adminPaymentApi;
     }
 
-    @Inject(optional = true)
-    public void setOverdueApi(final OverdueApi overdueApi) {
+    @Inject
+    public void setOverdueApi(@Nullable final OverdueApi overdueApi) {
         this.overdueApi = overdueApi;
     }
 
