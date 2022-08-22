@@ -58,7 +58,7 @@ public class KillbillHealthcheck implements HealthCheck {
     }
 
     @Inject
-    public void setPluginServiceDiscoveryRegistries(final OSGIServiceRegistration<ServiceDiscoveryRegistry> pluginServiceDiscoveryRegistries) {
+    public void setPluginServiceDiscoveryRegistries(@Nullable final OSGIServiceRegistration<ServiceDiscoveryRegistry> pluginServiceDiscoveryRegistries) {
         this.pluginServiceDiscoveryRegistries = pluginServiceDiscoveryRegistries;
     }
 
