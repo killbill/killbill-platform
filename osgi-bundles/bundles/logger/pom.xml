@@ -22,16 +22,12 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
-        <version>0.40.13</version>
+        <version>0.40.14-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
     <packaging>bundle</packaging>
     <name>killbill-platform-osgi-bundles-logger</name>
-
-    <scm>
-        <tag>killbill-platform-0.40.13</tag>
-    </scm>
     <properties>
         <osgi.private>org.killbill.billing.osgi.bundles.logger.*</osgi.private>
     </properties>
