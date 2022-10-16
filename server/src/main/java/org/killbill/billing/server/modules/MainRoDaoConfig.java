@@ -30,7 +30,7 @@ import org.skife.config.TimeSpan;
 
 public interface MainRoDaoConfig extends DaoConfig {
 
-    static final String DATA_SOURCE_PROP_PREFIX = "org.killbill.billing.main-ro.dao.";
+    static final String DATA_SOURCE_PROP_PREFIX = "org.killbill.billing.main.ro.dao.";
 
     @Description("Whether the read-only datasource is enabled")
     @Config(DATA_SOURCE_PROP_PREFIX + "enabled")
