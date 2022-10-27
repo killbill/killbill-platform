@@ -93,6 +93,11 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
+                <!-- not sure why, but enforcer show an error that there's jooq 3.15.11 exist, where mvn dependency:tree show nothing -->
+                <exclusion>
+                    <groupId>org.jooq</groupId>
+                    <artifactId>jooq</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
