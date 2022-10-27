@@ -27,9 +27,11 @@ import javax.servlet.http.HttpServlet;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
+import org.killbill.billing.osgi.libs.killbill.OSGIServiceNotAvailable;
 import org.killbill.billing.plugin.core.resources.jooby.PluginApp;
 import org.killbill.billing.plugin.core.resources.jooby.PluginAppBuilder;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +44,11 @@ public class Activator extends KillbillActivatorBase {
 
     private LogEntriesManager logEntriesManager;
     private LogsSseHandler logsSseHandler;
-    private KillbillLogWriter killbillLogListener;
 
     @Override
     public void start(final BundleContext context) throws Exception {
         logEntriesManager = new LogEntriesManager();
-        killbillLogListener = new KillbillLogWriter(logEntriesManager);
+        final KillbillLogWriter killbillLogListener = new KillbillLogWriter(logEntriesManager, getLoggerFactory(context));
         context.addBundleListener(killbillLogListener);
         context.addFrameworkListener(killbillLogListener);
         context.addServiceListener(killbillLogListener);
@@ -76,5 +77,14 @@ public class Activator extends KillbillActivatorBase {
         final Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, PLUGIN_NAME);
         registrar.registerService(context, Servlet.class, servlet, props);
+    }
+
+    private org.osgi.service.log.LoggerFactory getLoggerFactory(final BundleContext context) {
+        final String serviceName = org.osgi.service.log.LoggerFactory.class.getName();
+        final ServiceReference<?> serviceReference = context.getServiceReference(serviceName);
+        if (serviceReference != null) {
+            return (org.osgi.service.log.LoggerFactory) context.getService(serviceReference);
+        }
+        throw new OSGIServiceNotAvailable(serviceName);
     }
 }
