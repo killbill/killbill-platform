@@ -49,7 +49,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     protected OSGIKillbillAPI killbillAPI;
     protected ROOSGIKillbillAPI roOSGIkillbillAPI;
-    protected OSGIKillbillLogService logService;
     protected OSGIKillbillRegistrar registrar;
     protected OSGIKillbillDataSource dataSource;
     protected OSGIKillbillClock clock;
@@ -64,9 +63,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Override
     public void start(final BundleContext context) throws Exception {
-        // Keep it for now for backward compatibility purposes with existing plugins
-        logService = new OSGIKillbillLogService(context);
-
         logger.info("OSGI bundle='{}' received START command", context.getBundle().getSymbolicName());
 
         killbillAPI = new OSGIKillbillAPI(context);
@@ -134,10 +130,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         if (dataSource != null) {
             dataSource.close();
             dataSource = null;
-        }
-        if (logService != null) {
-            logService.close();
-            logService = null;
         }
     }
 
