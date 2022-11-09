@@ -35,8 +35,6 @@ import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class PersistentBusProvider implements Provider<PersistentBus> {
 
     private static final Logger logger = LoggerFactory.getLogger(PersistentBusProvider.class);
@@ -52,9 +50,11 @@ public class PersistentBusProvider implements Provider<PersistentBus> {
         this.busConfig = busConfig;
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject
-    public void initialize(@Named(DefaultQueueLifecycle.QUEUE_NAME) final IDBI dbi, final DatabaseTransactionNotificationApi observable, final Clock clock, final MetricRegistry metricRegistry) {
+    public void initialize(@Named(DefaultQueueLifecycle.QUEUE_NAME) final IDBI dbi,
+                           final DatabaseTransactionNotificationApi observable,
+                           final Clock clock,
+                           final MetricRegistry metricRegistry) {
         this.dbi = dbi;
         this.clock = clock;
         this.metricRegistry = metricRegistry;
