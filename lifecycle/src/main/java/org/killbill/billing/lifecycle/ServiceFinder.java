@@ -34,8 +34,6 @@ import java.util.jar.JarFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class ServiceFinder<T> {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceFinder.class);
@@ -44,7 +42,6 @@ public class ServiceFinder<T> {
     private final String interfaceFilter;
     private final Set<Class<? extends T>> servicesTypes;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public ServiceFinder(final ClassLoader loader, final String interfaceFilter) {
         this.loader = loader;
         this.interfaceFilter = interfaceFilter;
@@ -54,15 +51,14 @@ public class ServiceFinder<T> {
         }
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public Set<Class<? extends T>> getServices() {
-        return servicesTypes;
+        return Set.copyOf(servicesTypes);
     }
 
     private Set<Class<? extends T>> initialize() {
         try {
 
-            final Set<String> packageFilter = new HashSet<String>();
+            final Set<String> packageFilter = new HashSet<>();
             packageFilter.add("org.killbill.billing");
             final String jarFilter = "killbill";
             return findClasses(loader, interfaceFilter, jarFilter, packageFilter);
@@ -82,7 +78,7 @@ public class ServiceFinder<T> {
                                              final Set<String> packageFilter)
     throws ClassNotFoundException {
 
-        final Set<Class<? extends T>> result = new HashSet<Class<? extends T>>();
+        final Set<Class<? extends T>> result = new HashSet<>();
 
         Object[] classPaths;
         try {
