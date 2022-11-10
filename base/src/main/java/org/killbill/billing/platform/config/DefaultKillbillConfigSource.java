@@ -40,8 +40,6 @@ import org.killbill.xmlloader.UriAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
     private static final Object lock = new Object();
@@ -112,10 +110,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return properties.getProperty(propertyName);
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     @Override
     public Properties getProperties() {
-        return properties;
+        return new Properties(properties);
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
