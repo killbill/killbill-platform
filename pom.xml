@@ -192,6 +192,13 @@
                 <artifactId>killbill-platform-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- FIXME-PLATFORM-120: Move to killbill-oss-parent later -->
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.service.log</artifactId>
+                <version>1.5.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>
