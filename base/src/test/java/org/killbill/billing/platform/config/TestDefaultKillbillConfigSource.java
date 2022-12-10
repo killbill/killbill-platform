@@ -21,10 +21,12 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
+import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.Assert;
@@ -51,6 +53,19 @@ public class TestDefaultKillbillConfigSource {
         System.clearProperty(JASYPT_ALGORITHM);
         System.clearProperty(ENCRYPTED_PROPERTY_1);
         System.clearProperty(ENCRYPTED_PROPERTY_2);
+    }
+
+    @Test(groups = "fast")
+    public void testGetProperties() throws URISyntaxException, IOException {
+        final Map<String, String> configuration = new HashMap<>();
+        configuration.put("1", "A");
+        configuration.put("2", "B");
+
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, configuration);
+
+        Assert.assertNotNull(configSource.getProperties());
+        Assert.assertNotEquals(configSource.getProperties().size(), 0);
+        Assert.assertEquals(configSource.getProperties().getProperty("1"), "A");
     }
 
     @Test(groups = "fast")

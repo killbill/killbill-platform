@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -85,7 +86,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             this.properties = loadPropertiesFromFileOrSystemProperties();
         } else {
             this.properties = new Properties();
-            this.properties.load(UriAccessor.accessUri(this.getClass().getResource(file).toURI()));
+            this.properties.load(UriAccessor.accessUri(Objects.requireNonNull(this.getClass().getResource(file)).toURI()));
         }
 
         for (final Entry<String, String> entry : extraDefaultProperties.entrySet()) {
@@ -112,7 +113,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public Properties getProperties() {
-        return new Properties(properties);
+        final Properties result = new Properties();
+        result.putAll(properties);
+        return result;
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
