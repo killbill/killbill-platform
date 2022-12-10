@@ -42,7 +42,6 @@ import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.entity.Pagination;
 
-import com.google.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
@@ -140,7 +139,7 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
 
             @Override
             public List<PluginProperty> getProperties() {
-                return ImmutableList.<PluginProperty>of();
+                return Collections.emptyList();
             }
         });
     }
@@ -161,7 +160,7 @@ public class TestPaymentPluginApi implements PaymentPluginApiWithTestControl {
     @Override
     public List<PaymentTransactionInfoPlugin> getPaymentInfo(final UUID accountId, final UUID kbPaymentId, final Iterable<PluginProperty> properties, final TenantContext context) throws PaymentPluginApiException {
         final BigDecimal someAmount = new BigDecimal("12.45");
-        return ImmutableList.<PaymentTransactionInfoPlugin>of(getPaymentTransactionInfoPluginResult(kbPaymentId, UUID.randomUUID(), TransactionType.PURCHASE, someAmount, null));
+        return List.of(getPaymentTransactionInfoPluginResult(kbPaymentId, UUID.randomUUID(), TransactionType.PURCHASE, someAmount, null));
     }
 
     @Override

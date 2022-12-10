@@ -19,6 +19,8 @@
 
 package org.killbill.billing.osgi;
 
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Map;
 
 import org.osgi.framework.Bundle;
@@ -30,7 +32,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import com.google.common.collect.ImmutableMap;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
@@ -88,7 +90,7 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     private static final class RootBundleLogbackServiceReference implements ServiceReference {
 
         // MAGIC - do not change (see KillbillLogWriter)
-        private static final Map<String, String> SERVICE_KEYS = ImmutableMap.<String, String>of("KILL_BILL_ROOT_LOGGING", "true");
+        private static final Map<String, String> SERVICE_KEYS = Map.of("KILL_BILL_ROOT_LOGGING", "true");
 
         private final Bundle bundle;
 
@@ -119,6 +121,24 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         @Override
         public boolean isAssignableTo(final Bundle bundle, final String className) {
             throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+        }
+
+        @Override
+        public Object adapt(final Class type) {
+            throw new UnsupportedOperationException("Not supported yet for RootBundleLogbackServiceReference");
+        }
+
+        @Override
+        public Dictionary getProperties() {
+            final Hashtable<String, String> hashtable = new Hashtable<>();
+
+            for (final Map.Entry<String, String> entry : SERVICE_KEYS.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    hashtable.put(entry.getKey(), entry.getValue());
+                }
+            }
+
+            return hashtable;
         }
 
         @Override

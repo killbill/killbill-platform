@@ -27,7 +27,7 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import com.google.common.base.Preconditions;
+import org.killbill.commons.utils.Preconditions;
 
 public class ReferenceableDataSourceSpyFactory implements ObjectFactory {
 

@@ -21,9 +21,12 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
 
@@ -32,17 +35,15 @@ import javax.annotation.Nullable;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.commons.utils.Strings;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.xmlloader.UriAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
+
+    private static final Object lock = new Object();
 
     private static final String PROP_USER_TIME_ZONE = "user.timezone";
     private static final String PROP_SECURITY_EGD = "java.security.egd";
@@ -77,7 +78,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file) throws URISyntaxException, IOException {
-        this(file, ImmutableMap.<String, String>of());
+        this(file, Collections.emptyMap());
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
@@ -85,7 +86,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             this.properties = loadPropertiesFromFileOrSystemProperties();
         } else {
             this.properties = new Properties();
-            this.properties.load(UriAccessor.accessUri(this.getClass().getResource(file).toURI()));
+            this.properties.load(UriAccessor.accessUri(Objects.requireNonNull(this.getClass().getResource(file)).toURI()));
         }
 
         for (final Entry<String, String> entry : extraDefaultProperties.entrySet()) {
@@ -110,10 +111,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return properties.getProperty(propertyName);
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     @Override
     public Properties getProperties() {
-        return properties;
+        final Properties result = new Properties();
+        result.putAll(properties);
+        return result;
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
@@ -153,7 +155,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             if (propertyName.equals(PROP_USER_TIME_ZONE)) {
                 if (!"GMT".equals(System.getProperty(propertyName))) {
                     if (GMT_WARNING == NOT_SHOWN) {
-                        synchronized (DefaultKillbillConfigSource.class) {
+                        synchronized (lock) {
                             if (GMT_WARNING == NOT_SHOWN) {
                                 GMT_WARNING = SHOWN;
                                 logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
@@ -183,7 +185,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         // WARN for missing PROP_SECURITY_EGD
         if (System.getProperty(PROP_SECURITY_EGD) == null) {
             if (ENTROPY_WARNING == NOT_SHOWN) {
-                synchronized (DefaultKillbillConfigSource.class) {
+                synchronized (lock) {
                     if (ENTROPY_WARNING == NOT_SHOWN) {
                         ENTROPY_WARNING = SHOWN;
                         logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
@@ -253,9 +255,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             final String key = (String) keys.nextElement();
             final String value = (String) properties.get(key);
             final Optional<String> decryptableValue = decryptableValue(value);
-            if (decryptableValue.isPresent()) {
-                properties.setProperty(key, encryptor.decrypt(decryptableValue.get()));
-            }
+            decryptableValue.ifPresent(s -> properties.setProperty(key, encryptor.decrypt(s)));
         }
     }
 
@@ -285,7 +285,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private Optional<String> decryptableValue(final String value) {
         if (value == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
 
         final int start = value.indexOf(ENC_PREFIX);
@@ -295,6 +295,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 return Optional.of(value.substring(start + ENC_PREFIX.length(), end));
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

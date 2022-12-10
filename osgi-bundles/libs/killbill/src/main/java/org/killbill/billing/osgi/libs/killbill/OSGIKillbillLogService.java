@@ -22,9 +22,11 @@ package org.killbill.billing.osgi.libs.killbill;
 import javax.annotation.Nullable;
 
 import org.killbill.killbill.osgi.libs.killbill.OSGIKillbillServiceReference;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
+import org.osgi.service.log.Logger;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.MDC;
 
@@ -93,5 +95,30 @@ public class OSGIKillbillLogService extends OSGIKillbillLibraryBase implements L
                 return null;
             }
         });
+    }
+
+    @Override
+    public Logger getLogger(final String name) {
+        throw new java.lang.UnsupportedOperationException("Deprecated. Plugins should be using slf4j directly.");
+    }
+
+    @Override
+    public Logger getLogger(final Class<?> clazz) {
+        throw new java.lang.UnsupportedOperationException("Deprecated. Plugins should be using slf4j directly.");
+    }
+
+    @Override
+    public <L extends Logger> L getLogger(final String name, final Class<L> loggerType) {
+        throw new java.lang.UnsupportedOperationException("Deprecated. Plugins should be using slf4j directly.");
+    }
+
+    @Override
+    public <L extends Logger> L getLogger(final Class<?> clazz, final Class<L> loggerType) {
+        throw new java.lang.UnsupportedOperationException("Deprecated. Plugins should be using slf4j directly.");
+    }
+
+    @Override
+    public <L extends Logger> L getLogger(final Bundle bundle, final String name, final Class<L> loggerType) {
+        throw new java.lang.UnsupportedOperationException("Deprecated. Plugins should be using slf4j directly.");
     }
 }

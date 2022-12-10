@@ -32,6 +32,7 @@
     <logger name="org.killbill.billing.queue" level="INFO"/>
     <logger name="org.killbill.billing.server.updatechecker" level="INFO"/>
     <logger name="org.eclipse" level="INFO"/>
+    <logger name="org.jooq.Constants" level="OFF"/>
 
     <!-- Turn off jdbc logging by default -->
     <logger name="jdbc" level="OFF"/>

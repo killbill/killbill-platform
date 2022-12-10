@@ -41,8 +41,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     private ScheduledExecutorService restartMechanismExecutorService = null;
 
-    @Deprecated
-    private static final String JRUBY_PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.jruby.restart.delay.secs";
     private static final String PLUGINS_RESTART_DELAY_SECS = "org.killbill.billing.osgi.bundles.restart.delay.secs";
 
     public static final String TMP_DIR_NAME = "tmp";
@@ -57,6 +55,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     protected OSGIKillbillClock clock;
     protected OSGIKillbillEventDispatcher dispatcher;
     protected OSGIConfigPropertiesService configProperties;
+    protected OSGIMetricRegistry metricRegistry;
 
     protected File tmpDir = null;
 
@@ -76,14 +75,17 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         dispatcher = new OSGIKillbillEventDispatcher(context);
         configProperties = new OSGIConfigPropertiesService(context);
         clock = new OSGIKillbillClock(context);
+        metricRegistry = new OSGIMetricRegistry(context);
 
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
 
         final PluginConfig pluginConfig = retrievePluginConfig(context);
-        tmpDir = setupTmpDir(pluginConfig);
-
-        setupRestartMechanism(pluginConfig, context);
+        // pluginConfig is null for pure OSGI bundles
+        if (pluginConfig != null) {
+            tmpDir = setupTmpDir(pluginConfig);
+            setupRestartMechanism(pluginConfig, context);
+        }
     }
 
     @Override
@@ -152,10 +154,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
             return;
         }
 
-        String restartDelaySecProperty = configProperties.getString(JRUBY_PLUGINS_RESTART_DELAY_SECS);
-        if (restartDelaySecProperty == null) {
-            restartDelaySecProperty = configProperties.getString(PLUGINS_RESTART_DELAY_SECS);
-        }
+        final String restartDelaySecProperty = configProperties.getString(PLUGINS_RESTART_DELAY_SECS);
         final Integer restartDelaySecs = restartDelaySecProperty == null ? 5 : Integer.parseInt(restartDelaySecProperty);
 
         restartMechanismExecutorService = Executors.newSingleThreadScheduledExecutor();
@@ -170,9 +169,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
                                                                      try {
                                                                          logger.info("Stopping plugin='{}' ", pluginConfig.getPluginName());
                                                                          stopAllButRestartMechanism(context);
-                                                                     } catch (final IllegalStateException e) {
-                                                                         // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
-                                                                         logger.debug("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      } catch (final Exception e) {
                                                                          logger.warn("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      }
@@ -185,9 +181,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
                                                                      try {
                                                                          stopAllButRestartMechanism(context);
-                                                                     } catch (final IllegalStateException e) {
-                                                                         // Ignore errors from JRubyPlugin.checkPluginIsRunning, which can happen during development
-                                                                         logger.debug("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      } catch (final Exception e) {
                                                                          logger.warn("Error stopping plugin='{}'", pluginConfig.getPluginName(), e);
                                                                      }

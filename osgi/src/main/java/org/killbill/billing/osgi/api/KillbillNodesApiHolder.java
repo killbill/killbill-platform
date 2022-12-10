@@ -19,16 +19,21 @@
 
 package org.killbill.billing.osgi.api;
 
-import org.killbill.billing.util.nodes.KillbillNodesApi;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
-import com.google.inject.Inject;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
 
 public class KillbillNodesApiHolder {
 
-    @Inject(optional = true)
-    private KillbillNodesApi nodesApi = null;
+    private KillbillNodesApi nodesApi;
 
     public KillbillNodesApi getNodesApi() {
         return nodesApi;
+    }
+
+    @Inject
+    public void setNodesApi(@Nullable final KillbillNodesApi nodesApi) {
+        this.nodesApi = nodesApi;
     }
 }

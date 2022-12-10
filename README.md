@@ -21,6 +21,7 @@ The platform is billing and payment agnostic, and can be used to create other se
 | 0.38.y           | 0.20.z            |
 | 0.39.y           | 0.22.z            |
 | 0.40.y           | 0.22.z            |
+| 0.41.y           | 0.24.z            |
 
 We've upgraded numerous dependencies in 0.40.x (required for Java 11 support).
 
@@ -71,7 +72,22 @@ Add the relevant submodule(s) to a project:
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
-    <artifactId>killbill-platform-osgi-bundles-jruby</artifactId>
+    <artifactId>killbill-platform-osgi-bundles-eureka</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-graphite</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-influxdb</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-kpm</artifactId>
     <version>... release version ...</version>
 </dependency>
 <dependency>
@@ -91,17 +107,17 @@ Add the relevant submodule(s) to a project:
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
+    <artifactId>killbill-platform-osgi-bundles-metrics</artifactId>
+    <version>... release version ...</version>
+</dependency>
+<dependency>
+    <groupId>org.kill-bill.billing</groupId>
     <artifactId>killbill-platform-osgi-bundles-test-beatrix</artifactId>
     <version>... release version ...</version>
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
     <artifactId>killbill-platform-osgi-bundles-test-payment</artifactId>
-    <version>... release version ...</version>
-</dependency>
-<dependency>
-    <groupId>org.kill-bill.billing</groupId>
-    <artifactId>killbill-platform-osgi-bundles-webconsolebranding</artifactId>
     <version>... release version ...</version>
 </dependency>
 <dependency>

@@ -21,15 +21,15 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
+import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.Assert;
-
-import com.google.common.collect.ImmutableMap;
 
 import static org.killbill.billing.platform.config.DefaultKillbillConfigSource.ENVIRONMENT_VARIABLE_PREFIX;
 
@@ -53,6 +53,19 @@ public class TestDefaultKillbillConfigSource {
         System.clearProperty(JASYPT_ALGORITHM);
         System.clearProperty(ENCRYPTED_PROPERTY_1);
         System.clearProperty(ENCRYPTED_PROPERTY_2);
+    }
+
+    @Test(groups = "fast")
+    public void testGetProperties() throws URISyntaxException, IOException {
+        final Map<String, String> configuration = new HashMap<>();
+        configuration.put("1", "A");
+        configuration.put("2", "B");
+
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, configuration);
+
+        Assert.assertNotNull(configSource.getProperties());
+        Assert.assertNotEquals(configSource.getProperties().size(), 0);
+        Assert.assertEquals(configSource.getProperties().getProperty("1"), "A");
     }
 
     @Test(groups = "fast")
@@ -80,10 +93,10 @@ public class TestDefaultKillbillConfigSource {
         final String unencryptedValue = "myPropertyValue";
         final String encryptedValue = encString(unencryptedValue);
 
-        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "false",
-                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = Map.of(ENABLE_JASYPT_PROPERTY, "false",
+                                                      ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                      JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                      JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
 
@@ -96,10 +109,10 @@ public class TestDefaultKillbillConfigSource {
     public void testDecryptEmptyPassword() throws IOException, URISyntaxException {
         final String encryptedValue = encString("myPropertyValue");
 
-        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, "",
-                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = Map.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                      ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                      JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, "",
+                                                      JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         new DefaultKillbillConfigSource(properties);
     }
@@ -108,10 +121,10 @@ public class TestDefaultKillbillConfigSource {
     public void testDecryptEmptyAlgorithm() throws IOException, URISyntaxException {
         final String encryptedValue = encString("myPropertyValue");
 
-        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, "");
+        final Map<String, String> properties = Map.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                      ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                      JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                      JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, "");
 
         new DefaultKillbillConfigSource(properties);
     }
@@ -120,10 +133,10 @@ public class TestDefaultKillbillConfigSource {
     public void testDecryptInvalidJasyptString() throws IOException, URISyntaxException {
         final String encryptedValue = "ENC(notAValidEncryptedString!)";
 
-        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = Map.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                      ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                      JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                      JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         new DefaultKillbillConfigSource(properties);
     }
@@ -132,10 +145,10 @@ public class TestDefaultKillbillConfigSource {
     public void testDecryptEmptyJasyptString() throws IOException, URISyntaxException {
         final String encryptedValue = "ENC()";
 
-        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                               ENCRYPTED_PROPERTY_1, encryptedValue,
-                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = Map.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                      ENCRYPTED_PROPERTY_1, encryptedValue,
+                                                      JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                      JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         new DefaultKillbillConfigSource(properties);
     }
@@ -147,11 +160,11 @@ public class TestDefaultKillbillConfigSource {
         final String unencryptedValue2 = "myOtherPropertyValue";
         final String encryptedValue2 = encString(unencryptedValue2);
 
-        final Map<String, String> properties = ImmutableMap.of(ENABLE_JASYPT_PROPERTY, "true",
-                                                               ENCRYPTED_PROPERTY_1, encryptedValue1,
-                                                               ENCRYPTED_PROPERTY_2, encryptedValue2,
-                                                               JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
-                                                               JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
+        final Map<String, String> properties = Map.of(ENABLE_JASYPT_PROPERTY, "true",
+                                                      ENCRYPTED_PROPERTY_1, encryptedValue1,
+                                                      ENCRYPTED_PROPERTY_2, encryptedValue2,
+                                                      JASYPT_ENCRYPTOR_PASSWORD_PROPERTY, JASYPT_PASSWORD,
+                                                      JASYPT_ENCRYPTOR_ALGORITHM_PROPERTY, JASYPT_ALGORITHM);
 
         final DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource(properties);
 

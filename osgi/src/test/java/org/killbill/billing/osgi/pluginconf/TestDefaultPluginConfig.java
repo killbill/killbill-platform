@@ -25,10 +25,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
+import org.killbill.commons.utils.io.Files;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import com.google.common.io.Files;
 
 // Verify ordering from PluginFinder#loadPluginsIfRequired
 public class TestDefaultPluginConfig {
@@ -57,7 +56,7 @@ public class TestDefaultPluginConfig {
     private static final class DummyJavaConfig extends DefaultPluginJavaConfig {
 
         public DummyJavaConfig(final String version, final boolean isSelectedForStart) throws PluginConfigException {
-            super("stripe", "killbill-stripe", version, Files.createTempDir(), new Properties(), isSelectedForStart, true);
+            super("stripe", "killbill-stripe", version, Files.createTempDirectory(), new Properties(), isSelectedForStart, true);
         }
 
         @Override

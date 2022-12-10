@@ -29,12 +29,11 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import com.google.common.base.Preconditions;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.killbill.commons.utils.Preconditions;
 
 public class DataSourceProxy implements DataSource {
 
-    private static final Map<String, DataSource> delegates = new ConcurrentHashMap<String, DataSource>();
+    private static final Map<String, DataSource> delegates = new ConcurrentHashMap<>();
 
     public static <T extends DataSource> void addDelegate(final String dataSourceId, final T dataSource) {
         delegates.put(dataSourceId, dataSource);
@@ -51,7 +50,6 @@ public class DataSourceProxy implements DataSource {
         Preconditions.checkNotNull(delegate, "DataSource delegate for id " + dataSourceId + " hasn't been configured!");
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     public DataSource getDelegate() {
         return delegate;
     }

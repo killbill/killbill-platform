@@ -31,26 +31,27 @@ import org.killbill.billing.plugin.core.resources.jooby.PluginApp;
 import org.killbill.billing.plugin.core.resources.jooby.PluginAppBuilder;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.log.LogService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.osgi.service.log.LoggerFactory;
 
 public class Activator extends KillbillActivatorBase {
-
-    private static final Logger logger = LoggerFactory.getLogger(Activator.class);
 
     public static final String PLUGIN_NAME = "killbill-osgi-logger";
 
     private LogEntriesManager logEntriesManager;
     private LogsSseHandler logsSseHandler;
     private KillbillLogWriter killbillLogListener;
+    private KillbillLoggerFactory loggerFactory;
 
     @Override
     public void start(final BundleContext context) throws Exception {
+        loggerFactory = new KillbillLoggerFactory(context.getBundle());
         logEntriesManager = new LogEntriesManager();
-        killbillLogListener = new KillbillLogWriter(logEntriesManager);
+        killbillLogListener = new KillbillLogWriter(logEntriesManager, loggerFactory);
         context.addBundleListener(killbillLogListener);
         context.addFrameworkListener(killbillLogListener);
         context.addServiceListener(killbillLogListener);
+
+        context.registerService(LoggerFactory.class, loggerFactory, null);
         context.registerService(LogService.class.getName(), killbillLogListener, null);
 
         // Registrar for bundle

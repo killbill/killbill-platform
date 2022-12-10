@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -37,8 +38,6 @@ import org.osgi.framework.launch.Framework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class BundleRegistry {
@@ -104,7 +103,11 @@ public class BundleRegistry {
 
     public void startBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
-            fileInstall.startBundle(bundleWithConfig.getBundle());
+            final boolean isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
+
+            if (!isBundleStarted) {
+                registry.remove(getPluginName(bundleWithConfig));
+            }
         }
     }
 
@@ -121,12 +124,9 @@ public class BundleRegistry {
     }
 
     public Iterable<BundleWithMetadata> getPureOSGIBundles() {
-        return Iterables.filter(registry.values(), new Predicate<BundleWithMetadata>() {
-            @Override
-            public boolean apply(final BundleWithMetadata input) {
-                return input != null && input.getConfig() == null;
-            }
-        });
+        return registry.values().stream()
+                .filter(input -> input != null && input.getConfig() == null)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public BundleWithMetadata getBundle(final String pluginName) {

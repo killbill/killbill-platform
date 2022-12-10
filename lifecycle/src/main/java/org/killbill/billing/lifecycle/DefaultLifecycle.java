@@ -20,15 +20,19 @@
 package org.killbill.billing.lifecycle;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillService;
@@ -37,44 +41,34 @@ import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Supplier;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SortedSetMultimap;
 import com.google.inject.ConfigurationException;
-import com.google.inject.Inject;
+
 import com.google.inject.Injector;
 import com.google.inject.ProvisionException;
 
 public class DefaultLifecycle implements Lifecycle {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultLifecycle.class);
-    private final SortedSetMultimap<LifecycleLevel, LifecycleHandler<? extends KillbillService>> handlersByLevel;
+
+    // See https://github.com/killbill/killbill-commons/issues/143
+    private final Map<LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> handlersByLevel;
 
     @Inject
     public DefaultLifecycle(final Injector injector) {
         this();
-        final ServiceFinder<KillbillService> serviceFinder = new ServiceFinder<KillbillService>(DefaultLifecycle.class.getClassLoader(), KillbillService.class.getName());
+        final ServiceFinder<KillbillService> serviceFinder = new ServiceFinder<>(DefaultLifecycle.class.getClassLoader(), KillbillService.class.getName());
         init(serviceFinder, injector);
     }
 
     // For testing
-    public DefaultLifecycle(final Set<? extends KillbillService> services) {
+    public DefaultLifecycle(final Iterable<? extends KillbillService> services) {
         this();
         init(services);
     }
 
 
     private DefaultLifecycle() {
-        this.handlersByLevel = Multimaps.newSortedSetMultimap(new ConcurrentHashMap<LifecycleHandlerType.LifecycleLevel, Collection<LifecycleHandler<? extends KillbillService>>>(),
-                                                              new Supplier<SortedSet<LifecycleHandler<? extends KillbillService>>>() {
-                                                                  @Override
-                                                                  public SortedSet<LifecycleHandler<? extends KillbillService>> get() {
-                                                                      return new TreeSet<LifecycleHandler<? extends KillbillService>>();
-                                                                  }
-                                                              });
+        this.handlersByLevel = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -98,7 +92,7 @@ public class DefaultLifecycle implements Lifecycle {
     }
 
     private Set<? extends KillbillService> findServices(final Set<Class<? extends KillbillService>> services, final Injector injector) {
-        final Set<KillbillService> result = new HashSet<KillbillService>();
+        final Set<KillbillService> result = new HashSet<>();
         for (final Class<? extends KillbillService> cur : services) {
             log.debug("Found service {}", cur.getName());
             try {
@@ -129,9 +123,16 @@ public class DefaultLifecycle implements Lifecycle {
         init(services);
     }
 
-    private void init(final Set<? extends KillbillService> services) {
+    private void init(final Iterable<? extends KillbillService> services) {
         for (final KillbillService service : services) {
-            handlersByLevel.putAll(findAllHandlers(service));
+            final Map<LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> values = findAllHandlers(service);
+            for (final Entry<LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> entry : values.entrySet()) {
+                if (handlersByLevel.get(entry.getKey()) != null) {
+                    handlersByLevel.get(entry.getKey()).addAll(entry.getValue());
+                } else {
+                    handlersByLevel.put(entry.getKey(), entry.getValue());
+                }
+            }
         }
     }
 
@@ -144,7 +145,7 @@ public class DefaultLifecycle implements Lifecycle {
 
     private void doFireStage(final LifecycleHandlerType.LifecycleLevel level) {
         log.info("Killbill lifecycle firing stage {}", level);
-        final Set<LifecycleHandler<? extends KillbillService>> handlers = handlersByLevel.get(level);
+        final Set<LifecycleHandler<? extends KillbillService>> handlers = handlersByLevel.getOrDefault(level, new TreeSet<>());
         for (final LifecycleHandler<? extends KillbillService> cur : handlers) {
 
             try {
@@ -168,21 +169,27 @@ public class DefaultLifecycle implements Lifecycle {
         }
     }
 
-    private Multimap<LifecycleHandlerType.LifecycleLevel, LifecycleHandler<? extends KillbillService>> findAllHandlers(final KillbillService service) {
-        final Multimap<LifecycleHandlerType.LifecycleLevel, LifecycleHandler<? extends KillbillService>> methodsInService = HashMultimap.create();
+    private Map<LifecycleHandlerType.LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> findAllHandlers(final KillbillService service) {
+        final Map<LifecycleHandlerType.LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> methodsInService = new HashMap<>();
         final Class<? extends KillbillService> clazz = service.getClass();
         for (final Method method : clazz.getMethods()) {
             final LifecycleHandlerType annotation = method.getAnnotation(LifecycleHandlerType.class);
             if (annotation != null) {
                 final LifecycleHandlerType.LifecycleLevel level = annotation.value();
-                final LifecycleHandler<? extends KillbillService> handler = new LifecycleHandler<KillbillService>(service, method);
-                methodsInService.put(level, handler);
+                final LifecycleHandler<? extends KillbillService> handler = new LifecycleHandler<>(service, method);
+                if (methodsInService.get(level) != null) {
+                    methodsInService.get(level).add(handler);
+                } else {
+                    final SortedSet<LifecycleHandler<? extends KillbillService>> handlers = new TreeSet<>();
+                    handlers.add(handler);
+                    methodsInService.put(level, handlers);
+                }
             }
         }
         return methodsInService;
     }
 
-    static final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler> {
+    static final class LifecycleHandler<T extends KillbillService> implements Comparable<LifecycleHandler<?>> {
 
         private final T target;
         private final Method method;
@@ -210,13 +217,13 @@ public class DefaultLifecycle implements Lifecycle {
                 return false;
             }
             final LifecycleHandler<?> that = (LifecycleHandler<?>) o;
-            return Objects.equal(target, that.target) &&
-                   Objects.equal(method, that.method);
+            return Objects.equals(target, that.target) &&
+                   Objects.equals(method, that.method);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(target, method);
+            return Objects.hash(target, method);
         }
 
         @Override
@@ -231,7 +238,7 @@ public class DefaultLifecycle implements Lifecycle {
         }
     }
 
-    SortedSetMultimap<LifecycleLevel, LifecycleHandler<? extends KillbillService>> getHandlersByLevel() {
+    Map<LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> getHandlersByLevel() {
         return handlersByLevel;
     }
 }

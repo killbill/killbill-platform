@@ -89,6 +89,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.killbill.billing.security," +
              "org.killbill.billing.security.api," +
              "org.killbill.billing.osgi.libs.killbill," +
+             "org.killbill.commons.health.api," +
+             "org.killbill.commons.metrics.api," +
              //
              // We also add the dependencies from own set of APIs and some osgi compendium thingies...
              //
@@ -100,11 +102,11 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.slf4j.helpers;version=1.7.2," +
              "org.slf4j.spi;version=1.7.2," +
              "org.osgi.service.log;version=1.3," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (osgi.wiring.package=org.osgi.service.http)
+             // Let the world know the System bundle exposes the requirement (osgi.wiring.package=org.osgi.service.http)
              "org.osgi.service.http;version=1.2.0," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
+             // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
              "org.osgi.service.deploymentadmin;version=1.1.0," +
-             // Let the world know the System bundle exposes (via org.osgi.compendium) the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
+             // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
              "org.osgi.service.event;version=1.2.0")
     @Description("Kill Bill API packages to export from the system bundle")
     public String getSystemBundleExportPackagesApi();
@@ -255,8 +257,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "sun.misc.unsafe," +
              "sun.security," +
              "sun.security.util," +
-             "javax.servlet;version=3.1," +
-             "javax.servlet.http;version=3.1")
+             "javax.servlet;version=4.0," +
+             "javax.servlet.http;version=4.0")
     @Description("Java extension/platform Packages to export from the system bundle")
     public String getSystemBundleExportPackagesJava();
 

@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
+import javax.inject.Inject;
+
 import org.killbill.billing.lifecycle.DefaultLifecycle.LifecycleHandler;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
@@ -35,10 +37,9 @@ import org.testng.annotations.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
+
 import com.google.inject.Injector;
 import com.google.inject.Stage;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class TestLifecycle {
 
@@ -158,15 +159,12 @@ public class TestLifecycle {
                 return order;
             }
 
-            @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
             @LifecycleHandlerType(LifecycleLevel.INIT_SERVICE)
             public void initService() {
             }
         };
     }
 
-
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     @BeforeClass(groups = "fast")
     public void setup() {
         final Injector g = Guice.createInjector(Stage.DEVELOPMENT, new TestLifecycleModule());
@@ -204,10 +202,10 @@ public class TestLifecycle {
 
     @Test(groups = "fast")
     public void testHandlersOrdering() {
-        final Set<KillbillService> services = new HashSet();
+        final Set<KillbillService> services = new HashSet<>();
 
         for (int i = 0; i < 100; i++) {
-            int order = (i + 37) % 100;
+            final int order = (i + 37) % 100;
             services.add(createKillBillService(String.format("yo-%d", order) , order));
         }
 

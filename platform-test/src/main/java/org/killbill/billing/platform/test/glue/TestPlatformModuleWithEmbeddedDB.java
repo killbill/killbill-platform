@@ -20,6 +20,8 @@
 package org.killbill.billing.platform.test.glue;
 
 import javax.annotation.Nullable;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.sql.DataSource;
 
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
@@ -36,8 +38,6 @@ import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
 
 import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
 
 public class TestPlatformModuleWithEmbeddedDB extends TestPlatformModule {
 

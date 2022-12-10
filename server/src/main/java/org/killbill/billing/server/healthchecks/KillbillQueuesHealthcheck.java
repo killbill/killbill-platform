@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
@@ -34,18 +34,18 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.joda.time.DateTime;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.Clock;
+import org.killbill.commons.health.api.HealthCheck;
+import org.killbill.commons.health.api.Result;
+import org.killbill.commons.health.impl.HealthyResultBuilder;
+import org.killbill.commons.health.impl.UnhealthyResultBuilder;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
+import org.killbill.commons.utils.collect.EvictingQueue;
 import org.killbill.notificationq.api.NotificationQueue;
 import org.killbill.notificationq.api.NotificationQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import com.codahale.metrics.health.HealthCheck;
-import com.codahale.metrics.health.annotation.Async;
-import com.codahale.metrics.health.annotation.Async.InitialState;
-import com.codahale.metrics.health.annotation.Async.ScheduleType;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.EvictingQueue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 // Run this check asynchronously as it executes database queries: when the healthcheck is integrated with a load balancer,
@@ -56,9 +56,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 // (e.g. cloud deployment), all nodes behave the same (the healthcheck will fail on all nodes at the same time): in that case,
 // instead of taking the nodes out of rotation, new nodes should be deployed instead (i.e. Auto Scaling should be enabled), provided
 // the database is able to sustain the additional load.
-@Async(initialState = InitialState.HEALTHY, initialDelay = 0, period = 1, unit = TimeUnit.MINUTES, scheduleType = ScheduleType.FIXED_DELAY)
+//@Async(initialState = InitialState.HEALTHY, initialDelay = 0, period = 1, unit = TimeUnit.MINUTES, scheduleType = ScheduleType.FIXED_DELAY)
 @Singleton
-public class KillbillQueuesHealthcheck extends HealthCheck {
+// TODO
+public class KillbillQueuesHealthcheck implements HealthCheck {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillQueuesHealthcheck.class);
 
@@ -171,12 +172,11 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
     }
 
     private Result buildHealthcheckResponse() {
-        final ResultBuilder resultBuilder = Result.builder();
-
         final StringBuilder stringBuilderForMessage = new StringBuilder("Growing queues: ");
         boolean healthy = true;
         int i = 0;
 
+        final Map<String, Object> details = new HashMap<>();
         for (final Entry<String, QueueStats> entry : statsPerQueue.entrySet()) {
             final QueueStats queueStats = entry.getValue();
             if (queueStats.isGrowing()) {
@@ -194,17 +194,14 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
             }
 
             // Display the stats, regardless of the health status
-            resultBuilder.withDetail(entry.getKey(), queueStats);
+            details.put(entry.getKey(), queueStats);
         }
 
         if (healthy || !healthcheckActive.get()) {
-            resultBuilder.healthy();
+            return new HealthyResultBuilder().setDetails(details).createHealthyResult();
         } else {
-            resultBuilder.unhealthy()
-                         .withMessage(stringBuilderForMessage.toString());
+            return new UnhealthyResultBuilder().setDetails(details).setMessage(stringBuilderForMessage.toString()).createUnhealthyResult();
         }
-
-        return resultBuilder.build();
     }
 
     @VisibleForTesting
@@ -214,11 +211,11 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         // Number of samples to consider for our sliding window
         private final double slidingWindowSize;
         // X axis: timestamps
-        private final EvictingQueue<Long> timestamps;
+        private final Queue<Long> timestamps;
         // Y axis: sizes measured
-        private final EvictingQueue<Long> rawSizes;
+        private final Queue<Long> rawSizes;
         // Y axis: exponential moving average of the sizes measured
-        private final EvictingQueue<Double> smoothedSizes;
+        private final Queue<Double> smoothedSizes;
         private final SimpleRegression smoothedSizesRegression;
         private final HoltWintersComputer holtWintersComputer;
         // Linear regression to check for current trend over the slidingWindowSize
@@ -230,9 +227,9 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         public QueueStats(final String queueId, final int slidingWindowSize, final double alpha) {
             this.queueId = queueId;
             this.slidingWindowSize = slidingWindowSize;
-            this.timestamps = EvictingQueue.<Long>create(slidingWindowSize);
-            this.rawSizes = EvictingQueue.<Long>create(slidingWindowSize);
-            this.smoothedSizes = EvictingQueue.<Double>create(slidingWindowSize);
+            this.timestamps = new EvictingQueue<>(slidingWindowSize);
+            this.rawSizes = new EvictingQueue<>(slidingWindowSize);
+            this.smoothedSizes = new EvictingQueue<>(slidingWindowSize);
 
             this.smoothedSizesRegression = new SimpleRegression(true);
             this.holtWintersComputer = new HoltWintersComputer(alpha);
@@ -276,17 +273,17 @@ public class KillbillQueuesHealthcheck extends HealthCheck {
         }
 
         @VisibleForTesting
-        EvictingQueue<Long> getTimestamps() {
+        Queue<Long> getTimestamps() {
             return timestamps;
         }
 
         @VisibleForTesting
-        EvictingQueue<Long> getRawSizes() {
+        Queue<Long> getRawSizes() {
             return rawSizes;
         }
 
         @VisibleForTesting
-        EvictingQueue<Double> getSmoothedSizes() {
+        Queue<Double> getSmoothedSizes() {
             return smoothedSizes;
         }
 

@@ -1,8 +1,8 @@
 /*
  * Copyright 2010-2014 Ning, Inc.
  * Copyright 2014-2020 Groupon, Inc
- * Copyright 2020-2020 Equinix, Inc
- * Copyright 2014-2020 The Billing Project, LLC
+ * Copyright 2020-2022 Equinix, Inc
+ * Copyright 2014-2022 The Billing Project, LLC
  *
  * The Billing Project licenses this file to you under the Apache License, version 2.0
  * (the "License"); you may not use this file except in compliance with the
@@ -20,37 +20,31 @@
 package org.killbill.billing.osgi.bundles.kpm;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
+import org.killbill.billing.plugin.util.http.InvalidRequest;
+import org.killbill.commons.utils.Joiner;
+import org.killbill.commons.utils.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.asynchttpclient.AsyncCompletionHandlerBase;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.HttpResponseBodyPart;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Command;
 import io.airlift.command.CommandFailedException;
@@ -61,10 +55,10 @@ public class KPMWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(KPMWrapper.class);
 
-    private static final String PROPERTY_PREFIX = "org.killbill.billing.plugin.kpm.";
+    public static final String PROPERTY_PREFIX = "org.killbill.billing.plugin.kpm.";
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(daemonThreadsNamed("kpm-%s"));
-    private static final ImmutableSet<Integer> DEFAULT_SUCCESSFUL_EXIT_CODES = ImmutableSet.of(0);
+    private static final Set<Integer> DEFAULT_SUCCESSFUL_EXIT_CODES = Set.of(0);
     private static final File DEFAULT_DIRECTORY = new File(".").getAbsoluteFile();
     // Be generous
     private static final Duration COMMAND_TIMEOUT = new Duration(5, TimeUnit.MINUTES);
@@ -77,19 +71,19 @@ public class KPMWrapper {
     private final String bundlesPath;
     private final String nexusUrl;
     private final String nexusRepository;
-    private final AsyncHttpClient httpClient;
+    private final KPMClient httpClient;
 
     public KPMWrapper(final OSGIKillbillAPI killbillAPI, final Properties properties) throws GeneralSecurityException {
         this.killbillAPI = killbillAPI;
-        this.adminUsername = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
-        this.adminPassword = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
-        this.kpmPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
-        this.bundlesPath = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/var", "tmp", "bundles").toString());
-        this.nexusUrl = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
-        this.nexusRepository = MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
-        this.httpClient = buildAsyncHttpClient(Boolean.valueOf(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
-                                               Integer.parseInt(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60")) * 1000,
-                                               Integer.parseInt(MoreObjects.firstNonNull(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60")) * 1000);
+        this.adminUsername = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
+        this.adminPassword = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
+        this.kpmPath = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
+        this.bundlesPath = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/var", "tmp", "bundles").toString());
+        this.nexusUrl = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
+        this.nexusRepository = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
+        this.httpClient = new KPMClient(Boolean.parseBoolean(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
+                                        Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60")) * 1000,
+                                        Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60")) * 1000);
     }
 
     public String getAvailablePlugins(final String kbVersion, final Boolean latest) {
@@ -116,7 +110,7 @@ public class KPMWrapper {
     }
 
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-    public void install(final String pluginKey, final String uri, final String pluginVersion, final String pluginType) throws IOException, ExecutionException, InterruptedException {
+    public void install(final String pluginKey, final String uri, final String pluginVersion, final String pluginType) throws IOException, InvalidRequest, URISyntaxException, InterruptedException {
         logger.info("Installing pluginKey='{}', uri='{}', pluginVersion='{}', pluginType='{}'",
                     pluginKey,
                     uri,
@@ -127,25 +121,17 @@ public class KPMWrapper {
         // Use same conventions as official plugins (this is to make sure we don't confuse KPM)
         final String suffix = "ruby".equals(pluginType) ? "tar.gz" : "jar";
         final String pluginName = String.format("%s-plugin-%s.%s", pluginKey, pluginVersion, suffix);
-        final File tmp = new File(downloadDir, pluginName);
+        final Path path = Path.of(downloadDir.getPath(), pluginName);
 
         try {
-            final FileOutputStream stream = new FileOutputStream(tmp);
-            httpClient.prepareGet(uri)
-                      .execute(new AsyncCompletionHandlerBase() {
-                          @Override
-                          public State onBodyPartReceived(final HttpResponseBodyPart bodyPart) throws Exception {
-                              stream.write(bodyPart.getBodyPartBytes());
-                              return State.CONTINUE;
-                          }
-                      }).get();
+            httpClient.downloadPlugin(uri, path);
 
             final List<String> commands = new LinkedList<String>();
             commands.add(kpmPath);
             commands.add("ruby".equals(pluginType) ? "install_ruby_plugin" : "install_java_plugin");
             commands.add(pluginKey);
 
-            commands.add("--from-source-file=" + tmp.toString());
+            commands.add("--from-source-file=" + path);
             commands.add("--destination=" + bundlesPath);
             if (pluginVersion != null) {
                 commands.add("--version=" + pluginVersion);
@@ -163,7 +149,7 @@ public class KPMWrapper {
                                    pluginKey,
                                    pluginVersion);
         } finally {
-            tmp.delete();
+            Files.deleteIfExists(path);
         }
     }
 
@@ -248,21 +234,12 @@ public class KPMWrapper {
 
     }
 
-    private AsyncHttpClient buildAsyncHttpClient(final Boolean strictSSL, final int readTimeoutMs, final int connectTimeoutMs) throws GeneralSecurityException {
-        final DefaultAsyncHttpClientConfig.Builder cfg = new DefaultAsyncHttpClientConfig.Builder();
-        cfg.setUserAgent("KillBill/kpm-plugin/1.0")
-           .setConnectTimeout(connectTimeoutMs)
-           .setReadTimeout(readTimeoutMs)
-           .setUseInsecureTrustManager(!strictSSL);
-        return new DefaultAsyncHttpClient(cfg.build());
-    }
-
     private String system(final List<String> commands) {
         try {
             final Command commandToExecute = new Command(commands,
                                                          DEFAULT_SUCCESSFUL_EXIT_CODES,
                                                          DEFAULT_DIRECTORY,
-                                                         ImmutableMap.<String, String>of(),
+                                                         Collections.emptyMap(),
                                                          COMMAND_TIMEOUT);
             logger.info("Executing: {}", SPACE_JOINER.join(commandToExecute.getCommand()));
             final String commandOutput = commandToExecute.execute(executor)
