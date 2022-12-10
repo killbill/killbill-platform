@@ -19,7 +19,6 @@
 
 package org.killbill.billing.osgi.bundles.logger;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.framework.Bundle;
@@ -30,10 +29,8 @@ import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.Version;
 import org.osgi.service.log.LogService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.osgi.service.log.Logger;
 import org.slf4j.MDC;
 
 // Kill Bill LogService implementation: forwards OSGI logs to slf4j
@@ -42,14 +39,13 @@ import org.slf4j.MDC;
 public class KillbillLogWriter implements BundleListener, FrameworkListener, ServiceListener, LogService {
 
     private static final String UNKNOWN = "[Unknown]";
-    private static final String OSGI_BUNDLES_JRUBY = "org.kill-bill.billing.killbill-platform-osgi-bundles-jruby";
     private static final String MDC_KEY = "MDC";
-
-    private final Map<String, Logger> delegates = new HashMap<String, Logger>();
     private final LogEntriesManager logEntriesManager;
+    private final KillbillLoggerFactory loggerFactory;
 
-    public KillbillLogWriter(final LogEntriesManager logEntriesManager) {
+    public KillbillLogWriter(final LogEntriesManager logEntriesManager, final KillbillLoggerFactory loggerFactory) {
         this.logEntriesManager = logEntriesManager;
+        this.loggerFactory = loggerFactory;
     }
 
     @Override
@@ -65,7 +61,7 @@ public class KillbillLogWriter implements BundleListener, FrameworkListener, Ser
         }
 
         // Log comes from a pure OSGI LogService, forward it to slf4j
-        final Logger delegate = getDelegateForBundle(bundle);
+        final Logger delegate = getLogger(bundle, null, null);
         if (serviceReference != null) {
             // A single thread (e.g. org.apache.felix.log.LogListenerThread) should be invoking this, but just to be safe...
             synchronized (this) {
@@ -90,37 +86,6 @@ public class KillbillLogWriter implements BundleListener, FrameworkListener, Ser
         } else {
             logInternal(delegate, level, message);
         }
-    }
-
-    private Logger getDelegateForBundle(/* @Nullable */ final Bundle bundle) {
-        final String loggerName;
-        if (bundle != null) {
-            String name = bundle.getSymbolicName();
-            Version version = bundle.getVersion();
-            if (version == null) {
-                version = Version.emptyVersion;
-            }
-
-            // Prettier name for Ruby plugins
-            if (name.startsWith(OSGI_BUNDLES_JRUBY)) {
-                name = "jruby";
-            }
-
-            // Don't use . as a separator (to avoid any truncation by the logging system)
-            loggerName = name + ':' + version.toString().replace(".", "_");
-        } else {
-            loggerName = KillbillLogWriter.class.getName();
-        }
-
-        if (delegates.get(loggerName) == null) {
-            synchronized (delegates) {
-                if (delegates.get(loggerName) == null) {
-                    delegates.put(loggerName, LoggerFactory.getLogger(loggerName));
-                }
-            }
-        }
-
-        return delegates.get(loggerName);
     }
 
     private void logInternal(final Logger delegate, final int level, final String message) {
@@ -343,5 +308,30 @@ public class KillbillLogWriter implements BundleListener, FrameworkListener, Ser
     @Override
     public void log(final ServiceReference sr, final int level, final String message) {
         log(sr, level, message, null);
+    }
+
+    @Override
+    public Logger getLogger(final String name) {
+        return loggerFactory.getLogger(name);
+    }
+
+    @Override
+    public Logger getLogger(final Class<?> clazz) {
+        return loggerFactory.getLogger(clazz);
+    }
+
+    @Override
+    public <L extends Logger> L getLogger(final String name, final Class<L> loggerType) {
+        return loggerFactory.getLogger(name, loggerType);
+    }
+
+    @Override
+    public <L extends Logger> L getLogger(final Class<?> clazz, final Class<L> loggerType) {
+        return loggerFactory.getLogger(clazz, loggerType);
+    }
+
+    @Override
+    public <L extends Logger> L getLogger(final Bundle bundle, final String name, final Class<L> loggerType) {
+        return loggerFactory.getLogger(bundle, name, loggerType);
     }
 }
