@@ -29,6 +29,7 @@
     <packaging>bundle</packaging>
     <name>killbill-platform-osgi-bundles-logger</name>
     <properties>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
         <osgi.private>org.killbill.billing.osgi.bundles.logger.*</osgi.private>
     </properties>
     <dependencies>
