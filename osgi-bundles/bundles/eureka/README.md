@@ -23,7 +23,8 @@
    eureka.instance.hostname=localhost
    ```
 
-   2.3. Open console/command line, go to `<extracted-dir>`, and run: `./mvnw spring-boot:run`.
+   2.3. Open console/command line, go to `<extracted-dir>`, and run: `./mvnw spring-boot:run`. You can [open Eureka 
+        Console](http://localhost:8761/) in browser.
 
 
 ## Kill Bill instance setup
@@ -93,21 +94,27 @@
      -Dorg.killbill.server.properties=file:///killbill-eureka.properties \
      -Djetty.http.port=8081
    ```
-3. If everything works properly, you can open Eureka Spring Console at http://localhost:8761 in browser, and see that 2 Kill Bill instances discovered by Eureka, and the status is `UP`.
+3. If everything works properly, you can see in [Eureka Console](http://localhost:8761)that 2 Kill Bill instances 
+   discovered by Eureka, and the status is `UP`.
 
 4. Try to `put-out` and `put-in` Kill Bill from Eureka, for example by calling this using `killbill-client-java`:
    ```java
-   public class EurekaServiceRegistryTest extends Playground { 
-     @Test void putOutRotation() throws KillBillClientException {
-       final AdminApi adminApi = new AdminApi(new KillBillHttpClient());
+   public class EurekaServiceRegistryTest {
+
+     private KillbillClient killbillClient = newKillbillClientWithPort8080();
+
+     // Will make killbill instance with port 8080 status=DOWN in eureka. See eureka console in browser
+     @Test 
+     void putOutRotation() throws KillBillClientException {
+       final AdminApi adminApi = new AdminApi(killbillClient);
        adminApi.putOutOfRotation(RequestOptions.empty());
      }
-   
+
+     // Will make killbill instance with port 8080 status back to 'UP' in eureka
      @Test
      void putInRotation() throws KillBillClientException {
-       final AdminApi adminApi = new AdminApi(new KillBillHttpClient());
+       final AdminApi adminApi = new AdminApi(killbillClient);
        adminApi.putInRotation(RequestOptions.empty());
      }
    }
    ```
-5. If you open Eureka Console, you'll see that one of Kill Bill instance status is `DOWN`.
