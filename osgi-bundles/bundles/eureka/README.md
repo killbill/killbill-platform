@@ -31,16 +31,16 @@
 
 1. Make sure that you have MySQL/Postgres running and configured for run with Kill Bill. 
    [Read here](https://docs.killbill.io/latest/development.html#_configuring_the_database) for more detail. 
-   (At the time of writing, H2 not working properly when run Kill Bill more than 1 instances).
+   (Due to an H2 limitation, it is currently not possible to run more than one Kill Bill instance with H2).
 
 2. (Optional. Please delete this account at production).
-   To interact with Kill Bill REST API, you need at least one `tenants` account. Execute this to add one `tenants` account:
+   To interact with Kill Bill REST API, you need at least one `tenant` account. Execute the following SQL command to create the tenant:
    ```roomsql
    INSERT INTO tenants (record_id, id, external_key, api_key, api_secret, api_salt, created_date, created_by, updated_date, updated_by) 
    VALUES 
    (1, 'f76d3b8a-2fe9-4538-b434-a5dbf51b2d27', null, 'bob', 'iJTgdUDR/6RZF3lgBNtKxXZ+tPadfjHtQtykVq6yRkEecrlWp/wkWJ65G2EeHMfOpjVQ9XfYKyGYy86tMFT5pw==', 'IGfdQIzGWp7AbQ5Xx6h07w==', '2022-09-03 08:27:55', 'demo', '2022-09-03 08:28:06', 'demo');
    ```
-   This will create `tenants` with `API-KEY: bob, API-SECRET: lazar`.
+   This will create `tenant` with `API-KEY: bob, API-SECRET: lazar`.
 
 3. Create configuration file (for example, `killbill-eureka.properties`):
    ```properties
@@ -80,7 +80,7 @@
 
 ## Running and Testing
 
-1. Make sure that plugin installation configured properly, and database and Eureka running.
+1. Make sure that the plugin is installed and configured properly, the database is up and Eureka is running.
 
 2. Run Kill Bill instance with command:
    ```
@@ -94,8 +94,8 @@
      -Dorg.killbill.server.properties=file:///killbill-eureka.properties \
      -Djetty.http.port=8081
    ```
-3. If everything works properly, you can see in [Eureka Console](http://localhost:8761)that 2 Kill Bill instances 
-   discovered by Eureka, and the status is `UP`.
+3. If everything works properly, you can see in [Eureka Console](http://localhost:8761) that 2 Kill Bill instances 
+   were discovered by Eureka, and the status is `UP`.
 
 4. Try to `put-out` and `put-in` Kill Bill from Eureka, for example by calling this using `killbill-client-java`:
    ```java
