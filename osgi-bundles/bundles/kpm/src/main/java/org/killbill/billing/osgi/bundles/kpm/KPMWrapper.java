@@ -55,6 +55,8 @@ public class KPMWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(KPMWrapper.class);
 
+    private static final String BUNDLE_INSTALL_DIR = "org.killbill.osgi.bundle.install.dir";
+
     public static final String PROPERTY_PREFIX = "org.killbill.billing.plugin.kpm.";
 
     private static final ExecutorService executor = Executors.newCachedThreadPool(daemonThreadsNamed("kpm-%s"));
@@ -78,7 +80,7 @@ public class KPMWrapper {
         this.adminUsername = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
         this.adminPassword = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
         this.kpmPath = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "kpmPath"), "kpm");
-        this.bundlesPath = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "bundlesPath"), Paths.get("/var", "tmp", "bundles").toString());
+        this.bundlesPath = Objects.requireNonNullElse(properties.getProperty(BUNDLE_INSTALL_DIR), Paths.get("/var", "tmp", "bundles").toString());
         this.nexusUrl = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
         this.nexusRepository = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
         this.httpClient = new KPMClient(Boolean.parseBoolean(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true")),
