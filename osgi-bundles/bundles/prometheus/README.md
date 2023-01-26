@@ -2,7 +2,7 @@
 
 Metrics integration with Prometheus.
 
-The default Killbill metrics endpoint is `http://<KB host>:<KB Port>/plugins/killbill-prometheus`.
+The default Kill Bill metrics endpoint is `http://<KB host>:<KB Port>/plugins/killbill-prometheus`.
 
 For example, http://127.0.0.1:8080/plugins/killbill-prometheus.
 
