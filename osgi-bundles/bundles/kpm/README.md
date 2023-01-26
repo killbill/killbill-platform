@@ -6,7 +6,7 @@ The KPM OSGI bundle enables:
 * endpoints specific to [KPM UI](https://github.com/killbill/killbill-kpm-ui)
 
 The osgi bundle installation location will follow Kill Bill's `org.killbill.osgi.bundle.install.dir` configuration property, 
-and set to `/var/tmp/bundles` if property not set.
+and use `/var/tmp/bundles` if this property is not set.
 
 ## Configuration
 
