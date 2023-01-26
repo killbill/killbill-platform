@@ -6,7 +6,7 @@ The default Kill Bill metrics endpoint is `http://<KB host>:<KB Port>/plugins/ki
 
 For example, http://127.0.0.1:8080/plugins/killbill-prometheus.
 
-## Testing
+## Testing steps:
 
 1. Copy `killbill-platform-osgi-bundles-prometheus-*.jar` to the OSGI bundle installation directory, see the value of `org.killbill.osgi.bundle.install.dir` property.
    If the property is not configured, the default OSGI bundle directory is `/var/tmp/bundles/platform/`.
@@ -39,7 +39,7 @@ docker run \
 4. Go to http://localhost:9091/ to access the Prometheus dashboard.
 
 
-5. Verify that Killbill endpoint is UP by clicking on Status > Targets. If the endpoint state is not UP, verify the IP address and port in `prometheus.yml`.
+5. Verify that the Killbill endpoint is `UP` by clicking on `Status > Targets`. If it is not, verify the IP address and port in `prometheus.yml`.
 
 
 6. Sample curl expression to fetch all metrics: http://localhost:9091/api/v1/label/__name__/values
