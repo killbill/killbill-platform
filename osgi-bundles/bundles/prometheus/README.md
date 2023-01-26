@@ -16,7 +16,7 @@ NOTE: The OSGI bundle directory is the same as the KPM bundle path. For more inf
 
 2. Create a `prometheus.yml` file with the following configuration:
 
-NOTE: Use machine's IP in `targets` even if the Killbill is running on a localhost. Example, `targets: ['172.19.32.1:8080']`
+NOTE: Use the machine's IP in `targets` even if Kill Bill is running on `localhost`. Example, `targets: ['172.19.32.1:8080']`
 ```
 scrape_configs:
   - job_name: killbill
