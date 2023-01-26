@@ -5,7 +5,7 @@ The KPM OSGI bundle enables:
 * the `INSTALL` and `UNINSTALL` commands of the [Kill Bill plugins management APIs](https://github.com/killbill/killbill-docs/blob/v3/userguide/tutorials/plugin_management.adoc)
 * endpoints specific to [KPM UI](https://github.com/killbill/killbill-kpm-ui)
 
-The osgi bundle installation location will follow killbill's `org.killbill.osgi.bundle.install.dir` configuration property, 
+The osgi bundle installation location will follow Kill Bill's `org.killbill.osgi.bundle.install.dir` configuration property, 
 and set to `/var/tmp/bundles` if property not set.
 
 ## Configuration
