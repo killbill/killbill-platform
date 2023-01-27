@@ -2,20 +2,6 @@
 
 Metrics integration with InfluxDB.
 
-The following are the InfluxDB properties with their default values:
-```
-org.killbill.metrics.influxDb=false
-org.killbill.metrics.influxDb.host=localhost
-org.killbill.metrics.influxDb.port=8086
-org.killbill.metrics.influxDb.socketTimeout=1000
-org.killbill.metrics.influxDb.database=killbill
-org.killbill.metrics.influxDb.prefix=""
-org.killbill.metrics.influxDb.senderType=HTTP
-org.killbill.metrics.influxDb.organization=killbill
-org.killbill.metrics.influxDb.bucket=killbill
-org.killbill.metrics.influxDb.token=""
-org.killbill.metrics.influxDb.interval=30
-```
 
 ## Testing steps:
 
@@ -41,7 +27,7 @@ docker run
 5. Click on Data (or Load Your Data) menu -- go to API Tokens and copy it.
 
 
-6. Add the following properties in `killbill-server.properties`:
+6. Configure the following properties as explained in the [Kill Bill configuration guide](https://docs.killbill.io/latest/userguide_configuration.html).
 ````
 org.killbill.metrics.influxDb=true
 org.killbill.metrics.influxDb.port=8086
@@ -51,6 +37,24 @@ org.killbill.metrics.influxDb.bucket=<Bucket name>
 org.killbill.metrics.influxDb.token=<API Token got on step 4>
 ````
 
-7. Restart killbill.
+7. Restart Kill Bill.
+
 
 8. On InfluxDB dashboard, click on `Explore` > `FROM` > `<Bucket Name>`
+
+
+## InfluxDB properties: 
+For more InfluxDB customization, please check the following properties with their default values:
+```
+org.killbill.metrics.influxDb=false
+org.killbill.metrics.influxDb.host=localhost
+org.killbill.metrics.influxDb.port=8086
+org.killbill.metrics.influxDb.socketTimeout=1000
+org.killbill.metrics.influxDb.database=killbill
+org.killbill.metrics.influxDb.prefix=""
+org.killbill.metrics.influxDb.senderType=HTTP
+org.killbill.metrics.influxDb.organization=killbill
+org.killbill.metrics.influxDb.bucket=killbill
+org.killbill.metrics.influxDb.token=""
+org.killbill.metrics.influxDb.interval=30
+```
