@@ -114,7 +114,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     @Override
     public Properties getProperties() {
         final Properties result = new Properties();
-        result.putAll(properties);
+        // using properties.stringPropertyNames() because `result.putAll(properties)` not working when running inside
+        // tomcat, if we put configuration in tomcat's catalina.properties
+        // See:
+        // - https://github.com/killbill/technical-support/issues/61
+        // - https://github.com/killbill/technical-support/issues/67
+        //
+        // We have TestDefaultKillbillConfigSource#testGetProperties() that cover this, but seems like this is similar
+        // to one of our chicken-egg problem? (see loadPropertiesFromFileOrSystemProperties() below)
+        properties.stringPropertyNames().forEach(key -> result.setProperty(key, properties.getProperty(key)));
         return result;
     }
 
