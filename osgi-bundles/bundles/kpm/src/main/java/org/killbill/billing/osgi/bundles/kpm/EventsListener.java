@@ -42,10 +42,15 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
     private static final Logger logger = LoggerFactory.getLogger(EventsListener.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    // FIXME-TS-58: Remove @Deprecated and delete KPMWrapper once technical-support-58 done
+    @Deprecated
     private final KPMWrapper kpmWrapper;
 
-    public EventsListener(final KPMWrapper kpmWrapper) {
+    private final PluginManager pluginManager;
+
+    public EventsListener(final KPMWrapper kpmWrapper, final PluginManager pluginManager) {
         this.kpmWrapper = kpmWrapper;
+        this.pluginManager = pluginManager;
     }
 
     @Override
@@ -94,10 +99,13 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
             final String pluginUri = props.get("pluginUri");
             if (pluginUri != null) {
                 try {
+                    // FIXME-TS-58: Remove this comments block once TS-58 done
+                    /*
                     kpmWrapper.install(nodeCommandMetadata.getPluginKey(),
                                        pluginUri,
                                        nodeCommandMetadata.getPluginVersion(),
-                                       pluginType);
+                                       pluginType);*/
+                    pluginManager.install(pluginUri, nodeCommandMetadata.getPluginKey(), nodeCommandMetadata.getPluginVersion());
                 } catch (final Exception e) {
                     logger.warn("Unable to install plugin {}", nodeCommandMetadata.getPluginKey(), e);
                 }
