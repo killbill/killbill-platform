@@ -96,13 +96,6 @@ public class UpdateChecker {
             log.info("New update(s) found: " + updates.toString() + ". Please check http://killbill.io for the latest version.");
         }
 
-        // Send anonymous data
-        final Tracker tracker = new Tracker(configSource, productInfo, servletContext);
-        try {
-            tracker.track();
-        } finally {
-            tracker.close();
-        }
     }
 
     private boolean shouldSkipUpdateCheck() {
