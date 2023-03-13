@@ -45,12 +45,10 @@ import org.killbill.commons.utils.concurrent.ThreadFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airlift.command.Command;
 import io.airlift.command.CommandFailedException;
 import io.airlift.units.Duration;
 
-@SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
 public class KPMWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(KPMWrapper.class);
@@ -111,7 +109,6 @@ public class KPMWrapper {
         return system(commands);
     }
 
-    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     public void install(final String pluginKey, final String uri, final String pluginVersion, final String pluginType) throws IOException, InvalidRequest, URISyntaxException, InterruptedException {
         logger.info("Installing pluginKey='{}', uri='{}', pluginVersion='{}', pluginType='{}'",
                     pluginKey,
