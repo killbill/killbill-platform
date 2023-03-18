@@ -17,7 +17,22 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
-public interface PluginInstaller {
+import java.nio.file.Path;
 
-    void install() throws KPMPluginException;
+/**
+ * Get (and download, if necessary) nexus metadata files, like pom.xml, maven-metadata.xml, etc.
+ */
+public interface NexusMetadataFiles {
+
+    /**
+     * Get published <a href="https://github.com/killbill/killbill/blob/master/pom.xml">killbill</a> pom.xml in implemented
+     * nexus repository.
+     */
+    Path getKillbillPomXml() throws Exception;
+
+    /**
+     * Get published <a href="https://github.com/killbill/killbill-oss-parent/blob/master/pom.xml">killbill-oss-parent</a>
+     * pom.xml in nexus repository.
+     */
+    Path getOssParentPomXml() throws Exception;
 }

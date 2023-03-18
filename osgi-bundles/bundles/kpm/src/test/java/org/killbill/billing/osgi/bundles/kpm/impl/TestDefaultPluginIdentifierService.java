@@ -17,7 +17,6 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
-import org.killbill.billing.osgi.bundles.kpm.PluginIdentifier;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -42,7 +41,7 @@ public class TestDefaultPluginIdentifierService {
 
     @Test(groups = "fast")
     public void testAdd() {
-        Map<String, PluginIdentifier> content = pluginIdentifierService.loadFileContent();
+        Map<String, PluginIdentifierModel> content = pluginIdentifierService.loadFileContent();
         Assert.assertEquals(content.size(), 0);
 
         final String pluginKey = "testPlugin";
@@ -52,11 +51,11 @@ public class TestDefaultPluginIdentifierService {
         pluginIdentifierService.add(pluginKey, version);
 
         content = pluginIdentifierService.loadFileContent();
-        final PluginIdentifier pluginIdentifier = content.get(pluginKey);
+        final PluginIdentifierModel pluginIdentifierModel = content.get(pluginKey);
         Assert.assertEquals(content.size(), 1);
-        Assert.assertNotNull(pluginIdentifier);
-        Assert.assertEquals(pluginIdentifier.getPluginName(), pluginNamingResolver.getPluginName());
-        Assert.assertEquals(pluginIdentifier.getVersion(), pluginNamingResolver.getPluginVersion());
+        Assert.assertNotNull(pluginIdentifierModel);
+        Assert.assertEquals(pluginIdentifierModel.getPluginName(), pluginNamingResolver.getPluginName());
+        Assert.assertEquals(pluginIdentifierModel.getVersion(), pluginNamingResolver.getPluginVersion());
     }
 
     @Test(groups = "fast")
@@ -67,7 +66,7 @@ public class TestDefaultPluginIdentifierService {
 
         pluginIdentifierService.remove(pluginKey);
 
-        final Map<String, PluginIdentifier> content = pluginIdentifierService.loadFileContent();
+        final Map<String, PluginIdentifierModel> content = pluginIdentifierService.loadFileContent();
         Assert.assertEquals(content.size(), 0);
     }
 }

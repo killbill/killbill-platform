@@ -28,6 +28,7 @@ import org.jooby.Result;
 import org.jooby.Results;
 import org.jooby.mvc.GET;
 import org.jooby.mvc.Path;
+import org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginManager;
 
 @Singleton
 // Handle /plugins/killbill-kpm/plugins (for KPM UI)
@@ -35,14 +36,17 @@ import org.jooby.mvc.Path;
 public class PluginsResource {
 
     private final KPMWrapper kpmWrapper;
+    private final DefaultPluginManager pluginManager;
 
     @Inject
-    public PluginsResource(final KPMWrapper kpmWrapper) {
+    public PluginsResource(final KPMWrapper kpmWrapper, final DefaultPluginManager pluginManager) {
         this.kpmWrapper = kpmWrapper;
+        this.pluginManager = pluginManager;
     }
 
     @GET
     public Result getAvailablePlugins(final Optional<String> kbVersion, final Boolean latest) {
-        return Results.ok(kpmWrapper.getAvailablePlugins(kbVersion.orElse("LATEST"), latest));
+        final Object result = pluginManager.getAvailablePlugins(kbVersion.orElse("LATEST"), latest);
+        return Results.ok(result);
     }
 }

@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.bundles.kpm;
+package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public final class PluginIdentifier {
+final class PluginIdentifierModel {
 
     private final String pluginName;
     private final String groupId;
@@ -35,11 +35,11 @@ public final class PluginIdentifier {
     private final String version;
     private final String language = "java";
 
-    private PluginIdentifier(final String pluginName,
-                             final String groupId,
-                             final String artifactId,
-                             final String classifier,
-                             final String version) {
+    private PluginIdentifierModel(final String pluginName,
+                                  final String groupId,
+                                  final String artifactId,
+                                  final String classifier,
+                                  final String version) {
         this.pluginName = pluginName;
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -47,13 +47,13 @@ public final class PluginIdentifier {
         this.version = version;
     }
 
-    public PluginIdentifier(final String pluginName, final String version) {
+    public PluginIdentifierModel(final String pluginName, final String version) {
         this(pluginName, null, null, null, version);
     }
 
     // Required by jackson.
     @VisibleForTesting
-    PluginIdentifier() {
+    PluginIdentifierModel() {
         this(null, null, null, null, null);
     }
 
@@ -93,7 +93,7 @@ public final class PluginIdentifier {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final PluginIdentifier that = (PluginIdentifier) o;
+        final PluginIdentifierModel that = (PluginIdentifierModel) o;
         return pluginName.equals(that.pluginName) &&
                Objects.equals(groupId, that.groupId) &&
                Objects.equals(artifactId, that.artifactId) &&
@@ -103,6 +103,6 @@ public final class PluginIdentifier {
 
     @Override
     public int hashCode() {
-        return Objects.hash(pluginName, groupId, artifactId, packaging, classifier, version, language);
+        return Objects.hash(pluginName, groupId, artifactId, classifier, version);
     }
 }

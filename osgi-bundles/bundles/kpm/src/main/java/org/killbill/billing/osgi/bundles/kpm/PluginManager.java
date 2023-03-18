@@ -17,13 +17,11 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
-import java.util.SortedSet;
-
 public interface PluginManager {
 
     String PROPERTY_PREFIX = "org.killbill.billing.plugin.kpm.";
 
-    SortedSet<PluginIdentifier> getAvailablePlugins(final String kbVersion, final boolean forceDownload) throws KPMPluginException;
+    GetAvailablePluginsModel getAvailablePlugins(final String kbVersion, final boolean forceDownload) throws KPMPluginException;
 
     void install(final String uri, final String pluginKey, final String pluginVersion) throws KPMPluginException;
 

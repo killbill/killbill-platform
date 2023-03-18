@@ -23,15 +23,15 @@ import java.net.URISyntaxException;
 import java.net.http.HttpRequest.Builder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.killbill.billing.plugin.util.http.HttpClient;
 import org.killbill.billing.plugin.util.http.InvalidRequest;
 import org.killbill.billing.plugin.util.http.ResponseFormat;
 
-public class KPMClient extends HttpClient {
+public class KPMClient extends ForkedHttpClient {
 
     public KPMClient(final boolean strictSSL,
                      final int connectTimeoutMs,
@@ -56,5 +56,22 @@ public class KPMClient extends HttpClient {
                                                      ResponseFormat.RAW)) {
             Files.copy(pluginStream, target);
         }
+    }
+
+    /**
+     * @return temporary path where killbill artifact metadata located
+     */
+    public Path downloadArtifactMetadata(final String uri) throws IOException, InvalidRequest, URISyntaxException, InterruptedException {
+        final Path result = Files.createTempFile("", "");
+        try (final InputStream pluginStream = doCall(GET,
+                                                     uri,
+                                                     null,
+                                                     Collections.emptyMap(),
+                                                     Collections.emptyMap(),
+                                                     InputStream.class,
+                                                     ResponseFormat.RAW)) {
+            Files.copy(pluginStream, result, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return result;
     }
 }

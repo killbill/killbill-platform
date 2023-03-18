@@ -28,7 +28,10 @@ public class TestPluginNamingResolver {
         return new Object[][] {
                 { "plugin-a-1.2.1.jar", "1.2.1" },
                 { "plugin-b-1.2.3-SNAPSHOT.jar", "1.2.3" },
-                { "my.super.plugin.1.2.3-snapshot.jar", "1.2.3" }
+                { "my.super.plugin.1.2.3-snapshot.jar", "1.2.3" },
+                { "my.super.plugin.1.2.3-snapshot", "1.2.3" },
+                {"0.24.1", "0.24.1"},
+                {"0.25.0-SNAPSHOT", "0.25.0"}
         };
     }
 

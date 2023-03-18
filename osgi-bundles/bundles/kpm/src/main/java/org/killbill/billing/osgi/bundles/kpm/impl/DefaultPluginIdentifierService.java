@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
-import org.killbill.billing.osgi.bundles.kpm.PluginIdentifier;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifierService;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
@@ -67,7 +66,7 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
     }
 
     @VisibleForTesting
-    Map<String, PluginIdentifier> loadFileContent() {
+    Map<String, PluginIdentifierModel> loadFileContent() {
         try {
             return objectMapper.readValue(file, new TypeReference<>() {});
         } catch (final IOException e) {
@@ -76,7 +75,7 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
     }
 
     @VisibleForTesting
-    void writeContentToFile(final Map<String, PluginIdentifier> contents) {
+    void writeContentToFile(final Map<String, PluginIdentifierModel> contents) {
         try {
             objectMapper.writeValue(file, contents);
         } catch (final IOException e) {
@@ -91,8 +90,8 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
 
         final PluginNamingResolver namingResolver = PluginNamingResolver.of(pluginKey, version);
 
-        final Map<String, PluginIdentifier> content = loadFileContent();
-        content.put(pluginKey, new PluginIdentifier(namingResolver.getPluginName(), namingResolver.getPluginVersion()));
+        final Map<String, PluginIdentifierModel> content = loadFileContent();
+        content.put(pluginKey, new PluginIdentifierModel(namingResolver.getPluginName(), namingResolver.getPluginVersion()));
 
         writeContentToFile(content);
     }
@@ -101,7 +100,7 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
     public void remove(final String pluginKey) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(pluginKey), "'pluginKey' cannot be null or empty");
 
-        final Map<String, PluginIdentifier> content = loadFileContent();
+        final Map<String, PluginIdentifierModel> content = loadFileContent();
         content.remove(pluginKey);
 
         writeContentToFile(content);

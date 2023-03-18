@@ -23,8 +23,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
+import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
-import org.killbill.billing.osgi.bundles.kpm.KPMPluginOperationException;
 import org.killbill.billing.osgi.bundles.kpm.PluginInstaller;
 
 public class URIBasedPluginInstaller implements PluginInstaller {
@@ -48,7 +48,7 @@ public class URIBasedPluginInstaller implements PluginInstaller {
      * See point 6 of "Current Implementation" in <a href="https://github.com/killbill/technical-support/issues/92">this issue</a>.
      */
     @Override
-    public void install() throws KPMPluginOperationException {
+    public void install() throws KPMPluginException {
         try {
             // Make directory
             final Path pluginDirectory = pluginFileService.createPluginDirectory(pluginKey, pluginVersion);
@@ -61,7 +61,7 @@ public class URIBasedPluginInstaller implements PluginInstaller {
             // Make symlink
             pluginFileService.createSymlink(pluginDirectory);
         } catch (final IOException e) {
-            throw KPMPluginOperationException.newInstallException(e);
+            throw new KPMPluginException(String.format("Unable to install plugin with key: %s", pluginKey), e);
         }
     }
 }
