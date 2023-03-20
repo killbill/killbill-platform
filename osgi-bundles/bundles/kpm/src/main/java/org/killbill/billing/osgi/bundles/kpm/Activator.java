@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServlet;
 import org.jooby.json.Jackson;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
-import org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginFileService;
-import org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginIdentifierService;
 import org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginManager;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;
 import org.killbill.billing.osgi.libs.killbill.OSGIConfigPropertiesService;
@@ -60,10 +58,7 @@ public class Activator extends KillbillActivatorBase {
         final Properties properties = configProperties.getProperties();
         final KPMWrapper kpmWrapper = new KPMWrapper(killbillAPI, properties);
 
-        final PluginFileService pluginFileService = new DefaultPluginFileService(properties);
-        final PluginIdentifierService pluginIdentifierService = new DefaultPluginIdentifierService(properties);
-
-        final PluginManager pluginManager = new DefaultPluginManager(killbillAPI, pluginFileService, pluginIdentifierService, properties);
+        final DefaultPluginManager pluginManager = new DefaultPluginManager(killbillAPI, properties);
         eventsListener = new EventsListener(kpmWrapper, pluginManager);
 
         final Jackson jackson = new Jackson(PluginAppBuilder.DEFAULT_OBJECT_MAPPER);
@@ -71,6 +66,7 @@ public class Activator extends KillbillActivatorBase {
         jackson.raw();
         final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).withJackson(jackson)
                                                                      .withService(kpmWrapper)
+                                                                     .withService(pluginManager)
                                                                      .withRouteClass(PluginsResource.class)
                                                                      .build();
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);

@@ -25,7 +25,7 @@ import org.killbill.commons.utils.Strings;
 
 class PluginNamingResolver {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("([1-9]\\d*)\\.(\\d+)\\.(\\d+)(?:-([a-zA-Z0-9]+))?");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+[1-9]*).(\\d+).(\\d+)(?:-([a-zA-Z0-9]+))?");
 
     private final String pluginKey;
     private final String pluginVersion;

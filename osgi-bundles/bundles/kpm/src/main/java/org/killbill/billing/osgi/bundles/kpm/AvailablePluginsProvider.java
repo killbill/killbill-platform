@@ -17,7 +17,13 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
-public interface PluginInstaller {
+import java.util.Collections;
+import java.util.Map.Entry;
+import java.util.Set;
 
-    void install() throws KPMPluginException;
+public interface AvailablePluginsProvider {
+
+    Set<Entry<String, String>> getAvailablePlugins();
+
+    AvailablePluginsProvider NONE = Collections::emptySet;
 }
