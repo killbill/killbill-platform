@@ -62,7 +62,7 @@ public class KPMClient extends ForkedHttpClient {
      * @return temporary path where killbill artifact metadata located
      */
     public Path downloadArtifactMetadata(final String uri) throws IOException, InvalidRequest, URISyntaxException, InterruptedException {
-        final Path result = Files.createTempFile("", "");
+        final Path result = Files.createTempFile("kpm-metadata", "");
         try (final InputStream pluginStream = doCall(GET,
                                                      uri,
                                                      null,
