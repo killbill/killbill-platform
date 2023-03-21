@@ -30,7 +30,7 @@ public interface AvailablePluginsProvider {
 
     AvailablePluginsProvider NONE = Collections::emptySet;
 
-    class AvailablePluginsModel {
+    class AvailablePluginsModel implements Comparable<AvailablePluginsModel> {
 
         private final String pluginKey;
         private final String pluginVersion;
@@ -63,6 +63,11 @@ public interface AvailablePluginsProvider {
         @Override
         public int hashCode() {
             return Objects.hash(pluginKey, pluginVersion);
+        }
+
+        @Override
+        public int compareTo(final AvailablePluginsModel o) {
+            return pluginKey.compareTo(o.getPluginKey());
         }
     }
 }

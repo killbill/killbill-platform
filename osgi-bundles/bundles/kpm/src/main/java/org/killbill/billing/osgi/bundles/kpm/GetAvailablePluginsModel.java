@@ -17,57 +17,167 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.io.IOException;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider.AvailablePluginsModel;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public final class GetAvailablePluginsModel {
 
     @JsonProperty("killbill")
-    private final SortedMap<String, String> killbill;
+    private final KillbillArtifactsVersion killbillArtifactsVersion;
 
     @JsonProperty("plugins")
-    private final SortedMap<String, String> plugins;
+    @JsonSerialize(using = AvailablePluginsSerializer.class)
+    private final SortedSet<AvailablePluginsModel> availablePlugins;
 
     public GetAvailablePluginsModel() {
-        killbill = new TreeMap<>();
-        plugins = new TreeMap<>();
+        killbillArtifactsVersion = new KillbillArtifactsVersion();
+        availablePlugins = new TreeSet<>();
     }
 
     public void addKillbillVersion(final String fixedKillbillVersion) {
-        killbill.put("killbill", fixedKillbillVersion);
+        killbillArtifactsVersion.setKillbill(fixedKillbillVersion);
     }
 
     public void addOssParentVersion(final String ossParentVersion) {
-        killbill.put("killbill-oss-parent", ossParentVersion);
+        killbillArtifactsVersion.setOssParent(ossParentVersion);
     }
 
     public void addApiVersion(final String killbillApiVersion) {
-        killbill.put("killbill-api", killbillApiVersion);
+        killbillArtifactsVersion.setApi(killbillApiVersion);
     }
 
     public void addPluginApiVersion(final String killbillPluginApiVersion) {
-        killbill.put("killbill-plugin-api", killbillPluginApiVersion);
+        killbillArtifactsVersion.setPluginApi(killbillPluginApiVersion);
     }
 
     public void addCommonsVersion(final String killbillCommonsVersion) {
-        killbill.put("killbill-commons", killbillCommonsVersion);
+        killbillArtifactsVersion.setCommons(killbillCommonsVersion);
     }
 
     public void addPlatformVersion(final String killbillPlatformVersion) {
-        killbill.put("killbill-platform", killbillPlatformVersion);
+        killbillArtifactsVersion.setPlatform(killbillPlatformVersion);
     }
 
     public void addPlugins(final String pluginKey, final String version) {
-        plugins.put(pluginKey, version);
+        availablePlugins.add(new AvailablePluginsModel(pluginKey, version));
     }
 
-    public SortedMap<String, String> getKillbill() {
-        return new TreeMap<>(killbill);
+    public KillbillArtifactsVersion getKillbillArtifactsVersion() {
+        return new KillbillArtifactsVersion(killbillArtifactsVersion);
     }
 
-    public SortedMap<String, String> getPlugins() {
-        return new TreeMap<>(plugins);
+    @VisibleForTesting
+    public SortedSet<AvailablePluginsModel> getAvailablePlugins() {
+        return new TreeSet<>(availablePlugins);
+    }
+
+    public static class KillbillArtifactsVersion {
+
+        @JsonProperty("killbill")
+        private String killbill = "";
+
+        @JsonProperty("killbill-oss-parent")
+        private String ossParent = "";
+
+        @JsonProperty("killbill-api")
+        private String api = "";
+
+        @JsonProperty("killbill-plugin-api")
+        private String pluginApi = "";
+
+        @JsonProperty("killbill-commons")
+        private String commons = "";
+
+        @JsonProperty("killbill-platform")
+        private String platform = "";
+
+        public KillbillArtifactsVersion() {}
+
+        KillbillArtifactsVersion(final KillbillArtifactsVersion other) {
+            this.killbill = other.getKillbill();
+            this.ossParent = other.getOssParent();
+            this.api = other.getApi();
+            this.pluginApi = other.getPluginApi();
+            this.commons = other.getCommons();
+            this.platform = other.getPlatform();
+        }
+
+        public String getKillbill() {
+            return killbill;
+        }
+
+        public void setKillbill(final String killbill) {
+            this.killbill = killbill;
+        }
+
+        public String getOssParent() {
+            return ossParent;
+        }
+
+        public void setOssParent(final String ossParent) {
+            this.ossParent = ossParent;
+        }
+
+        public String getApi() {
+            return api;
+        }
+
+        public void setApi(final String api) {
+            this.api = api;
+        }
+
+        public String getPluginApi() {
+            return pluginApi;
+        }
+
+        public void setPluginApi(final String pluginApi) {
+            this.pluginApi = pluginApi;
+        }
+
+        public String getCommons() {
+            return commons;
+        }
+
+        public void setCommons(final String commons) {
+            this.commons = commons;
+        }
+
+        public String getPlatform() {
+            return platform;
+        }
+
+        public void setPlatform(final String platform) {
+            this.platform = platform;
+        }
+    }
+
+    static class AvailablePluginsSerializer extends StdSerializer<SortedSet<AvailablePluginsModel>> {
+
+        protected AvailablePluginsSerializer() {
+            this(null);
+        }
+
+        protected AvailablePluginsSerializer(final Class<SortedSet<AvailablePluginsModel>> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(final SortedSet<AvailablePluginsModel> value, final JsonGenerator gen, final SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            for (final AvailablePluginsModel model : value) {
+                gen.writeStringField(model.getPluginKey(), model.getPluginVersion());
+            }
+            gen.writeEndObject();
+        }
     }
 }

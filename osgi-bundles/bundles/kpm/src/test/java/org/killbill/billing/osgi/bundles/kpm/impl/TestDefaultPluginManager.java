@@ -52,8 +52,8 @@ public class TestDefaultPluginManager {
     public void testGetAvailablePlugins() {
         // Get plugin info from actual, default, killbill plugins_directory.yml. See DefaultAvailablePluginsProvider
         GetAvailablePluginsModel result = pluginManager.getAvailablePlugins("0.18.0", true);
-        Assert.assertEquals(result.getKillbill().get("killbill"), "0.18.0");
-        Assert.assertFalse(result.getPlugins().isEmpty());
+        Assert.assertEquals(result.getKillbillArtifactsVersion().getKillbill(), "0.18.0");
+        Assert.assertFalse(result.getAvailablePlugins().isEmpty());
 
         try {
             result = pluginManager.getAvailablePlugins("not-exist", true);
@@ -65,9 +65,9 @@ public class TestDefaultPluginManager {
         // will never throw an exception
         result = pluginManager.getAvailablePlugins("not-exist", false);
         // will return VersionsProvider.ZERO
-        Assert.assertEquals(result.getKillbill().get("killbill"), "0.0.0");
+        Assert.assertEquals(result.getKillbillArtifactsVersion().getKillbill(), "0.0.0");
         // will return AvailablePluginsProvider.NONE
-        Assert.assertTrue(result.getPlugins().isEmpty());
+        Assert.assertTrue(result.getAvailablePlugins().isEmpty());
     }
 
 }
