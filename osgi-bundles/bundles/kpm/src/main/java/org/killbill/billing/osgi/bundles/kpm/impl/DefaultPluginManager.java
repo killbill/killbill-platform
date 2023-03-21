@@ -121,7 +121,7 @@ public class DefaultPluginManager implements PluginManager {
         availablePluginsComponentsFactory
                 .createAvailablePluginsProvider(versionsProvider.getFixedKillbillVersion(), forceDownload)
                 .getAvailablePlugins()
-                .forEach(entry -> result.addPlugins(entry.getKey(), entry.getValue()));
+                .forEach(entry -> result.addPlugins(entry.getPluginKey(), entry.getPluginVersion()));
 
         return result;
     }

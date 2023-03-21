@@ -18,12 +18,51 @@
 package org.killbill.billing.osgi.bundles.kpm;
 
 import java.util.Collections;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Provide available plugins information from remote location.
+ */
 public interface AvailablePluginsProvider {
 
-    Set<Entry<String, String>> getAvailablePlugins();
+    Set<AvailablePluginsModel> getAvailablePlugins();
 
     AvailablePluginsProvider NONE = Collections::emptySet;
+
+    class AvailablePluginsModel {
+
+        private final String pluginKey;
+        private final String pluginVersion;
+
+        public AvailablePluginsModel(final String pluginKey, final String pluginVersion) {
+            this.pluginKey = pluginKey;
+            this.pluginVersion = pluginVersion;
+        }
+
+        public String getPluginKey() {
+            return pluginKey;
+        }
+
+        public String getPluginVersion() {
+            return pluginVersion;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final AvailablePluginsModel that = (AvailablePluginsModel) o;
+            return pluginKey.equals(that.pluginKey) && pluginVersion.equals(that.pluginVersion);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(pluginKey, pluginVersion);
+        }
+    }
 }

@@ -18,9 +18,9 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
-import java.util.Map.Entry;
 
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
+import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider.AvailablePluginsModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.killbill.commons.utils.Strings;
@@ -44,9 +44,9 @@ public class TestDefaultAvailablePluginsProvider {
     @Test(groups = "fast")
     public void testGetAvailablePlugins() throws Exception {
         final AvailablePluginsProvider availablePluginsProvider = new DefaultAvailablePluginsProvider(httpClient, "0.24.0");
-        for (final Entry<String, String> availablePlugin : availablePluginsProvider.getAvailablePlugins()) {
-            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getKey()));
-            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getValue()));
+        for (final AvailablePluginsModel availablePlugin : availablePluginsProvider.getAvailablePlugins()) {
+            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getPluginKey()));
+            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getPluginVersion()));
         }
     }
 }

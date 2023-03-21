@@ -31,6 +31,11 @@ import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Will get available plugin information from "plugins_directory.yml" file. The YAML file structure that able to process
+ * by this class is following
+ * <a href="https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml">this file</a>.
+ */
 class DefaultAvailablePluginsProvider implements AvailablePluginsProvider {
 
     private static final String PLUGIN_DIRECTORY_YML_URL = "https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml";
@@ -38,9 +43,9 @@ class DefaultAvailablePluginsProvider implements AvailablePluginsProvider {
     private final String killbillVersion;
     private final List<Object> yamlData;
 
-    DefaultAvailablePluginsProvider(final KPMClient kpmClient,
-                                    final String semverBasedKbVersion,
-                                    final String pluginDirectoryYamlUrl) throws Exception {
+    public DefaultAvailablePluginsProvider(final KPMClient kpmClient,
+                                           final String semverBasedKbVersion,
+                                           final String pluginDirectoryYamlUrl) throws Exception {
         this.killbillVersion = semverBasedKbVersion;
         final Path pluginDirectoryYml = kpmClient.downloadArtifactMetadata(pluginDirectoryYamlUrl);
         final Yaml yaml = new Yaml();
@@ -53,8 +58,8 @@ class DefaultAvailablePluginsProvider implements AvailablePluginsProvider {
     }
 
     @Override
-    public Set<Entry<String, String>> getAvailablePlugins() {
-        final Set<Entry<String, String>> result = new HashSet<>();
+    public Set<AvailablePluginsModel> getAvailablePlugins() {
+        final Set<AvailablePluginsModel> result = new HashSet<>();
         if (yamlData == null || yamlData.isEmpty()) {
             return Collections.emptySet();
         }
@@ -72,7 +77,7 @@ class DefaultAvailablePluginsProvider implements AvailablePluginsProvider {
                         final String compatibleKbVersion = versionEntry.getKey().replace(":", "");
                         // "plugins_directory.yml" only contains MAJOR.MINOR killbill version. So use ".startsWith()" here
                         if (killbillVersion.startsWith(compatibleKbVersion)) {
-                            result.add(Map.entry(pluginKey, versionEntry.getValue()));
+                            result.add(new AvailablePluginsModel(pluginKey, versionEntry.getValue()));
                         }
                     }
                 }

@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
+import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider.AvailablePluginsModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
@@ -75,7 +76,7 @@ public class TestAvailablePluginsComponentsFactory {
         final AvailablePluginsProvider availablePluginsProvider = componentsFactory.createAvailablePluginsProvider("0.24.2-SNAPSHOT", true);
         Assert.assertNotNull(availablePluginsProvider);
 
-        final Set<Entry<String, String>> plugins = availablePluginsProvider.getAvailablePlugins();
+        final Set<AvailablePluginsModel> plugins = availablePluginsProvider.getAvailablePlugins();
         Assert.assertNotNull(plugins);
         Assert.assertFalse(plugins.isEmpty());
     }
