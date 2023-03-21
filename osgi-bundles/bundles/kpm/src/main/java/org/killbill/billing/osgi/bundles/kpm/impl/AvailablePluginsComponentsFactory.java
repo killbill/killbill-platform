@@ -19,12 +19,14 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Objects;
 
+import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
+import org.killbill.billing.util.nodes.NodeInfo;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.cache.Cache;
 import org.killbill.commons.utils.cache.DefaultCache;
@@ -43,6 +45,7 @@ public final class AvailablePluginsComponentsFactory {
 
     private static final int CACHE_SIZE = 10;
 
+    private final OSGIKillbill osgiKillbill;
     private final KPMClient httpClient;
     private final String nexusUrl;
     private final String nexusRepository;
@@ -50,7 +53,11 @@ public final class AvailablePluginsComponentsFactory {
     private final Cache<String, VersionsProvider> versionsProviderCache;
     private final Cache<String, AvailablePluginsProvider> pluginsProviderCache;
 
-    public AvailablePluginsComponentsFactory(final KPMClient httpClient, final String nexusUrl, final String nexusRepository) {
+    public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill,
+                                             final KPMClient httpClient,
+                                             final String nexusUrl,
+                                             final String nexusRepository) {
+        this.osgiKillbill = osgiKillbill;
         this.httpClient = httpClient;
         this.nexusUrl = nexusUrl;
         this.nexusRepository = nexusRepository;
@@ -70,13 +77,21 @@ public final class AvailablePluginsComponentsFactory {
 
         final VersionsProvider result = versionsProviderCache.get(killbillVersionOrLatest);
         if (result == null && forceDownload) {
+            final NexusMetadataFiles nexusMetadataFiles = createNexusMetadataFiles(killbillVersionOrLatest);
+            final NodeInfo nodeInfo = osgiKillbill.getKillbillNodesApi().getCurrentNodeInfo();
             try {
-                final NexusMetadataFiles nexusMetadataFiles = createNexusMetadataFiles(killbillVersionOrLatest);
-                versionsProviderCache.put(killbillVersionOrLatest, new DefaultVersionsProvider(nexusMetadataFiles));
+                // NodeInfo doesn't have killbill-oss-parent version info, but have other killbill libs info. Thus,
+                // adding NodeInfo option here worth it because we can reduce remote call to just 1 call, since
+                // killbill-oss-parent.pom is not needed anymore (get covered by NodeInfo)
+                if (nodeInfo.getKillbillVersion().equals(killbillVersionOrLatest)) {
+                    versionsProviderCache.put(killbillVersionOrLatest, new DefaultVersionsProvider(nexusMetadataFiles, nodeInfo));
+                } else {
+                    versionsProviderCache.put(killbillVersionOrLatest, new DefaultVersionsProvider(nexusMetadataFiles));
+                }
+                return versionsProviderCache.get(killbillVersionOrLatest);
             } catch (final Exception e) {
                 throw new KPMPluginException(String.format("Unable to get killbill version info: %s", killbillVersionOrLatest), e);
             }
-            return versionsProviderCache.get(killbillVersionOrLatest);
         } else {
             return Objects.requireNonNullElse(result, VersionsProvider.ZERO);
         }

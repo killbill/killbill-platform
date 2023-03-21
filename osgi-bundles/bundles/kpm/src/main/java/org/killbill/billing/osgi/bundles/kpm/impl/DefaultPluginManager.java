@@ -87,7 +87,7 @@ public class DefaultPluginManager implements PluginManager {
     AvailablePluginsComponentsFactory createAvailablePluginsComponentsFactory(final KPMClient httpClient, final Properties properties) {
         final String nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
         final String nexusRepository = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "releases");
-        return new AvailablePluginsComponentsFactory(httpClient, nexusUrl, nexusRepository);
+        return new AvailablePluginsComponentsFactory(killbillApi, httpClient, nexusUrl, nexusRepository);
     }
 
     private void notifyFileSystemChange(final PluginStateChange newState,

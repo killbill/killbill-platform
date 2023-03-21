@@ -19,8 +19,10 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
+import org.killbill.billing.util.nodes.NodeInfo;
+import org.killbill.commons.utils.Preconditions;
 
-public class DefaultVersionsProvider implements VersionsProvider {
+class DefaultVersionsProvider implements VersionsProvider {
 
     private final String fixedKbVersion;
     private final String ossParentVersion;
@@ -29,9 +31,17 @@ public class DefaultVersionsProvider implements VersionsProvider {
     private final String commonsVersion;
     private final String platformVersion;
 
-    public DefaultVersionsProvider(final NexusMetadataFiles nexusMetadataFiles) throws Exception {
-        final XmlParser killbillPomParser = new XmlParser(nexusMetadataFiles.getKillbillPomXml());
-        final XmlParser ossParentPomParser = new XmlParser(nexusMetadataFiles.getOssParentPomXml());
+    /**
+     * Create default {@link VersionsProvider} with valid, non-null {@link NexusMetadataFiles} implementation. This
+     * is heavy operation because at least have 2 remote HTTP call to get killbill pom.xml and killbill-oss-parent pom.xml
+     * Consider to use {@code DefaultVersionsProvider(nexusMetadataFiles, NodeInfo)}, because this could reduce
+     * one remote call because {@code apiVersion}, {@code pluginApiVersion}, etc. provided by {@code NodeInfo}.
+     */
+    DefaultVersionsProvider(final NexusMetadataFiles nexusMetadataFiles) throws Exception {
+        Preconditions.checkNotNull(nexusMetadataFiles, "'nexusMetadata' is null");
+
+        final XmlParser killbillPomParser = new XmlParser(Preconditions.checkNotNull(nexusMetadataFiles.getKillbillPomXml()));
+        final XmlParser ossParentPomParser = new XmlParser(Preconditions.checkNotNull(nexusMetadataFiles.getOssParentPomXml()));
 
         fixedKbVersion = killbillPomParser.getValue("/version");
         ossParentVersion = killbillPomParser.getValue("/parent/version");
@@ -40,6 +50,23 @@ public class DefaultVersionsProvider implements VersionsProvider {
         pluginApiVersion = ossParentPomParser.getValue("/properties/killbill-plugin-api.version");
         commonsVersion = ossParentPomParser.getValue("/properties/killbill-commons.version");
         platformVersion = ossParentPomParser.getValue("/properties/killbill-platform.version");
+    }
+
+    /**
+     * See {@code DefaultVersionsProvider(NexusMetadataFiles)} constructor javadocs.
+     */
+    DefaultVersionsProvider(final NexusMetadataFiles nexusMetadataFiles, final NodeInfo nodeInfo) throws Exception {
+        Preconditions.checkNotNull(nexusMetadataFiles, "'nexusMetadataFiles' is null");
+        Preconditions.checkNotNull(nodeInfo, "'nodeInfo' is null");
+
+        final XmlParser killbillPomParser = new XmlParser(nexusMetadataFiles.getKillbillPomXml());
+        fixedKbVersion = killbillPomParser.getValue("/version");
+        ossParentVersion = killbillPomParser.getValue("/parent/version");
+        //
+        apiVersion = nodeInfo.getApiVersion();
+        pluginApiVersion = nodeInfo.getPluginApiVersion();
+        commonsVersion = nodeInfo.getCommonVersion();
+        platformVersion = nodeInfo.getPlatformVersion();
     }
 
     @Override

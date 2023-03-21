@@ -18,9 +18,9 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
-import java.util.Map.Entry;
 import java.util.Set;
 
+import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider.AvailablePluginsModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
@@ -28,6 +28,8 @@ import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 
+import org.killbill.billing.util.nodes.KillbillNodesApi;
+import org.killbill.billing.util.nodes.NodeInfo;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -37,6 +39,7 @@ public class TestAvailablePluginsComponentsFactory {
 
     private static final String KILLBILL_POM_REGEX = ".killbill-\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?\\.pom$";
 
+    private NodeInfo nodeInfo;
     private AvailablePluginsComponentsFactory componentsFactory;
 
     @BeforeMethod(groups = "fast")
@@ -46,17 +49,29 @@ public class TestAvailablePluginsComponentsFactory {
         final Path mavenMetadataXml = TestUtils.getTestPath("xml").resolve("maven-metadata.xml");
         final Path pluginDirectoryYml = TestUtils.getTestPath("yaml").resolve("plugins_directory.yml");
 
+        nodeInfo = Mockito.mock(NodeInfo.class);
+
+        final KillbillNodesApi killbillNodesApi = Mockito.mock(KillbillNodesApi.class);
+        Mockito.when(killbillNodesApi.getCurrentNodeInfo()).thenReturn(nodeInfo);
+
+        final OSGIKillbill osgiKillbill = Mockito.mock(OSGIKillbill.class);
+        Mockito.when(osgiKillbill.getKillbillNodesApi()).thenReturn(killbillNodesApi);
+
         final KPMClient httpClient = Mockito.mock(KPMClient.class);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("plugins_directory"))).thenReturn(pluginDirectoryYml);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("maven-metadata.xml"))).thenReturn(mavenMetadataXml);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("killbill-oss-parent"))).thenReturn(ossParentPomXml);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.matches(KILLBILL_POM_REGEX))).thenReturn(killbillPomXml);
 
-        componentsFactory = new AvailablePluginsComponentsFactory(httpClient, "not://required.com", "not-needed-because-mocked");
+        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill,
+                                                                  httpClient,
+                                                                  "not://required.com",
+                                                                  "not-needed-because-mocked");
     }
 
     @Test(groups = "fast")
-    public void testGetVersionsProvider() {
+    public void testGetVersionsProviderWithoutNodeInfo() {
+        Mockito.when(nodeInfo.getKillbillVersion()).thenReturn("0.0.0");
         // Version not actually needed here, since all pom xml mocked. Just 'LATEST' or sem-ver compliance value
         final VersionsProvider versionsProvider = componentsFactory.createVersionsProvider("laTEst", true);
 
@@ -67,6 +82,29 @@ public class TestAvailablePluginsComponentsFactory {
         Assert.assertEquals(versionsProvider.getKillbillPluginApiVersion(), "0.27.0");
         Assert.assertEquals(versionsProvider.getKillbillCommonsVersion(), "0.25.1-209ec51-SNAPSHOT");
         Assert.assertEquals(versionsProvider.getKillbillPlatformVersion(), "0.41.0-1461460-SNAPSHOT");
+    }
+
+    @Test(groups = "fast")
+    public void testGetVersionsProviderWithNodeInfo() {
+        Mockito.when(nodeInfo.getKillbillVersion()).thenReturn("0.24.1-SNAPSHOT");
+        Mockito.when(nodeInfo.getApiVersion()).thenReturn("1.0-node-info");
+        Mockito.when(nodeInfo.getPluginApiVersion()).thenReturn("1.0-node-info");
+        Mockito.when(nodeInfo.getCommonVersion()).thenReturn("1.0-node-info");
+        Mockito.when(nodeInfo.getPlatformVersion()).thenReturn("1.0-node-info");
+
+        // Intentionally set the version the same as nodeInfo version.
+        final VersionsProvider versionsProvider = componentsFactory.createVersionsProvider("0.24.1-SNAPSHOT", true);
+
+        // Will use node info versions instead
+        Assert.assertEquals(versionsProvider.getFixedKillbillVersion(), "0.24.1-SNAPSHOT");
+        // This is where 'NexusMetadataFiles' still used to get killbill pom.xml info from remote.
+        Assert.assertEquals(versionsProvider.getOssParentVersion(), "0.146.6");
+
+        // The rest will use NodeInfo version
+        Assert.assertEquals(versionsProvider.getKillbillApiVersion(), "1.0-node-info");
+        Assert.assertEquals(versionsProvider.getKillbillPluginApiVersion(), "1.0-node-info");
+        Assert.assertEquals(versionsProvider.getKillbillCommonsVersion(), "1.0-node-info");
+        Assert.assertEquals(versionsProvider.getKillbillPlatformVersion(), "1.0-node-info");
     }
 
     @Test(groups = "fast")
