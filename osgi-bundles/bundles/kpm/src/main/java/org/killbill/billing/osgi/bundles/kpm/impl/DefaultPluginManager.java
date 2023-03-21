@@ -17,6 +17,8 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
@@ -128,13 +130,16 @@ public class DefaultPluginManager implements PluginManager {
 
     @Override
     public void install(final String uri, final String pluginKey, final String pluginVersion) throws KPMPluginException {
+        logger.debug("Installing plugin via URL for key: {}, pluginVersion: {}, uri: {}", pluginKey, pluginVersion, uri);
+
+        Path downloadedFile = null;
         final PluginNamingResolver namingResolver = PluginNamingResolver.of(pluginKey, pluginVersion, uri);
         try {
             // Prepare temp file as download location
             final Path downloadDirectory = PluginFileService.createTmpDownloadPath();
             final String pluginFileName = namingResolver.getPluginJarFileName();
             final String fixedVersion = namingResolver.getPluginVersion();
-            final Path downloadedFile = downloadDirectory.resolve(pluginFileName);
+            downloadedFile = downloadDirectory.resolve(pluginFileName);
             // Download
             httpClient.downloadPlugin(uri, downloadedFile);
 
@@ -150,6 +155,13 @@ public class DefaultPluginManager implements PluginManager {
         } catch (final Exception e) {
             logger.error("Error when install plugin with URI:{}, key:{}, version:{}", uri, pluginKey, pluginVersion);
             throw new KPMPluginException(e);
+        } finally {
+            if (downloadedFile != null) {
+                try {
+                    Files.deleteIfExists(downloadedFile);
+                } catch (final IOException ignored) {
+                }
+            }
         }
     }
 
