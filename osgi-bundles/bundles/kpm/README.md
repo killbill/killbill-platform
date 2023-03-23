@@ -18,6 +18,7 @@ Available global configuration properties:
 * `org.killbill.billing.plugin.kpm.strictSSL` (default: `true`)
 * `org.killbill.billing.plugin.kpm.readTimeoutSec` (default: `60`)
 * `org.killbill.billing.plugin.kpm.connectTimeoutSec` (default: `60`)
+* `org.killbill.billing.plugin.kpm.pluginDirectoryUrl` (default: [default structure](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml))
 
 ## Endpoints
 

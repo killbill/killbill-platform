@@ -17,6 +17,7 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
@@ -31,22 +32,34 @@ import org.testng.annotations.Test;
 
 public class TestDefaultAvailablePluginsProvider {
 
-    private final Path pluginsDirectoryYml = TestUtils.getTestPath("yaml").resolve("plugins_directory.yml");
+    private Path pluginsDirectoryYml;
 
     private KPMClient httpClient;
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() throws Exception {
+        // Assign to temporary file, so original test resources files not getting deleted.
+        final Path pluginsDirYmlInTestRes = TestUtils.getTestPath("yaml").resolve("plugin_directory.yml");
+        pluginsDirectoryYml = Files.createTempFile("kpm-test", "");
+        if (Files.notExists(pluginsDirectoryYml)) {
+            Files.copy(pluginsDirYmlInTestRes, pluginsDirectoryYml);
+        }
+
+        // In KPMClient #downloadArtifactMetadata() return tmp file instead file in src/test/resources
         httpClient = Mockito.mock(KPMClient.class);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.anyString())).thenReturn(pluginsDirectoryYml);
     }
 
     @Test(groups = "fast")
     public void testGetAvailablePlugins() throws Exception {
-        final AvailablePluginsProvider availablePluginsProvider = new DefaultAvailablePluginsProvider(httpClient, "0.24.0");
+        final AvailablePluginsProvider availablePluginsProvider = new DefaultAvailablePluginsProvider(httpClient, "0.24.0", pluginsDirectoryYml.toString());
         for (final AvailablePluginsModel availablePlugin : availablePluginsProvider.getAvailablePlugins()) {
-            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getPluginKey()));
-            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getPluginVersion()));
+            Assert.assertNotNull(availablePlugin);
+
+            final String pluginKey = availablePlugin.getPluginKey();
+            final String pluginVersion = availablePlugin.getPluginVersion();
+            Assert.assertFalse(Strings.isNullOrEmpty(pluginKey));
+            Assert.assertFalse(Strings.isNullOrEmpty(pluginVersion));
         }
     }
 }

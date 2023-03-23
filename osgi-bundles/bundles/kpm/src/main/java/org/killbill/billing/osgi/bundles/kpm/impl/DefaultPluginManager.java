@@ -55,7 +55,7 @@ public class DefaultPluginManager implements PluginManager {
         this.pluginFileService = createPluginFileService(properties);
         this.pluginIdentifierService = createPluginIdentifierService(properties);
         this.httpClient = createHttpClient(properties);
-        this.availablePluginsComponentsFactory = createAvailablePluginsComponentsFactory(httpClient, properties);
+        this.availablePluginsComponentsFactory = new AvailablePluginsComponentsFactory(killbillApi, httpClient, properties);
 
         this.adminUsername = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
         this.adminPassword = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
@@ -85,13 +85,6 @@ public class DefaultPluginManager implements PluginManager {
         }
     }
 
-    @VisibleForTesting
-    AvailablePluginsComponentsFactory createAvailablePluginsComponentsFactory(final KPMClient httpClient, final Properties properties) {
-        final String nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
-        final String nexusRepository = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "releases");
-        return new AvailablePluginsComponentsFactory(killbillApi, httpClient, nexusUrl, nexusRepository);
-    }
-
     private void notifyFileSystemChange(final PluginStateChange newState,
                                         final String pluginKey,
                                         final String pluginVersion) {
@@ -109,7 +102,8 @@ public class DefaultPluginManager implements PluginManager {
     }
 
     @Override
-    public GetAvailablePluginsModel getAvailablePlugins(final String kbVersion, final boolean forceDownload) throws KPMPluginException {
+    public GetAvailablePluginsModel getAvailablePlugins(final String kbVersion,
+                                                        final boolean forceDownload) throws KPMPluginException {
         final GetAvailablePluginsModel result = new GetAvailablePluginsModel();
 
         final VersionsProvider versionsProvider = availablePluginsComponentsFactory.createVersionsProvider(kbVersion, forceDownload);

@@ -18,6 +18,7 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.Set;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
@@ -63,10 +64,7 @@ public class TestAvailablePluginsComponentsFactory {
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("killbill-oss-parent"))).thenReturn(ossParentPomXml);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.matches(KILLBILL_POM_REGEX))).thenReturn(killbillPomXml);
 
-        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill,
-                                                                  httpClient,
-                                                                  "not://required.com",
-                                                                  "not-needed-because-mocked");
+        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill, httpClient, new Properties());
     }
 
     @Test(groups = "fast")

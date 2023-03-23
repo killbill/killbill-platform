@@ -38,8 +38,6 @@ import org.yaml.snakeyaml.Yaml;
  */
 class DefaultAvailablePluginsProvider implements AvailablePluginsProvider {
 
-    private static final String PLUGIN_DIRECTORY_YML_URL = "https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml";
-
     private final String killbillVersion;
     private final List<Object> yamlData;
 
@@ -52,9 +50,8 @@ class DefaultAvailablePluginsProvider implements AvailablePluginsProvider {
         yamlData = new ArrayList<>();
         // yaml.loadAll() return Iterable<Object> which is a "view" and will empty once consumed
         yaml.loadAll(Files.readString(pluginDirectoryYml)).forEach(yamlData::add);
-    }
-    public DefaultAvailablePluginsProvider(final KPMClient httpClient, final String semVerBasedKbVersion) throws Exception {
-        this(httpClient, semVerBasedKbVersion, PLUGIN_DIRECTORY_YML_URL);
+
+        Files.deleteIfExists(pluginDirectoryYml);
     }
 
     @Override

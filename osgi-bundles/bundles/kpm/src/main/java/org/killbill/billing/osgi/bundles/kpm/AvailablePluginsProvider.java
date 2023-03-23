@@ -28,6 +28,8 @@ public interface AvailablePluginsProvider {
 
     Set<AvailablePluginsModel> getAvailablePlugins();
 
+    String DEFAULT_DIRECTORY = "https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml";
+
     AvailablePluginsProvider NONE = Collections::emptySet;
 
     class AvailablePluginsModel implements Comparable<AvailablePluginsModel> {

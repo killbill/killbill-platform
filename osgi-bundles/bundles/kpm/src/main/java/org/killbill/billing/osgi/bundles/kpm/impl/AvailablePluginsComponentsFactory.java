@@ -18,6 +18,7 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Objects;
+import java.util.Properties;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
@@ -49,18 +50,20 @@ public final class AvailablePluginsComponentsFactory {
     private final KPMClient httpClient;
     private final String nexusUrl;
     private final String nexusRepository;
+    private final String pluginDirectoryUrl;
 
     private final Cache<String, VersionsProvider> versionsProviderCache;
     private final Cache<String, AvailablePluginsProvider> pluginsProviderCache;
 
-    public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill,
-                                             final KPMClient httpClient,
-                                             final String nexusUrl,
-                                             final String nexusRepository) {
+    public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill, final KPMClient httpClient, final Properties properties) {
         this.osgiKillbill = osgiKillbill;
         this.httpClient = httpClient;
-        this.nexusUrl = nexusUrl;
-        this.nexusRepository = nexusRepository;
+
+        nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
+        nexusRepository = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "releases");
+        pluginDirectoryUrl = Objects.requireNonNullElse(
+                properties.getProperty(PluginManager.PROPERTY_PREFIX + "pluginDirectoryUrl"),
+                AvailablePluginsProvider.DEFAULT_DIRECTORY);
 
         versionsProviderCache = new DefaultCache<>(CACHE_SIZE);
         pluginsProviderCache = new DefaultCache<>(CACHE_SIZE);
@@ -118,18 +121,23 @@ public final class AvailablePluginsComponentsFactory {
      * @param fixedKillbillVersion sem-ver killbill version
      * @param forceDownload when it false, we just try to load from cache and no download operation
      */
+    // FIXME-TS-58: There's request to add ability to set plugin_directory.yml file at runtime, ex via request parameter
+    //   like: http://127.0.0.1:8080/plugins/killbill-kpm/plugins?latest=true&pluginDirUrl=https://plugindir.com/file.yml
+    //   although this is doable, some concern are:
+    //   1. How this affected technical-support-93 (https://github.com/killbill/technical-support/issues/93) ?
+    //   2. This probably make an open to overflow attack, where unexpected YAML URL passed and exception thrown multiple times
     public AvailablePluginsProvider createAvailablePluginsProvider(final String fixedKillbillVersion, final boolean forceDownload) throws KPMPluginException {
         logger.debug("#createAvailablePluginsProvider() with killbillVersion: {} and forceDownload: {}", fixedKillbillVersion, forceDownload);
         // For validating version format
         final String version = PluginNamingResolver.getVersionFromString(fixedKillbillVersion);
         if (Strings.isNullOrEmpty(version)) {
-            throw new IllegalArgumentException(String.format("'%s' is not a valid killbill version in createAvailablePluginsProvider() method", fixedKillbillVersion));
+            throw new IllegalArgumentException(String.format("'%s' is not a valid killbill version in createAvailablePluginsProvider()", fixedKillbillVersion));
         }
 
         final AvailablePluginsProvider result = pluginsProviderCache.get(version);
         if (result == null && forceDownload) {
             try {
-                pluginsProviderCache.put(version, new DefaultAvailablePluginsProvider(httpClient, version));
+                pluginsProviderCache.put(version, new DefaultAvailablePluginsProvider(httpClient, version, pluginDirectoryUrl));
             } catch (final Exception e) {
                 throw new KPMPluginException(String.format("Unable to get available plugin info for killbill version: %s", version), e);
             }
