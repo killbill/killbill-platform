@@ -19,6 +19,7 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
 import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
@@ -28,6 +29,7 @@ import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.util.nodes.NodeInfo;
+import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.cache.Cache;
 import org.killbill.commons.utils.cache.DefaultCache;
@@ -42,18 +44,21 @@ import org.slf4j.LoggerFactory;
  */
 public final class AvailablePluginsComponentsFactory {
 
-    private final Logger logger = LoggerFactory.getLogger(AvailablePluginsComponentsFactory.class);
+    private static final int DEFAULT_CACHE_SIZE = 10;
 
-    private static final int CACHE_SIZE = 10;
+    private static final int DEFAULT_CACHE_EXPIRATION_SEC = 86400; // 24 hours
+
+    private final Logger logger = LoggerFactory.getLogger(AvailablePluginsComponentsFactory.class);
 
     private final OSGIKillbill osgiKillbill;
     private final KPMClient httpClient;
     private final String nexusUrl;
     private final String nexusRepository;
     private final String pluginDirectoryUrl;
+    private final boolean bypassCache;
 
-    private final Cache<String, VersionsProvider> versionsProviderCache;
-    private final Cache<String, AvailablePluginsProvider> pluginsProviderCache;
+    private final Cache<CacheKey, VersionsProvider> versionsProviderCache;
+    private final Cache<CacheKey, AvailablePluginsProvider> availablePluginsProviderCache;
 
     public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill, final KPMClient httpClient, final Properties properties) {
         this.osgiKillbill = osgiKillbill;
@@ -62,11 +67,48 @@ public final class AvailablePluginsComponentsFactory {
         nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
         nexusRepository = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "releases");
         pluginDirectoryUrl = Objects.requireNonNullElse(
-                properties.getProperty(PluginManager.PROPERTY_PREFIX + "pluginDirectoryUrl"),
+                properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.pluginDirectoryUrl"),
                 AvailablePluginsProvider.DEFAULT_DIRECTORY);
 
-        versionsProviderCache = new DefaultCache<>(CACHE_SIZE);
-        pluginsProviderCache = new DefaultCache<>(CACHE_SIZE);
+        final int cacheSize = Objects.requireNonNullElse(
+                Integer.getInteger(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.size")),
+                DEFAULT_CACHE_SIZE);
+        final int expirationSec = Objects.requireNonNullElse(
+                Integer.getInteger(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.expirationSecs")),
+                DEFAULT_CACHE_EXPIRATION_SEC);
+        bypassCache = Boolean.parseBoolean(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.bypass"));
+
+        if (!bypassCache) {
+            versionsProviderCache = new DefaultCache<>(cacheSize, expirationSec, versionsProviderLoader());
+            availablePluginsProviderCache = new DefaultCache<>(cacheSize, expirationSec, availablePluginsProviderLoader());
+        } else {
+            versionsProviderCache = null;
+            availablePluginsProviderCache = null;
+        }
+    }
+
+    Function<CacheKey, VersionsProvider> versionsProviderLoader() {
+        return key -> {
+            final NexusMetadataFiles nexusMetadataFiles = createNexusMetadataFiles(key.getVersion());
+            final NodeInfo nodeInfo = osgiKillbill.getKillbillNodesApi().getCurrentNodeInfo();
+            try {
+                return nodeInfo.getKillbillVersion().equals(key.getVersion()) ?
+                       new DefaultVersionsProvider(nexusMetadataFiles, nodeInfo) :
+                       new DefaultVersionsProvider(nexusMetadataFiles);
+            } catch (final Exception e) {
+                throw new KPMPluginException(String.format("Unable to get killbill version info: %s", key.getVersion()), e);
+            }
+        };
+    }
+
+    Function<CacheKey, AvailablePluginsProvider> availablePluginsProviderLoader() {
+        return key -> {
+            try {
+                return new DefaultAvailablePluginsProvider(httpClient, key.getVersion(), key.getUrl());
+            } catch (final Exception e) {
+                throw new KPMPluginException(String.format("Unable to get available plugin killbill version: %s", key.getVersion()), e);
+            }
+        };
     }
 
     /**
@@ -78,37 +120,26 @@ public final class AvailablePluginsComponentsFactory {
     public VersionsProvider createVersionsProvider(final String killbillVersionOrLatest, final boolean forceDownload) throws KPMPluginException {
         logger.debug("#createVersionsProvider() with version:{}, forceDownload:{}", killbillVersionOrLatest, forceDownload);
 
-        final VersionsProvider result = versionsProviderCache.get(killbillVersionOrLatest);
+        final CacheKey cacheKey = CacheKey.of(killbillVersionOrLatest, nexusUrl);
+
+        if (bypassCache) {
+            return versionsProviderLoader().apply(cacheKey);
+        }
+
+        VersionsProvider result = versionsProviderCache.get(cacheKey);
         if (result == null && forceDownload) {
-            final NexusMetadataFiles nexusMetadataFiles = createNexusMetadataFiles(killbillVersionOrLatest);
-            final NodeInfo nodeInfo = osgiKillbill.getKillbillNodesApi().getCurrentNodeInfo();
-            try {
-                // NodeInfo doesn't have killbill-oss-parent version info, but have other killbill libs info. Thus,
-                // adding NodeInfo option here worth it because we can reduce remote call to just 1 call, since
-                // killbill-oss-parent.pom is not needed anymore (get covered by NodeInfo)
-                if (nodeInfo.getKillbillVersion().equals(killbillVersionOrLatest)) {
-                    versionsProviderCache.put(killbillVersionOrLatest, new DefaultVersionsProvider(nexusMetadataFiles, nodeInfo));
-                } else {
-                    versionsProviderCache.put(killbillVersionOrLatest, new DefaultVersionsProvider(nexusMetadataFiles));
-                }
-                return versionsProviderCache.get(killbillVersionOrLatest);
-            } catch (final Exception e) {
-                throw new KPMPluginException(String.format("Unable to get killbill version info: %s", killbillVersionOrLatest), e);
-            }
+            result = versionsProviderLoader().apply(cacheKey);
+            versionsProviderCache.put(cacheKey, result);
+            return result;
         } else {
             return Objects.requireNonNullElse(result, VersionsProvider.ZERO);
         }
     }
 
     private NexusMetadataFiles createNexusMetadataFiles(final String killbillVersionOrLatest) {
-        // FIXME-TS-58: In KPM, we have: KPM::Tasks::info(), and then in the end, KPM::NexusFacade::Actions.initialize()
-        //   that used to determine which nexus server we need to get killbill metadata info. But in reality, calling
-        //   "kpm info --as-json --force-download --version=0.24.0 --overrides=url:<ANY_URL> --overrides=repository:releases"
-        //   and replace <ANY_URL> with "https://username:password@maven.pkg.github.com", "https://dl.cloudsmith.io" or
-        //   "https://oss.sonatype.org" produce the same thing.
-        //   -
-        //   Maybe KPM::NexusFacade::Actions.initialize() only used in install plugin via artifact and not applied here?
-        //   Should we throw an exception if nexusUrl is not "https://oss.sonatype.org" ?
+        // FIXME-TS-58: This FIXME updated. See more here:
+        //   https://github.com/killbill/killbill-platform/pull/134#discussion_r1144512376
+        //   (or see commit history for initial content)
         return new SonatypeNexusMetadataFiles(httpClient, nexusUrl, nexusRepository, killbillVersionOrLatest);
     }
 
@@ -134,16 +165,64 @@ public final class AvailablePluginsComponentsFactory {
             throw new IllegalArgumentException(String.format("'%s' is not a valid killbill version in createAvailablePluginsProvider()", fixedKillbillVersion));
         }
 
-        final AvailablePluginsProvider result = pluginsProviderCache.get(version);
+        final CacheKey cacheKey = CacheKey.of(version, pluginDirectoryUrl);
+
+        if (bypassCache) {
+            return availablePluginsProviderLoader().apply(cacheKey);
+        }
+
+        AvailablePluginsProvider result = availablePluginsProviderCache.get(cacheKey);
         if (result == null && forceDownload) {
-            try {
-                pluginsProviderCache.put(version, new DefaultAvailablePluginsProvider(httpClient, version, pluginDirectoryUrl));
-            } catch (final Exception e) {
-                throw new KPMPluginException(String.format("Unable to get available plugin info for killbill version: %s", version), e);
-            }
-            return pluginsProviderCache.get(version);
+            result = availablePluginsProviderLoader().apply(cacheKey);
+            availablePluginsProviderCache.put(cacheKey, result);
+            return result;
         } else {
             return Objects.requireNonNullElse(result, AvailablePluginsProvider.NONE);
+        }
+    }
+
+    /**
+     * Originally, "version" variable, which is usually just simply java.lang.String, used as cache key. But turns out
+     * that the same version could contain different metadata info based on where the metadata info located (the URL).
+     */
+    static class CacheKey {
+        private final String version;
+        private final String url;
+
+        CacheKey(final String version, final String url) {
+            Preconditions.checkArgument(!Strings.isNullOrEmpty(version), "version in CacheKey is null or empty");
+            Preconditions.checkArgument(!Strings.isNullOrEmpty(url), "url in CacheKey is null or empty");
+            this.version = version;
+            this.url = url;
+        }
+
+        static CacheKey of(final String version, final String url) {
+            return new CacheKey(version, url);
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final CacheKey cacheKey = (CacheKey) o;
+            return version.equals(cacheKey.version) && url.equals(cacheKey.url);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(version, url);
         }
     }
 }

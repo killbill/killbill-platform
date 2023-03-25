@@ -18,7 +18,17 @@ Available global configuration properties:
 * `org.killbill.billing.plugin.kpm.strictSSL` (default: `true`)
 * `org.killbill.billing.plugin.kpm.readTimeoutSec` (default: `60`)
 * `org.killbill.billing.plugin.kpm.connectTimeoutSec` (default: `60`)
-* `org.killbill.billing.plugin.kpm.pluginDirectoryUrl` (default: [default structure](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml))
+
+These configurations applied only to `<host>/plugins/killbill-kpm/plugins` endpoint: 
+
+* `org.killbill.billing.plugin.kpm.availablePlugins.pluginDirectoryUrl` 
+  (default: [default structure](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml))
+* `org.killbill.billing.plugin.kpm.availablePlugins.cache.size` 
+  (Max cache size before it remove the oldest entry. default: `10`)
+* `org.killbill.billing.plugin.kpm.availablePlugins.cache.expirationSecs` 
+  (Time, in second, when the cache should be expired and reload metadata info. default: `86400` (24 hours))
+* `org.killbill.billing.plugin.kpm.availablePlugins.cache.bypass`
+  (No cache used for endpoint above. Killbill will always perform HTTP call to get killbill version and plugins information. default: `false`)
 
 ## Endpoints
 

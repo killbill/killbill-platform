@@ -17,8 +17,9 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.Set;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
@@ -28,11 +29,11 @@ import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
-
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeInfo;
 import org.mockito.Mockito;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -40,6 +41,7 @@ public class TestAvailablePluginsComponentsFactory {
 
     private static final String KILLBILL_POM_REGEX = ".killbill-\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?\\.pom$";
 
+    private Path pluginDirectoryYml;
     private NodeInfo nodeInfo;
     private AvailablePluginsComponentsFactory componentsFactory;
 
@@ -48,7 +50,8 @@ public class TestAvailablePluginsComponentsFactory {
         final Path killbillPomXml = TestUtils.getTestPath("xml").resolve("killbill-pom.xml");
         final Path ossParentPomXml = TestUtils.getTestPath("xml").resolve("ossparent-pom.xml");
         final Path mavenMetadataXml = TestUtils.getTestPath("xml").resolve("maven-metadata.xml");
-        final Path pluginDirectoryYml = TestUtils.getTestPath("yaml").resolve("plugins_directory.yml");
+
+        this.pluginDirectoryYml = TestUtils.copyTestResourceToTemp("/yaml/plugins_directory.yml");
 
         nodeInfo = Mockito.mock(NodeInfo.class);
 
@@ -64,11 +67,16 @@ public class TestAvailablePluginsComponentsFactory {
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("killbill-oss-parent"))).thenReturn(ossParentPomXml);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.matches(KILLBILL_POM_REGEX))).thenReturn(killbillPomXml);
 
-        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill, httpClient, new Properties());
+        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill, httpClient, TestUtils.getTestProperties());
+    }
+
+    @AfterMethod(groups = "fast")
+    public void afterMethod() throws IOException {
+        Files.deleteIfExists(pluginDirectoryYml);
     }
 
     @Test(groups = "fast")
-    public void testGetVersionsProviderWithoutNodeInfo() {
+    public void testCreateVersionsProviderWithoutNodeInfo() {
         Mockito.when(nodeInfo.getKillbillVersion()).thenReturn("0.0.0");
         // Version not actually needed here, since all pom xml mocked. Just 'LATEST' or sem-ver compliance value
         final VersionsProvider versionsProvider = componentsFactory.createVersionsProvider("laTEst", true);
@@ -83,7 +91,7 @@ public class TestAvailablePluginsComponentsFactory {
     }
 
     @Test(groups = "fast")
-    public void testGetVersionsProviderWithNodeInfo() {
+    public void testCreateVersionsProviderWithNodeInfo() {
         Mockito.when(nodeInfo.getKillbillVersion()).thenReturn("0.24.1-SNAPSHOT");
         Mockito.when(nodeInfo.getApiVersion()).thenReturn("1.0-node-info");
         Mockito.when(nodeInfo.getPluginApiVersion()).thenReturn("1.0-node-info");
@@ -106,7 +114,7 @@ public class TestAvailablePluginsComponentsFactory {
     }
 
     @Test(groups = "fast")
-    public void testGetAvailablePluginsProvider() throws KPMPluginException {
+    public void testCreateAvailablePluginsProvider() throws KPMPluginException {
         // This test will return plugins with its version as long as createAvailablePluginsProvider() supplied
         // with <MAJOR.MINOR> killbill version listed in mocked plugins_directory.yml
         final AvailablePluginsProvider availablePluginsProvider = componentsFactory.createAvailablePluginsProvider("0.24.2-SNAPSHOT", true);
