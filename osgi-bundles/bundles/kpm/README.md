@@ -21,7 +21,7 @@ Available global configuration properties:
 
 These configurations applied only to `<host>/plugins/killbill-kpm/plugins` endpoint: 
 
-* `org.killbill.billing.plugin.kpm.availablePlugins.pluginDirectoryUrl` 
+* `org.killbill.billing.plugin.kpm.availablePlugins.pluginsDirectoryUrl` 
   (default: [default structure](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml))
 * `org.killbill.billing.plugin.kpm.availablePlugins.cache.size` 
   (Max cache size before it remove the oldest entry. default: `10`)
@@ -29,6 +29,11 @@ These configurations applied only to `<host>/plugins/killbill-kpm/plugins` endpo
   (Time, in second, when the cache should be expired and reload metadata info. default: `86400` (24 hours))
 * `org.killbill.billing.plugin.kpm.availablePlugins.cache.bypass`
   (No cache used for endpoint above. Killbill will always perform HTTP call to get killbill version and plugins information. default: `false`)
+
+These configurations applied specifics to plugin installation:
+
+* `org.killbill.billing.plugin.kpm.pluginInstall.verifySHA1` 
+  (Whether coordinate (groupId/artifactID) based plugin installation should check its integrity. default: `false`)
 
 ## Endpoints
 

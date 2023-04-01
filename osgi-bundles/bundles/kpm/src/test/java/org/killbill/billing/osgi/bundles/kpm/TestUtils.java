@@ -39,15 +39,15 @@ public class TestUtils {
      * Copy file in {@code pathToSrcTestResourceFile} to temporary file. Needed because file deletion actually performed
      * by related classes, and thus, the file will not available anymore during testing.
      *
-     * @param pathToSrcTestResourceFile any file located in "src/test/resources".
+     * @param testResourceFile any file located in "src/test/resources".
      * @return copied temporary file
      */
     // FIXME-TS-58 : It is possible that the real problem is caused by maven's surefire/failsafe (or even intellij
     //   testing integration?) where test resources files not re-copied for each testing. Investigating this may take
     //   more time, where this solution already fixed the problem.
-    public static Path copyTestResourceToTemp(final String pathToSrcTestResourceFile) {
+    public static Path copyTestResourceToTemp(final String... testResourceFile) {
         try {
-            final Path source = getTestPath(pathToSrcTestResourceFile);
+            final Path source = getTestPath(testResourceFile);
             final Path target = Files.createTempFile("kpm-test", "");
             return Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (final IOException e) {

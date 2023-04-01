@@ -24,7 +24,7 @@
 
     <!-- Justification: Jackson need them -->
     <Match>
-        <Class name="org.killbill.billing.osgi.bundles.kpm.impl.PluginIdentifierModel" />
+        <Class name="org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO$PluginIdentifierModel" />
         <Or>
             <Field name="language" type="java.lang.String" />
             <Field name="packaging" type="java.lang.String" />

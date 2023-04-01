@@ -15,11 +15,25 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.bundles.kpm;
+package org.killbill.billing.osgi.bundles.kpm.impl;
 
-public interface PluginIdentifierService {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-    void add(final String pluginKey, final String version);
+/**
+ * We have one at {@code org.killbill.commons.utils.io.Files}, but upgrading that class requires multiple steps. Maybe
+ * some fix-me here?
+ */
+class FilesUtils {
 
-    void remove(final String pluginKey);
+    static void deleteIfExists(final Path path) {
+        if (path == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(path);
+        } catch (final IOException ignored) {
+        }
+    }
 }

@@ -17,7 +17,14 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
+import java.nio.file.Path;
+
 public interface PluginInstaller {
 
-    void install() throws KPMPluginException;
+    /**
+     * Install plugin.
+     * @return path where the plugin installed.
+     * @throws KPMPluginException if something happened during installation
+     */
+    Path install() throws KPMPluginException;
 }

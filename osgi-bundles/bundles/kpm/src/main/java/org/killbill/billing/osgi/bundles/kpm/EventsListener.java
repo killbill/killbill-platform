@@ -94,7 +94,6 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
 
         if ("INSTALL_PLUGIN".equals(commandType)) {
             final Map<String, String> props = toMap(nodeCommandMetadata.getProperties());
-            final String pluginType = props.get("pluginType");
 
             final String pluginUri = props.get("pluginUri");
             if (pluginUri != null) {
@@ -114,9 +113,10 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                 final String kbVersion = Objects.requireNonNullElse(props.get("kbVersion"), "LATEST");
                 final String pluginArtifactId = props.get("pluginArtifactId");
                 final String pluginGroupId = props.get("pluginGroupId");
-                final String pluginPackaging = props.get("pluginPackaging");
-                final String pluginClassifier = props.get("pluginClassifier");
                 final boolean forceDownload = "true".equals(props.get("forceDownload"));
+                /**
+                 * FIXME-TS-58: Remove this once TS-58 close
+                 *
                 kpmWrapper.install(nodeCommandMetadata.getPluginKey(),
                                    kbVersion,
                                    pluginArtifactId,
@@ -125,7 +125,13 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                                    pluginPackaging,
                                    pluginClassifier,
                                    pluginType,
-                                   forceDownload);
+                                   forceDownload);*/
+                pluginManager.install(nodeCommandMetadata.getPluginKey(),
+                                      kbVersion,
+                                      pluginGroupId,
+                                      pluginArtifactId,
+                                      nodeCommandMetadata.getPluginVersion(),
+                                      forceDownload);
             }
         } else //noinspection ConstantConditions
             if ("UNINSTALL_PLUGIN".equals(commandType)) {

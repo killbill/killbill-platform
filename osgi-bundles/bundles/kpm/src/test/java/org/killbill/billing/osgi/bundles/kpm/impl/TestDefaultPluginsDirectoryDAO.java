@@ -20,8 +20,8 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
-import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider.AvailablePluginsModel;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.killbill.commons.utils.Strings;
@@ -30,7 +30,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class TestDefaultAvailablePluginsProvider {
+public class TestDefaultPluginsDirectoryDAO {
 
     private Path pluginsDirectoryYml;
 
@@ -51,9 +51,9 @@ public class TestDefaultAvailablePluginsProvider {
     }
 
     @Test(groups = "fast")
-    public void testGetAvailablePlugins() throws Exception {
-        final AvailablePluginsProvider availablePluginsProvider = new DefaultAvailablePluginsProvider(httpClient, "0.24.0", pluginsDirectoryYml.toString());
-        for (final AvailablePluginsModel availablePlugin : availablePluginsProvider.getAvailablePlugins()) {
+    public void testGetPlugins() throws Exception {
+        final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, "0.24.0", pluginsDirectoryYml.toString());
+        for (final PluginsDirectoryModel availablePlugin : pluginsDirectoryDAO.getPlugins()) {
             Assert.assertNotNull(availablePlugin);
 
             final String pluginKey = availablePlugin.getPluginKey();

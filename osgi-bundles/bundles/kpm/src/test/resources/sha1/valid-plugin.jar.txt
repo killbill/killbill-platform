@@ -1,0 +1,1 @@
+This is valid plugin. File named "valid-plugin.jar.txt.sha1" contains valid SHA1 of this file.

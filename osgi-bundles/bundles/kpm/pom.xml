@@ -31,6 +31,8 @@
     <properties>
         <check.spotbugs-exclude-filter-file>spotbugs-exclude.xml</check.spotbugs-exclude-filter-file>
         <osgi.private>org.killbill.billing.osgi.bundles.kpm.*</osgi.private>
+        <!-- We have 2 .sha1 files for testing purpose -->
+        <rat.numUnapprovedLicenses>2</rat.numUnapprovedLicenses>
     </properties>
     <dependencies>
         <dependency>
@@ -53,6 +55,11 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>io.airlift</groupId>
@@ -147,6 +154,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
+            <version>2.0</version>
         </dependency>
     </dependencies>
     <build>

@@ -17,6 +17,7 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
+import org.killbill.billing.osgi.bundles.kpm.PluginManager.GetAvailablePluginsModel;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

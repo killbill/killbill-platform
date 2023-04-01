@@ -23,8 +23,8 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
-import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
-import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider.AvailablePluginsModel;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
@@ -72,7 +72,7 @@ public class TestAvailablePluginsComponentsFactory {
 
     @AfterMethod(groups = "fast")
     public void afterMethod() throws IOException {
-        Files.deleteIfExists(pluginDirectoryYml);
+        FilesUtils.deleteIfExists(pluginDirectoryYml);
     }
 
     @Test(groups = "fast")
@@ -117,10 +117,10 @@ public class TestAvailablePluginsComponentsFactory {
     public void testCreateAvailablePluginsProvider() throws KPMPluginException {
         // This test will return plugins with its version as long as createAvailablePluginsProvider() supplied
         // with <MAJOR.MINOR> killbill version listed in mocked plugins_directory.yml
-        final AvailablePluginsProvider availablePluginsProvider = componentsFactory.createAvailablePluginsProvider("0.24.2-SNAPSHOT", true);
-        Assert.assertNotNull(availablePluginsProvider);
+        final PluginsDirectoryDAO pluginsDirectoryDAO = componentsFactory.createPluginsDirectoryDAO("0.24.2-SNAPSHOT", true);
+        Assert.assertNotNull(pluginsDirectoryDAO);
 
-        final Set<AvailablePluginsModel> plugins = availablePluginsProvider.getAvailablePlugins();
+        final Set<PluginsDirectoryModel> plugins = pluginsDirectoryDAO.getPlugins();
         Assert.assertNotNull(plugins);
         Assert.assertFalse(plugins.isEmpty());
     }

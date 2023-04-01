@@ -22,22 +22,33 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Provide available plugins information from remote location.
+ *<p>
+ *     Provide a way to accessing plugin directory information. Currently, the only plugin directory available is in
+ *     <a href="https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml">GitHub repository</a>.
+ * </p>
+ *
+ * <p>See also {@code org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginsDirectoryDAO}</p>
  */
-public interface AvailablePluginsProvider {
+public interface PluginsDirectoryDAO {
 
-    Set<AvailablePluginsModel> getAvailablePlugins();
+    Set<PluginsDirectoryModel> getPlugins();
 
     String DEFAULT_DIRECTORY = "https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml";
 
-    AvailablePluginsProvider NONE = Collections::emptySet;
+    PluginsDirectoryDAO NONE = Collections::emptySet;
 
-    class AvailablePluginsModel implements Comparable<AvailablePluginsModel> {
+    /**
+     * In this context, pluginKey and pluginVersion is the only things that is mandatory.
+     */
+    class PluginsDirectoryModel implements Comparable<PluginsDirectoryModel> {
 
         private final String pluginKey;
         private final String pluginVersion;
 
-        public AvailablePluginsModel(final String pluginKey, final String pluginVersion) {
+        // Optional, and added to support ArtifactAndVersionFinder#findArtifactAndVersion()
+        private String pluginArtifactId;
+
+        public PluginsDirectoryModel(final String pluginKey, final String pluginVersion) {
             this.pluginKey = pluginKey;
             this.pluginVersion = pluginVersion;
         }
@@ -50,6 +61,14 @@ public interface AvailablePluginsProvider {
             return pluginVersion;
         }
 
+        public String getPluginArtifactId() {
+            return pluginArtifactId;
+        }
+
+        public void setPluginArtifactId(final String pluginArtifactId) {
+            this.pluginArtifactId = pluginArtifactId;
+        }
+
         @Override
         public boolean equals(final Object o) {
             if (this == o) {
@@ -58,7 +77,7 @@ public interface AvailablePluginsProvider {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            final AvailablePluginsModel that = (AvailablePluginsModel) o;
+            final PluginsDirectoryModel that = (PluginsDirectoryModel) o;
             return pluginKey.equals(that.pluginKey) && pluginVersion.equals(that.pluginVersion);
         }
 
@@ -68,8 +87,17 @@ public interface AvailablePluginsProvider {
         }
 
         @Override
-        public int compareTo(final AvailablePluginsModel o) {
+        public int compareTo(final PluginsDirectoryModel o) {
             return pluginKey.compareTo(o.getPluginKey());
+        }
+
+        @Override
+        public String toString() {
+            return "AvailablePluginsModel{" +
+                   "pluginKey='" + pluginKey + '\'' +
+                   ", pluginVersion='" + pluginVersion + '\'' +
+                   ", pluginArtifactId='" + pluginArtifactId + '\'' +
+                   '}';
         }
     }
 }

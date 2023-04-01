@@ -1,0 +1,1 @@
+This is invalid plugin. File named "invalid-plugin.jar.txt.sha1" contains invalid SHA1 of this file.

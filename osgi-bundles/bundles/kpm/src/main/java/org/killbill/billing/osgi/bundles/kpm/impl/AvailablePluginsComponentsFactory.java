@@ -19,14 +19,16 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
-import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.util.nodes.NodeInfo;
 import org.killbill.commons.utils.Preconditions;
@@ -40,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * Instantiate components needed to fulfill {@link PluginManager#getAvailablePlugins(String, boolean)}.
  *
  * @see VersionsProvider
- * @see AvailablePluginsProvider
+ * @see PluginsDirectoryDAO
  */
 public final class AvailablePluginsComponentsFactory {
 
@@ -58,7 +60,7 @@ public final class AvailablePluginsComponentsFactory {
     private final boolean bypassCache;
 
     private final Cache<CacheKey, VersionsProvider> versionsProviderCache;
-    private final Cache<CacheKey, AvailablePluginsProvider> availablePluginsProviderCache;
+    private final Cache<CacheKey, Set<PluginsDirectoryModel>> pluginDirectoryCache;
 
     public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill, final KPMClient httpClient, final Properties properties) {
         this.osgiKillbill = osgiKillbill;
@@ -68,7 +70,7 @@ public final class AvailablePluginsComponentsFactory {
         nexusRepository = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "releases");
         pluginDirectoryUrl = Objects.requireNonNullElse(
                 properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.pluginDirectoryUrl"),
-                AvailablePluginsProvider.DEFAULT_DIRECTORY);
+                PluginsDirectoryDAO.DEFAULT_DIRECTORY);
 
         final int cacheSize = Objects.requireNonNullElse(
                 Integer.getInteger(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.size")),
@@ -80,10 +82,10 @@ public final class AvailablePluginsComponentsFactory {
 
         if (!bypassCache) {
             versionsProviderCache = new DefaultCache<>(cacheSize, expirationSec, versionsProviderLoader());
-            availablePluginsProviderCache = new DefaultCache<>(cacheSize, expirationSec, availablePluginsProviderLoader());
+            pluginDirectoryCache = new DefaultCache<>(cacheSize, expirationSec, pluginDirectoryLoader());
         } else {
             versionsProviderCache = null;
-            availablePluginsProviderCache = null;
+            pluginDirectoryCache = null;
         }
     }
 
@@ -101,13 +103,10 @@ public final class AvailablePluginsComponentsFactory {
         };
     }
 
-    Function<CacheKey, AvailablePluginsProvider> availablePluginsProviderLoader() {
+    Function<CacheKey, Set<PluginsDirectoryModel>> pluginDirectoryLoader() {
         return key -> {
-            try {
-                return new DefaultAvailablePluginsProvider(httpClient, key.getVersion(), key.getUrl());
-            } catch (final Exception e) {
-                throw new KPMPluginException(String.format("Unable to get available plugin killbill version: %s", key.getVersion()), e);
-            }
+            final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, key.getVersion(), key.getUrl());
+            return pluginsDirectoryDAO.getPlugins();
         };
     }
 
@@ -144,7 +143,7 @@ public final class AvailablePluginsComponentsFactory {
     }
 
     /**
-     * Create instance of {@link AvailablePluginsProvider}. Parameter passed in {@code fixedKillbillVersion} should be
+     * Create instance of {@link PluginsDirectoryDAO}. Parameter passed in {@code fixedKillbillVersion} should be
      * valid sem-ver semantics. Attempt to set {@code LATEST} to parameter will immediately throw an
      * {@code IllegalArgumentException}. If version really unknown, client code could call
      * {@link #createVersionsProvider(String, boolean)} and then use {@link VersionsProvider#getFixedKillbillVersion()}.
@@ -157,8 +156,8 @@ public final class AvailablePluginsComponentsFactory {
     //   although this is doable, some concern are:
     //   1. How this affected technical-support-93 (https://github.com/killbill/technical-support/issues/93) ?
     //   2. This probably make an open to overflow attack, where unexpected YAML URL passed and exception thrown multiple times
-    public AvailablePluginsProvider createAvailablePluginsProvider(final String fixedKillbillVersion, final boolean forceDownload) throws KPMPluginException {
-        logger.debug("#createAvailablePluginsProvider() with killbillVersion: {} and forceDownload: {}", fixedKillbillVersion, forceDownload);
+    public PluginsDirectoryDAO createPluginsDirectoryDAO(final String fixedKillbillVersion, final boolean forceDownload) throws KPMPluginException {
+        logger.debug("#createPluginsDirectoryDAO() with killbillVersion: {} and forceDownload: {}", fixedKillbillVersion, forceDownload);
         // For validating version format
         final String version = PluginNamingResolver.getVersionFromString(fixedKillbillVersion);
         if (Strings.isNullOrEmpty(version)) {
@@ -168,16 +167,16 @@ public final class AvailablePluginsComponentsFactory {
         final CacheKey cacheKey = CacheKey.of(version, pluginDirectoryUrl);
 
         if (bypassCache) {
-            return availablePluginsProviderLoader().apply(cacheKey);
+            return () -> pluginDirectoryLoader().apply(cacheKey);
         }
 
-        AvailablePluginsProvider result = availablePluginsProviderCache.get(cacheKey);
+        final Set<PluginsDirectoryModel> result = pluginDirectoryCache.get(cacheKey);
         if (result == null && forceDownload) {
-            result = availablePluginsProviderLoader().apply(cacheKey);
-            availablePluginsProviderCache.put(cacheKey, result);
-            return result;
+            final Set<PluginsDirectoryModel> newDirectory = pluginDirectoryLoader().apply(cacheKey);
+            pluginDirectoryCache.put(cacheKey, newDirectory);
+            return () -> newDirectory;
         } else {
-            return Objects.requireNonNullElse(result, AvailablePluginsProvider.NONE);
+            return Objects.requireNonNullElse(() -> result, PluginsDirectoryDAO.NONE);
         }
     }
 
