@@ -24,6 +24,8 @@ import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager.GetAvailablePluginsModel;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
+import org.killbill.billing.util.nodes.NodeInfo;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -36,8 +38,17 @@ public class TestDefaultPluginManager {
 
     @BeforeMethod(groups = "slow")
     public void beforeMethod() {
+        final NodeInfo nodeInfo = Mockito.mock(NodeInfo.class);
+        Mockito.when(nodeInfo.getKillbillVersion()).thenReturn("0.18.0");
+
+        final KillbillNodesApi nodesApi = Mockito.mock(KillbillNodesApi.class);
+        Mockito.when(nodesApi.getCurrentNodeInfo()).thenReturn(nodeInfo);
+
         final OSGIKillbillAPI osgiKillbillAPI = Mockito.mock(OSGIKillbillAPI.class);
+        Mockito.when(osgiKillbillAPI.getKillbillNodesApi()).thenReturn(nodesApi);
+
         final Properties properties = new Properties();
+        properties.setProperty("org.killbill.billing.plugin.kpm.availablePlugins.cache.bypass", "false");
 
         final PluginFileService pluginFileService = new DefaultPluginFileService(properties);
         final PluginIdentifiersDAO pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(properties);

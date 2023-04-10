@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -31,6 +32,7 @@ import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginInstaller;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.osgi.bundles.kpm.impl.CoordinateBasedPluginDownloader.DownloadResult;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
@@ -122,10 +124,10 @@ public class DefaultPluginManager implements PluginManager {
         result.addCommonsVersion(versionsProvider.getKillbillCommonsVersion());
         result.addPlatformVersion(versionsProvider.getKillbillPlatformVersion());
 
-        availablePluginsComponentsFactory
+        final Set<PluginsDirectoryModel> plugins = availablePluginsComponentsFactory
                 .createPluginsDirectoryDAO(versionsProvider.getFixedKillbillVersion(), forceDownload)
-                .getPlugins()
-                .forEach(entry -> result.addPlugins(entry.getPluginKey(), entry.getPluginVersion()));
+                .getPlugins();
+        plugins.forEach(entry -> result.addPlugins(entry.getPluginKey(), entry.getPluginVersion()));
 
         return result;
     }
@@ -169,7 +171,8 @@ public class DefaultPluginManager implements PluginManager {
                         @Nonnull final String kbVersion,
                         String groupId,
                         String artifactId,
-                        String pluginVersion, final boolean forceDownload) throws KPMPluginException {
+                        String pluginVersion,
+                        final boolean forceDownload) throws KPMPluginException {
         logger.info("Install plugin via coordinate. key:{}, kbVersion:{}, version:{}, groupId:{}, artifactId:{}", pluginKey, kbVersion, pluginVersion, groupId, artifactId);
 
         DownloadResult downloadResult = null;
@@ -178,28 +181,24 @@ public class DefaultPluginManager implements PluginManager {
             downloadResult = pluginDownloader.download(pluginKey, kbVersion, groupId, artifactId, pluginVersion, forceDownload);
             logger.debug("downloadResult object value: {}", downloadResult);
 
-            if (downloadResult.getDownloadedPath() != null) {
-                // Update these values. Needed because these values are getting up-to-date during pluginDownloader.download(),
-                // depends on which implementation used by artifactAndVersionFinder.findArtifactAndVersion(). See more
-                // artifactAndVersionFinder.findArtifactAndVersion javadoc
-                groupId = downloadResult.getGroupId();
-                artifactId = downloadResult.getArtifactId();
-                pluginVersion = downloadResult.getPluginVersion();
-                // FIXME TS-93:
-                //   1. What happened if, just like github, we need username:password in URL?
-                //   2. What happened if, cloudsmith need authentication info in header or body?
-                final PluginInstaller pluginInstaller = new URIBasedPluginInstaller(pluginFileService,
-                                                                                    downloadResult.getDownloadedPath(),
-                                                                                    pluginKey,
-                                                                                    pluginVersion);
-                installedPath = pluginInstaller.install();
+            // Update these values. Needed because these values are getting up-to-date during pluginDownloader.download(),
+            // depends on which implementation used by artifactAndVersionFinder.findArtifactAndVersion(). See more
+            // artifactAndVersionFinder.findArtifactAndVersion javadoc
+            final Path downloadedPath = downloadResult.getDownloadedPath();
+            groupId = downloadResult.getGroupId();
+            artifactId = downloadResult.getArtifactId();
+            pluginVersion = downloadResult.getPluginVersion();
+            // FIXME TS-93:
+            //   1. What happened if, just like github, we need username:password in URL?
+            //   2. What happened if, cloudsmith need authentication info in header or body?
+            final PluginInstaller pluginInstaller = new URIBasedPluginInstaller(pluginFileService, downloadedPath, pluginKey, pluginVersion);
+            installedPath = pluginInstaller.install();
 
-                // Add/update plugin identifier
-                pluginIdentifiersDAO.add(pluginKey, groupId, artifactId, pluginVersion);
+            // Add/update plugin identifier
+            pluginIdentifiersDAO.add(pluginKey, groupId, artifactId, pluginVersion);
 
-                notifyFileSystemChange(PluginStateChange.NEW_VERSION, pluginKey, pluginVersion);
-                logger.info("Plugin key: {} installed successfully via coordinate.", pluginKey);
-            }
+            notifyFileSystemChange(PluginStateChange.NEW_VERSION, pluginKey, pluginVersion);
+            logger.info("Plugin key: {} installed successfully via coordinate.", pluginKey);
         } catch (final Exception e) {
             logger.error("Error when install pluginKey: '{}' with coordinate: Exception: {}", pluginKey, e);
             // If exception happened, installed file should be deleted.

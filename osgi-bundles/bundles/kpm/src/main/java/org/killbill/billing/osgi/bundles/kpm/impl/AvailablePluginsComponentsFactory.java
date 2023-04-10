@@ -81,8 +81,9 @@ public final class AvailablePluginsComponentsFactory {
         bypassCache = Boolean.parseBoolean(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.bypass"));
 
         if (!bypassCache) {
-            versionsProviderCache = new DefaultCache<>(cacheSize, expirationSec, versionsProviderLoader());
-            pluginDirectoryCache = new DefaultCache<>(cacheSize, expirationSec, pluginDirectoryLoader());
+            // We cant set cache loaders in constructor. It's pretty expensive.
+            versionsProviderCache = new DefaultCache<>(cacheSize, expirationSec, DefaultCache.noCacheLoader());
+            pluginDirectoryCache = new DefaultCache<>(cacheSize, expirationSec, DefaultCache.noCacheLoader());
         } else {
             versionsProviderCache = null;
             pluginDirectoryCache = null;
@@ -124,15 +125,7 @@ public final class AvailablePluginsComponentsFactory {
         if (bypassCache) {
             return versionsProviderLoader().apply(cacheKey);
         }
-
-        VersionsProvider result = versionsProviderCache.get(cacheKey);
-        if (result == null && forceDownload) {
-            result = versionsProviderLoader().apply(cacheKey);
-            versionsProviderCache.put(cacheKey, result);
-            return result;
-        } else {
-            return Objects.requireNonNullElse(result, VersionsProvider.ZERO);
-        }
+        return versionsProviderCache.getOrLoad(cacheKey, forceDownload ? versionsProviderLoader() : key -> VersionsProvider.ZERO);
     }
 
     private NexusMetadataFiles createNexusMetadataFiles(final String killbillVersionOrLatest) {
@@ -170,14 +163,7 @@ public final class AvailablePluginsComponentsFactory {
             return () -> pluginDirectoryLoader().apply(cacheKey);
         }
 
-        final Set<PluginsDirectoryModel> result = pluginDirectoryCache.get(cacheKey);
-        if (result == null && forceDownload) {
-            final Set<PluginsDirectoryModel> newDirectory = pluginDirectoryLoader().apply(cacheKey);
-            pluginDirectoryCache.put(cacheKey, newDirectory);
-            return () -> newDirectory;
-        } else {
-            return Objects.requireNonNullElse(() -> result, PluginsDirectoryDAO.NONE);
-        }
+        return () -> pluginDirectoryCache.getOrLoad(cacheKey, forceDownload ? pluginDirectoryLoader() : key -> PluginsDirectoryDAO.NONE.getPlugins());
     }
 
     /**
