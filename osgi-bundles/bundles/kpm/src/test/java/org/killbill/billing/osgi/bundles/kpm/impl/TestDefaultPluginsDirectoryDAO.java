@@ -17,10 +17,11 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map.Entry;
 
-import org.killbill.billing.osgi.bundles.kpm.AvailablePluginsProvider;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.killbill.commons.utils.Strings;
@@ -29,24 +30,36 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class TestDefaultAvailablePluginsProvider {
+public class TestDefaultPluginsDirectoryDAO {
 
-    private final Path pluginsDirectoryYml = TestUtils.getTestPath("yaml").resolve("plugins_directory.yml");
+    private Path pluginsDirectoryYml;
 
     private KPMClient httpClient;
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() throws Exception {
+        // Assign to temporary file, so original test resources files not getting deleted.
+        final Path pluginsDirYmlInTestRes = TestUtils.getTestPath("yaml").resolve("plugin_directory.yml");
+        pluginsDirectoryYml = Files.createTempFile("kpm-test", "");
+        if (Files.notExists(pluginsDirectoryYml)) {
+            Files.copy(pluginsDirYmlInTestRes, pluginsDirectoryYml);
+        }
+
+        // In KPMClient #downloadArtifactMetadata() return tmp file instead file in src/test/resources
         httpClient = Mockito.mock(KPMClient.class);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.anyString())).thenReturn(pluginsDirectoryYml);
     }
 
     @Test(groups = "fast")
-    public void testGetAvailablePlugins() throws Exception {
-        final AvailablePluginsProvider availablePluginsProvider = new DefaultAvailablePluginsProvider(httpClient, "0.24.0");
-        for (final Entry<String, String> availablePlugin : availablePluginsProvider.getAvailablePlugins()) {
-            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getKey()));
-            Assert.assertFalse(Strings.isNullOrEmpty(availablePlugin.getValue()));
+    public void testGetPlugins() throws Exception {
+        final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, "0.24.0", pluginsDirectoryYml.toString());
+        for (final PluginsDirectoryModel availablePlugin : pluginsDirectoryDAO.getPlugins()) {
+            Assert.assertNotNull(availablePlugin);
+
+            final String pluginKey = availablePlugin.getPluginKey();
+            final String pluginVersion = availablePlugin.getPluginVersion();
+            Assert.assertFalse(Strings.isNullOrEmpty(pluginKey));
+            Assert.assertFalse(Strings.isNullOrEmpty(pluginVersion));
         }
     }
 }

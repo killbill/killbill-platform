@@ -17,6 +17,7 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO.PluginIdentifierModel;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -25,32 +26,32 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-public class TestDefaultPluginIdentifierService {
+public class TestFileBasedPluginIdentifiersDAO {
 
-    private DefaultPluginIdentifierService pluginIdentifierService;
+    private FileBasedPluginIdentifiersDAO pluginIdentifiersDAO;
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() {
-        pluginIdentifierService = new DefaultPluginIdentifierService(TestUtils.getTestProperties());
+        pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(TestUtils.getTestProperties());
     }
 
     @AfterMethod(groups = "fast")
     public void afterMethod() {
-        pluginIdentifierService.file.delete();
+        pluginIdentifiersDAO.file.delete();
     }
 
     @Test(groups = "fast")
     public void testAdd() {
-        Map<String, PluginIdentifierModel> content = pluginIdentifierService.loadFileContent();
+        Map<String, PluginIdentifierModel> content = pluginIdentifiersDAO.loadFileContent();
         Assert.assertEquals(content.size(), 0);
 
         final String pluginKey = "testPlugin";
         final String version = "1.0";
         final PluginNamingResolver pluginNamingResolver = PluginNamingResolver.of(pluginKey, version);
 
-        pluginIdentifierService.add(pluginKey, version);
+        pluginIdentifiersDAO.add(pluginKey, version);
 
-        content = pluginIdentifierService.loadFileContent();
+        content = pluginIdentifiersDAO.loadFileContent();
         final PluginIdentifierModel pluginIdentifierModel = content.get(pluginKey);
         Assert.assertEquals(content.size(), 1);
         Assert.assertNotNull(pluginIdentifierModel);
@@ -62,11 +63,11 @@ public class TestDefaultPluginIdentifierService {
     public void testRemove() {
         final String pluginKey = "testPlugin";
         final String version = "1.0";
-        pluginIdentifierService.add(pluginKey, version);
+        pluginIdentifiersDAO.add(pluginKey, version);
 
-        pluginIdentifierService.remove(pluginKey);
+        pluginIdentifiersDAO.remove(pluginKey);
 
-        final Map<String, PluginIdentifierModel> content = pluginIdentifierService.loadFileContent();
+        final Map<String, PluginIdentifierModel> content = pluginIdentifiersDAO.loadFileContent();
         Assert.assertEquals(content.size(), 0);
     }
 }

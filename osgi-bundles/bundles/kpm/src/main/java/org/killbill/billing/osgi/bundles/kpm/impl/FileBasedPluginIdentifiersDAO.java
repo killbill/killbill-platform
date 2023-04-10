@@ -24,10 +24,12 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
-import org.killbill.billing.osgi.bundles.kpm.PluginIdentifierService;
+import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
@@ -37,7 +39,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
-public class DefaultPluginIdentifierService implements PluginIdentifierService {
+class FileBasedPluginIdentifiersDAO implements PluginIdentifiersDAO {
 
     private static final String FILE_NAME = "plugin_identifiers.json";
 
@@ -46,7 +48,7 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
     @VisibleForTesting
     final File file;
 
-    public DefaultPluginIdentifierService(final Properties properties) {
+    public FileBasedPluginIdentifiersDAO(final Properties properties) {
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(Include.NON_NULL);
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
@@ -97,6 +99,25 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
     }
 
     @Override
+    public void add(final String pluginKey, final String groupId, final String artifactId, final String version) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(pluginKey), "'pluginKey' cannot be null or empty");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(groupId), "'groupId' cannot be null or empty");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(artifactId), "'artifactId' cannot be null or empty");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(version), "'version' cannot be null or empty");
+
+        final PluginNamingResolver namingResolver = PluginNamingResolver.of(pluginKey, version);
+
+        final Map<String, PluginIdentifierModel> content = loadFileContent();
+        final PluginIdentifierModel model = new PluginIdentifierModel(namingResolver.getPluginName(),
+                                                                      groupId,
+                                                                      artifactId,
+                                                                      namingResolver.getPluginVersion());
+        content.put(pluginKey, model);
+
+        writeContentToFile(content);
+    }
+
+    @Override
     public void remove(final String pluginKey) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(pluginKey), "'pluginKey' cannot be null or empty");
 
@@ -104,5 +125,12 @@ public class DefaultPluginIdentifierService implements PluginIdentifierService {
         content.remove(pluginKey);
 
         writeContentToFile(content);
+    }
+
+    @Override
+    public Set<PluginIdentifiersModel> getPluginIdentifiers() {
+        return loadFileContent().entrySet().stream()
+                .map(entry -> new PluginIdentifiersModel(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toUnmodifiableSet());
     }
 }

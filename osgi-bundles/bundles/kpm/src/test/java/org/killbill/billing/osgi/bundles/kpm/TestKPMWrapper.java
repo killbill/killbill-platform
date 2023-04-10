@@ -32,11 +32,12 @@ import org.testng.annotations.Test;
 
 import static org.killbill.billing.osgi.bundles.kpm.KPMWrapper.PROPERTY_PREFIX;
 
+@Deprecated
 public class TestKPMWrapper {
 
     private KPMWrapper kpmWrapper;
 
-    @BeforeMethod(groups = "slow")
+    @BeforeMethod(groups = "slow", enabled = false)
     public void setUp() throws GeneralSecurityException {
         final OSGIKillbillAPI killbillApi = Mockito.mock(OSGIKillbillAPI.class);
         final SecurityApi securityApi = Mockito.mock(SecurityApi.class);
@@ -50,7 +51,7 @@ public class TestKPMWrapper {
         kpmWrapper = new KPMWrapper(killbillApi, properties);
     }
 
-    @Test(groups = "slow")
+    @Test(groups = "slow", enabled = false)
     public void testInstall() throws InvalidRequest, IOException, URISyntaxException, InterruptedException {
         kpmWrapper.install("analytics",
                            "https://repo1.maven.org/maven2/org/kill-bill/billing/plugin/java/analytics-plugin/7.2.6/analytics-plugin-7.2.6.jar",

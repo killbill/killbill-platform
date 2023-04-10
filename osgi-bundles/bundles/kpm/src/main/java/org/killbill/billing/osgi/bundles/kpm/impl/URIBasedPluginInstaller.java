@@ -48,18 +48,20 @@ public class URIBasedPluginInstaller implements PluginInstaller {
      * See point 6 of "Current Implementation" in <a href="https://github.com/killbill/technical-support/issues/92">this issue</a>.
      */
     @Override
-    public void install() throws KPMPluginException {
+    public Path install() throws KPMPluginException {
         try {
             // Make directory
             final Path pluginDirectory = pluginFileService.createPluginDirectory(pluginKey, pluginVersion);
 
             // Copy downloadedFile to directory
-            Files.copy(downloadedFile,
-                       pluginDirectory.resolve(PluginNamingResolver.of(pluginKey, pluginVersion).getPluginJarFileName()),
-                       StandardCopyOption.REPLACE_EXISTING);
+            final Path result = Files.copy(downloadedFile,
+                                           pluginDirectory.resolve(PluginNamingResolver.of(pluginKey, pluginVersion).getPluginJarFileName()),
+                                           StandardCopyOption.REPLACE_EXISTING);
 
             // Make symlink
             pluginFileService.createSymlink(pluginDirectory);
+
+            return result;
         } catch (final IOException e) {
             throw new KPMPluginException(String.format("Unable to install plugin with key: %s", pluginKey), e);
         }

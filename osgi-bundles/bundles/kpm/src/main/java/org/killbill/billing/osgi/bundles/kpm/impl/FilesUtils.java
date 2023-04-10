@@ -15,15 +15,25 @@
  * under the License.
  */
 
-package org.killbill.billing.osgi.bundles.kpm;
+package org.killbill.billing.osgi.bundles.kpm.impl;
 
-import java.util.Collections;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public interface AvailablePluginsProvider {
+/**
+ * We have one at {@code org.killbill.commons.utils.io.Files}, but upgrading that class requires multiple steps. Maybe
+ * some fix-me here?
+ */
+class FilesUtils {
 
-    Set<Entry<String, String>> getAvailablePlugins();
-
-    AvailablePluginsProvider NONE = Collections::emptySet;
+    static void deleteIfExists(final Path path) {
+        if (path == null) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(path);
+        } catch (final IOException ignored) {
+        }
+    }
 }

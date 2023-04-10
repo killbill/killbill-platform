@@ -34,9 +34,12 @@ class PluginNamingResolver {
 
     PluginNamingResolver(final String pluginKey, final String pluginVersion) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(pluginKey), "pluginKey is null or empty");
-        Preconditions.checkArgument(!Strings.isNullOrEmpty(pluginVersion), "pluginVersion is null or empty");
         this.pluginKey = pluginKey;
         this.pluginVersion = pluginVersion;
+    }
+
+    static PluginNamingResolver of(final String pluginKey) {
+        return new PluginNamingResolver(pluginKey, null);
     }
 
     static PluginNamingResolver of(final String pluginKey, final String pluginVersion) {
@@ -58,6 +61,7 @@ class PluginNamingResolver {
     }
 
     String getPluginVersion() {
+        Preconditions.checkState(pluginVersion != null, "Cannot call #getPluginVersion() since PluginNamingResolver created without 'version'");
         String result = getVersionFromString(pluginVersion);
         if (Strings.isNullOrEmpty(result) && !Strings.isNullOrEmpty(stringContainsVersion)) {
             result = getVersionFromString(stringContainsVersion);

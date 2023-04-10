@@ -19,11 +19,13 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Properties;
 
-import org.killbill.billing.osgi.bundles.kpm.GetAvailablePluginsModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
-import org.killbill.billing.osgi.bundles.kpm.PluginIdentifierService;
+import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
+import org.killbill.billing.osgi.bundles.kpm.PluginManager.GetAvailablePluginsModel;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
+import org.killbill.billing.util.nodes.KillbillNodesApi;
+import org.killbill.billing.util.nodes.NodeInfo;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -36,24 +38,33 @@ public class TestDefaultPluginManager {
 
     @BeforeMethod(groups = "slow")
     public void beforeMethod() {
+        final NodeInfo nodeInfo = Mockito.mock(NodeInfo.class);
+        Mockito.when(nodeInfo.getKillbillVersion()).thenReturn("0.18.0");
+
+        final KillbillNodesApi nodesApi = Mockito.mock(KillbillNodesApi.class);
+        Mockito.when(nodesApi.getCurrentNodeInfo()).thenReturn(nodeInfo);
+
         final OSGIKillbillAPI osgiKillbillAPI = Mockito.mock(OSGIKillbillAPI.class);
+        Mockito.when(osgiKillbillAPI.getKillbillNodesApi()).thenReturn(nodesApi);
+
         final Properties properties = new Properties();
+        properties.setProperty("org.killbill.billing.plugin.kpm.availablePlugins.cache.bypass", "false");
 
         final PluginFileService pluginFileService = new DefaultPluginFileService(properties);
-        final PluginIdentifierService pluginIdentifierService = new DefaultPluginIdentifierService(properties);
+        final PluginIdentifiersDAO pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(properties);
 
         final DefaultPluginManager toSpy = new DefaultPluginManager(osgiKillbillAPI, properties);
         pluginManager = Mockito.spy(toSpy);
         Mockito.doReturn(pluginFileService).when(pluginManager).createPluginFileService(properties);
-        Mockito.doReturn(pluginIdentifierService).when(pluginManager).createPluginIdentifierService(properties);
+        Mockito.doReturn(pluginIdentifiersDAO).when(pluginManager).createPluginIdentifiersDAO(properties);
     }
 
     @Test(groups = "slow")
     public void testGetAvailablePlugins() {
-        // Get plugin info from actual, default, killbill plugins_directory.yml. See DefaultAvailablePluginsProvider
+        // Get plugin info from actual, default, killbill plugins_directory.yml. See DefaultPluginsDirectoryDAO
         GetAvailablePluginsModel result = pluginManager.getAvailablePlugins("0.18.0", true);
-        Assert.assertEquals(result.getKillbill().get("killbill"), "0.18.0");
-        Assert.assertFalse(result.getPlugins().isEmpty());
+        Assert.assertEquals(result.getKillbillArtifactsVersion().getKillbill(), "0.18.0");
+        Assert.assertFalse(result.getAvailablePlugins().isEmpty());
 
         try {
             result = pluginManager.getAvailablePlugins("not-exist", true);
@@ -65,9 +76,9 @@ public class TestDefaultPluginManager {
         // will never throw an exception
         result = pluginManager.getAvailablePlugins("not-exist", false);
         // will return VersionsProvider.ZERO
-        Assert.assertEquals(result.getKillbill().get("killbill"), "0.0.0");
-        // will return AvailablePluginsProvider.NONE
-        Assert.assertTrue(result.getPlugins().isEmpty());
+        Assert.assertEquals(result.getKillbillArtifactsVersion().getKillbill(), "0.0.0");
+        // will return PluginsDirectoryDAO.NONE
+        Assert.assertTrue(result.getAvailablePlugins().isEmpty());
     }
 
 }
