@@ -18,11 +18,11 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
@@ -67,7 +67,7 @@ public class TestAvailablePluginsComponentsFactory {
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("killbill-oss-parent"))).thenReturn(ossParentPomXml);
         Mockito.when(httpClient.downloadArtifactMetadata(Mockito.matches(KILLBILL_POM_REGEX))).thenReturn(killbillPomXml);
 
-        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill, httpClient, TestUtils.getTestProperties());
+        componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill, httpClient, new KpmProperties(TestUtils.getTestProperties()));
     }
 
     @AfterMethod(groups = "fast")

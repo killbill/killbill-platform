@@ -29,6 +29,8 @@ public final class KpmProperties {
 
     private static final String AVAILABLE_PLUGINS_PREFIX = PROPERTY_PREFIX + "availablePlugins.";
 
+    private static final String PLUGIN_INSTALL_PREFIX = PROPERTY_PREFIX + "pluginInstall.";
+
     private final Properties properties = new Properties();
 
     public KpmProperties(final Properties killbillProperties) {
@@ -42,6 +44,20 @@ public final class KpmProperties {
     public Path getBundlesPath() {
         final String bundleInstallDir = properties.getProperty("org.killbill.osgi.bundle.install.dir");
         return Strings.isNullOrEmpty(bundleInstallDir) ? Path.of("/var", "tmp", "bundles") : Path.of(bundleInstallDir);
+    }
+
+    /**
+     * @return get {@code org.killbill.billing.plugin.kpm.adminUsername} property, or {@code admin} if not set.
+     */
+    public String getKillbillAdminUsername() {
+        return Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
+    }
+
+    /**
+     * @return get {@code org.killbill.billing.plugin.kpm.adminPassword} property, or {@code password} if not set.
+     */
+    public String getKillbillAdminPassword() {
+        return Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
     }
 
     /**
@@ -69,14 +85,14 @@ public final class KpmProperties {
      * @return get {@code org.killbill.billing.plugin.kpm.readTimeoutSec} property, or {@code 60} if not set.
      */
     public int getReadTimeoutSec() {
-        return Objects.requireNonNullElse(Integer.valueOf(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec")), 60);
+        return Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60"));
     }
 
     /**
      * @return get {@code org.killbill.billing.plugin.kpm.connectTimeoutSec} property, or {@code 60} if not set.
      */
     public int getConnectTimeoutSec() {
-        return Objects.requireNonNullElse(Integer.valueOf(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec")), 60);
+        return Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60"));
     }
 
     /**
@@ -86,7 +102,14 @@ public final class KpmProperties {
         return new AvailablePlugins();
     }
 
-    private class AvailablePlugins {
+    /**
+     * Navigate to {@code pluginInstall} specifics configuration.
+     */
+    public PluginInstall pluginInstall() {
+        return new PluginInstall();
+    }
+
+    public final class AvailablePlugins {
 
         /**
          * @return get {@code org.killbill.billing.plugin.kpm.availablePlugins.pluginsDirectoryUrl} config property, or
@@ -105,29 +128,48 @@ public final class KpmProperties {
             return new Cache();
         }
 
-        private class Cache {
+        public final class Cache {
 
             /**
              * @return get {@code org.killbill.billing.plugin.kpm.availablePlugins.cache.size} property, or {@code 10} if not set.
              */
             public int getSize() {
-                return Objects.requireNonNullElse(Integer.valueOf(properties.getProperty(AVAILABLE_PLUGINS_PREFIX + "cache.size")), 10);
+                return Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(AVAILABLE_PLUGINS_PREFIX + "cache.size"), "10"));
             }
 
             /**
              * @return get {@code org.killbill.billing.plugin.kpm.availablePlugins.cache.expirationSecs} or {@code 86400 (24 hours)} if not set
              */
             public int getExpirationSec() {
-                return Objects.requireNonNullElse(Integer.valueOf(properties.getProperty(AVAILABLE_PLUGINS_PREFIX + "cache.expirationSecs")), 86_460);
+                return Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(AVAILABLE_PLUGINS_PREFIX + "cache.expirationSecs"), "86460"));
             }
 
             /**
-             *
              * @return get {@code org.killbill.billing.plugin.kpm.availablePlugins.cache.bypass} or {@code false} it not set.
              */
             public boolean isBypass() {
                 return Boolean.parseBoolean(properties.getProperty(AVAILABLE_PLUGINS_PREFIX + "cache.bypass"));
             }
+        }
+    }
+
+    public final class PluginInstall {
+
+        /**
+         * @return get {@code org.killbill.billing.plugin.kpm.pluginInstall.verifySHA1} or {@code false} it not set.
+         */
+        public boolean isVerifySHA1Needed() {
+            return Boolean.parseBoolean(properties.getProperty(PLUGIN_INSTALL_PREFIX + "verifySHA1"));
+        }
+
+        /**
+         * @return get {@code org.killbill.billing.plugin.kpm.pluginInstall.pluginRepositoryUrl} or combination of
+         *         {@link #getNexusUrl()} {@code + "/content/repositories/" +} {@link #getNexusRepository()}.
+         */
+        public String getPluginRepositoryUrl() {
+            return Objects.requireNonNullElse(
+                    properties.getProperty(PLUGIN_INSTALL_PREFIX + "pluginRepositoryUrl"),
+                    getNexusUrl() + "/content/repositories/" + getNexusRepository());
         }
     }
 }

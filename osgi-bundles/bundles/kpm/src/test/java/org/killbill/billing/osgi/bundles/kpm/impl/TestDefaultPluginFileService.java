@@ -17,6 +17,7 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -33,7 +34,7 @@ public class TestDefaultPluginFileService {
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() {
-        pluginFileService = new DefaultPluginFileService(TestUtils.getTestProperties());
+        pluginFileService = new DefaultPluginFileService(new KpmProperties(TestUtils.getTestProperties()));
     }
 
     @DataProvider(name = "createPluginDirectoryParams")

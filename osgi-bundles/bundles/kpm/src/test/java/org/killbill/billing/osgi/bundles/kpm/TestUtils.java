@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
-import org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginFileService;
 import org.killbill.commons.utils.io.Resources;
 
 public class TestUtils {
@@ -57,7 +56,7 @@ public class TestUtils {
 
     public static Properties getTestProperties() {
         final Properties properties = new Properties();
-        properties.setProperty(DefaultPluginFileService.BUNDLE_INSTALL_DIR, TestUtils.getTestPath().toString());
+        properties.setProperty("org.killbill.osgi.bundle.install.dir", getTestPath().toString());
         return properties;
     }
 }

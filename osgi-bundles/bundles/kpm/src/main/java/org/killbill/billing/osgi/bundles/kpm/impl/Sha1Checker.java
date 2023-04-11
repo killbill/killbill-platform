@@ -22,11 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
-import org.killbill.billing.osgi.bundles.kpm.PluginManager;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +36,9 @@ class Sha1Checker {
     private final KPMClient httpClient;
     private final boolean shouldVerify;
 
-    public Sha1Checker(final KPMClient httpClient, final Properties properties) {
+    public Sha1Checker(final KPMClient httpClient, final KpmProperties kpmProperties) {
         this.httpClient = httpClient;
-        this.shouldVerify = Boolean.parseBoolean(properties.getProperty(PluginManager.PROPERTY_PREFIX + "pluginInstall.verifySHA1"));
+        this.shouldVerify = kpmProperties.pluginInstall().isVerifySHA1Needed();
     }
 
     boolean isDownloadedFileVerified(final String sha1Url, final Path downloadedPath) {

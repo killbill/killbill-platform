@@ -40,7 +40,7 @@ public interface VersionsProvider {
 
     VersionsProvider ZERO = new ZeroVersionsProvider();
 
-    static class ZeroVersionsProvider implements VersionsProvider {
+    class ZeroVersionsProvider implements VersionsProvider {
 
         private static final String ZERO_VERSION = "0.0.0";
 

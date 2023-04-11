@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.testng.Assert;
@@ -35,7 +36,7 @@ public class TestURIBasedPluginInstaller {
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() throws IOException {
-        final PluginFileService pluginFileService = new DefaultPluginFileService(TestUtils.getTestProperties());
+        final PluginFileService pluginFileService = new DefaultPluginFileService(new KpmProperties(TestUtils.getTestProperties()));
         final Path downloadedDir = Files.createDirectories(testPath);
         final Path downloadedFile = downloadedDir.resolve("downloaded-file-jar.txt");
         if (!Files.exists(downloadedFile)) {

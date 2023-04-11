@@ -19,14 +19,13 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
-import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
@@ -54,45 +53,41 @@ public class DefaultPluginManager implements PluginManager {
     private final String adminUsername;
     private final String adminPassword;
 
-    public DefaultPluginManager(@Nonnull final OSGIKillbillAPI killbillApi, @Nonnull final Properties properties) {
+    public DefaultPluginManager(@Nonnull final OSGIKillbillAPI killbillApi, @Nonnull final KpmProperties kpmProperties) {
         this.killbillApi = killbillApi;
-        this.pluginFileService = createPluginFileService(properties);
-        this.pluginIdentifiersDAO = createPluginIdentifiersDAO(properties);
-        this.httpClient = createHttpClient(properties);
-        this.availablePluginsComponentsFactory = new AvailablePluginsComponentsFactory(killbillApi, httpClient, properties);
-        this.pluginDownloader = createPluginDownloader(properties);
+        this.pluginFileService = createPluginFileService(kpmProperties);
+        this.pluginIdentifiersDAO = createPluginIdentifiersDAO(kpmProperties);
+        this.httpClient = createHttpClient(kpmProperties);
+        this.availablePluginsComponentsFactory = new AvailablePluginsComponentsFactory(killbillApi, httpClient, kpmProperties);
+        this.pluginDownloader = createPluginDownloader(kpmProperties);
 
-        this.adminUsername = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
-        this.adminPassword = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
+        this.adminUsername = kpmProperties.getKillbillAdminUsername();
+        this.adminPassword = kpmProperties.getKillbillAdminPassword();
     }
 
     @VisibleForTesting
-    PluginFileService createPluginFileService(final Properties properties) {
-        return new DefaultPluginFileService(properties);
+    PluginFileService createPluginFileService(final KpmProperties kpmProperties) {
+        return new DefaultPluginFileService(kpmProperties);
     }
 
     @VisibleForTesting
-    PluginIdentifiersDAO createPluginIdentifiersDAO(final Properties properties) {
-        return new FileBasedPluginIdentifiersDAO(properties);
+    PluginIdentifiersDAO createPluginIdentifiersDAO(final KpmProperties kpmProperties) {
+        return new FileBasedPluginIdentifiersDAO(kpmProperties);
     }
 
     @VisibleForTesting
-    KPMClient createHttpClient(final Properties properties) {
-        final boolean strictSSL = Boolean.parseBoolean(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true"));
-        final int connectTimeOutMs = Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60")) * 1000;
-        final int readTimeOutMs = Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60")) * 1000;
-
+    KPMClient createHttpClient(final KpmProperties kpmProperties) {
         try {
             // If exceptions are thrown here, the plugin cannot work properly in the first place
-            return new KPMClient(strictSSL, connectTimeOutMs, readTimeOutMs);
+            return new KPMClient(kpmProperties.isStrictSSL(), kpmProperties.getConnectTimeoutSec() * 1000, kpmProperties.getReadTimeoutSec() * 1000);
         } catch (final GeneralSecurityException e) {
             throw new KPMPluginException("Cannot create KpmHttpClient, there's problem with SSL context creation.", e);
         }
     }
 
-    CoordinateBasedPluginDownloader createPluginDownloader(final Properties properties) {
+    CoordinateBasedPluginDownloader createPluginDownloader(final KpmProperties kpmProperties) {
         final ArtifactAndVersionFinder finder = new ArtifactAndVersionFinder(pluginIdentifiersDAO, availablePluginsComponentsFactory);
-        return new CoordinateBasedPluginDownloader(httpClient, finder, properties);
+        return new CoordinateBasedPluginDownloader(httpClient, finder, kpmProperties);
     }
 
     private void notifyFileSystemChange(final PluginStateChange newState,

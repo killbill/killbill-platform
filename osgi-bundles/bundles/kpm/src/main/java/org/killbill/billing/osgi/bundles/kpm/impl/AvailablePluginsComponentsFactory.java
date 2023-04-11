@@ -18,11 +18,11 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.killbill.billing.osgi.api.OSGIKillbill;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
@@ -46,10 +46,6 @@ import org.slf4j.LoggerFactory;
  */
 public final class AvailablePluginsComponentsFactory {
 
-    private static final int DEFAULT_CACHE_SIZE = 10;
-
-    private static final int DEFAULT_CACHE_EXPIRATION_SEC = 86400; // 24 hours
-
     private final Logger logger = LoggerFactory.getLogger(AvailablePluginsComponentsFactory.class);
 
     private final OSGIKillbill osgiKillbill;
@@ -62,23 +58,17 @@ public final class AvailablePluginsComponentsFactory {
     private final Cache<CacheKey, VersionsProvider> versionsProviderCache;
     private final Cache<CacheKey, Set<PluginsDirectoryModel>> pluginDirectoryCache;
 
-    public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill, final KPMClient httpClient, final Properties properties) {
+    public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill, final KPMClient httpClient, final KpmProperties kpmProperties) {
         this.osgiKillbill = osgiKillbill;
         this.httpClient = httpClient;
 
-        nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
-        nexusRepository = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "releases");
-        pluginDirectoryUrl = Objects.requireNonNullElse(
-                properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.pluginDirectoryUrl"),
-                PluginsDirectoryDAO.DEFAULT_DIRECTORY);
+        nexusUrl = kpmProperties.getNexusUrl();
+        nexusRepository = kpmProperties.getNexusRepository();
+        pluginDirectoryUrl = kpmProperties.availablePlugins().getPluginsDirectoryUrl();
 
-        final int cacheSize = Objects.requireNonNullElse(
-                Integer.getInteger(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.size")),
-                DEFAULT_CACHE_SIZE);
-        final int expirationSec = Objects.requireNonNullElse(
-                Integer.getInteger(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.expirationSecs")),
-                DEFAULT_CACHE_EXPIRATION_SEC);
-        bypassCache = Boolean.parseBoolean(properties.getProperty(PluginManager.PROPERTY_PREFIX + "availablePlugins.cache.bypass"));
+        final int cacheSize = kpmProperties.availablePlugins().cache().getSize();
+        final int expirationSec = kpmProperties.availablePlugins().cache().getExpirationSec();
+        bypassCache = kpmProperties.availablePlugins().cache().isBypass();
 
         if (!bypassCache) {
             // We cant set cache loaders in constructor. It's pretty expensive.

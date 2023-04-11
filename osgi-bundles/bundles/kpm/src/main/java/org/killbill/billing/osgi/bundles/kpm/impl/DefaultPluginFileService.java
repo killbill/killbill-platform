@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 
@@ -34,8 +35,8 @@ public class DefaultPluginFileService implements PluginFileService {
 
     private final Path bundlesPath;
 
-    public DefaultPluginFileService(final Properties properties) {
-        this.bundlesPath = PluginFileService.getBundlesPath(properties);
+    public DefaultPluginFileService(final KpmProperties kpmProperties) {
+        this.bundlesPath = kpmProperties.getBundlesPath();
     }
 
     @Override

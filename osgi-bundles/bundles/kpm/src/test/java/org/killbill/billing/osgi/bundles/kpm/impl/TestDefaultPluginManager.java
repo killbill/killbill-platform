@@ -20,6 +20,7 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager.GetAvailablePluginsModel;
@@ -49,14 +50,15 @@ public class TestDefaultPluginManager {
 
         final Properties properties = new Properties();
         properties.setProperty("org.killbill.billing.plugin.kpm.availablePlugins.cache.bypass", "false");
+        final KpmProperties kpmProperties = new KpmProperties(properties);
 
-        final PluginFileService pluginFileService = new DefaultPluginFileService(properties);
-        final PluginIdentifiersDAO pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(properties);
+        final PluginFileService pluginFileService = new DefaultPluginFileService(kpmProperties);
+        final PluginIdentifiersDAO pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(kpmProperties);
 
-        final DefaultPluginManager toSpy = new DefaultPluginManager(osgiKillbillAPI, properties);
+        final DefaultPluginManager toSpy = new DefaultPluginManager(osgiKillbillAPI, kpmProperties);
         pluginManager = Mockito.spy(toSpy);
-        Mockito.doReturn(pluginFileService).when(pluginManager).createPluginFileService(properties);
-        Mockito.doReturn(pluginIdentifiersDAO).when(pluginManager).createPluginIdentifiersDAO(properties);
+        Mockito.doReturn(pluginFileService).when(pluginManager).createPluginFileService(kpmProperties);
+        Mockito.doReturn(pluginIdentifiersDAO).when(pluginManager).createPluginIdentifiersDAO(kpmProperties);
     }
 
     @Test(groups = "slow")

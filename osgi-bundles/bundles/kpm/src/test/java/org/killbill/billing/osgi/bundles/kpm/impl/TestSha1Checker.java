@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -29,12 +30,14 @@ import org.testng.annotations.Test;
 
 public class TestSha1Checker {
 
-    private Properties properties;
+    private KpmProperties kpmProperties;
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() {
-        properties = Mockito.mock(Properties.class);
-        Mockito.when(properties.getProperty("org.killbill.billing.plugin.kpm.pluginInstall.verifySHA1")).thenReturn("true");
+        final Properties properties = new Properties();
+        properties.setProperty("org.killbill.billing.plugin.kpm.pluginInstall.verifySHA1", "true");
+
+        this.kpmProperties = new KpmProperties(properties);
     }
 
     @Test(groups = "fast")
@@ -46,7 +49,7 @@ public class TestSha1Checker {
 
         Mockito.when(httpClient.downloadArtifactMetadata("valid")).thenReturn(validPluginSha1);
 
-        Sha1Checker sha1Checker = new Sha1Checker(httpClient, properties);
+        Sha1Checker sha1Checker = new Sha1Checker(httpClient, kpmProperties);
         boolean result = sha1Checker.isDownloadedFileVerified("valid", validPlugin);
 
         Assert.assertTrue(result);
@@ -59,7 +62,7 @@ public class TestSha1Checker {
 
         Mockito.when(httpClient.downloadArtifactMetadata("invalid")).thenReturn(invalidPluginSha1);
 
-        sha1Checker = new Sha1Checker(httpClient, properties);
+        sha1Checker = new Sha1Checker(httpClient, kpmProperties);
         result = sha1Checker.isDownloadedFileVerified("invalid", invalidPlugin);
 
         Assert.assertFalse(result);

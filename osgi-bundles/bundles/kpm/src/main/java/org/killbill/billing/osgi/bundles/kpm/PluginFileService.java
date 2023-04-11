@@ -20,26 +20,10 @@ package org.killbill.billing.osgi.bundles.kpm;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
-import org.killbill.commons.utils.Strings;
-import org.killbill.commons.utils.annotation.VisibleForTesting;
-
 public interface PluginFileService {
-
-    @VisibleForTesting
-    String BUNDLE_INSTALL_DIR = "org.killbill.osgi.bundle.install.dir";
-
-    /**
-     * Get killbill bundles path. It will find property named {@code org.killbill.osgi.bundle.install.dir}, or
-     * {@code /var/tmp/bundles} if property not exist.
-     */
-    static Path getBundlesPath(final Properties properties) {
-        final String bundleInstallDir = properties.getProperty(BUNDLE_INSTALL_DIR);
-        return Strings.isNullOrEmpty(bundleInstallDir) ? Path.of("/var", "tmp", "bundles") : Path.of(bundleInstallDir);
-    }
 
     /**
      * Get download path. This is usually temporary path where plugin file should be downloaded before processed further.

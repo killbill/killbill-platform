@@ -22,12 +22,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.jar.JarFile;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
-import org.killbill.billing.osgi.bundles.kpm.PluginManager;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.impl.ArtifactAndVersionFinder.ArtifactAndVersionModel;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
@@ -51,10 +50,12 @@ class CoordinateBasedPluginDownloader {
 
     private final String pluginRepository;
 
-    CoordinateBasedPluginDownloader(final KPMClient httpClient, final ArtifactAndVersionFinder artifactAndVersionFinder, final Properties properties) {
+    CoordinateBasedPluginDownloader(final KPMClient httpClient,
+                                    final ArtifactAndVersionFinder artifactAndVersionFinder,
+                                    final KpmProperties kpmProperties) {
         this.httpClient = httpClient;
-        this.sha1Checker = new Sha1Checker(httpClient, properties);
-        this.pluginRepository = getPluginRepository(properties);
+        this.sha1Checker = new Sha1Checker(httpClient, kpmProperties);
+        this.pluginRepository = kpmProperties.pluginInstall().getPluginRepositoryUrl();
 
         this.artifactAndVersionFinder = artifactAndVersionFinder;
     }
@@ -108,17 +109,6 @@ class CoordinateBasedPluginDownloader {
                                          pluginKey, killbillVersion, actualGroupId, actualArtifactId, actualPluginVersion);
 
         throw new KPMPluginException(msg);
-    }
-
-    private String getPluginRepository(final Properties properties) {
-        final String pluginInstallRepoUrl = properties.getProperty(PluginManager.PROPERTY_PREFIX + "pluginInstall.pluginRepositoryUrl");
-        // Attempt to get value from
-        if (Strings.isNullOrEmpty(pluginInstallRepoUrl)) {
-            final String nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
-            final String nexusRepo = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "content/repositories/releases");
-            return nexusUrl + "/" + nexusRepo;
-        }
-        return pluginInstallRepoUrl;
     }
 
     private Path doDownloadValidateAndVerify(final String pluginKey, final String version, final String pluginJarUrl, final String sha1Url) {

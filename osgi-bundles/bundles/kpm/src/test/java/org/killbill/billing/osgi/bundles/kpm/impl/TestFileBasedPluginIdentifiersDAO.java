@@ -17,6 +17,7 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO.PluginIdentifierModel;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.testng.Assert;
@@ -32,7 +33,7 @@ public class TestFileBasedPluginIdentifiersDAO {
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() {
-        pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(TestUtils.getTestProperties());
+        pluginIdentifiersDAO = new FileBasedPluginIdentifiersDAO(new KpmProperties(TestUtils.getTestProperties()));
     }
 
     @AfterMethod(groups = "fast")
