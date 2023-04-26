@@ -117,10 +117,11 @@ List available plugins:
 ```
 curl -v \
      -u admin:password \
-     http://127.0.0.1:8080/plugins/killbill-kpm/plugins?latest=true&forceDownload=false
+     http://127.0.0.1:8080/plugins/killbill-kpm/plugins?kbVersion=<LATEST|ANY_VERSION>&latest=true
 ```
 
-1. `latest` parameter will let KPM plugin whether there's the latest Kill Bill version in repository. 
-2. `forceDownload` parameter will let KPM Plugin download each request to plugins/plugins information. Note that
-   `availablePlugins.cache.enabled` will take precedence over `forceDownload`. Setting `cache.enabled=false` means KPM 
-   plugin will always download plugins and plugins information.
+1. `kbVersion` parameter will let KPM plugin whether it should download the latest Kill Bill version in repository. 
+2. `latest` parameter will translate into `forceDownload` method parameter in `PluginManager.java`. Keep parameter name 
+   as is to keep backward compatibility. setting this value to true means KPM Plugin will download plugins/plugins  
+   information in each request. Note that `availablePlugins.cache.enabled` will take precedence over `forceDownload`. 
+   Setting `cache.enabled=false` means KPM plugin will always download plugins and plugins information.
