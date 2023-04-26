@@ -1,1 +1,1 @@
-used by TestURIBasedPluginInstaller
+used by TestDefaultPluginInstaller

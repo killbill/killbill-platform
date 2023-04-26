@@ -17,7 +17,6 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
 
@@ -41,15 +40,18 @@ public class TestAvailablePluginsComponentsFactory {
 
     private static final String KILLBILL_POM_REGEX = ".killbill-\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9]+)?\\.pom$";
 
+    private Path killbillPomXml;
+    private Path ossParentPomXml;
+    private Path mavenMetadataXml;
     private Path pluginDirectoryYml;
     private NodeInfo nodeInfo;
     private AvailablePluginsComponentsFactory componentsFactory;
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() throws Exception {
-        final Path killbillPomXml = TestUtils.getTestPath("xml").resolve("killbill-pom.xml");
-        final Path ossParentPomXml = TestUtils.getTestPath("xml").resolve("ossparent-pom.xml");
-        final Path mavenMetadataXml = TestUtils.getTestPath("xml").resolve("maven-metadata.xml");
+        killbillPomXml = TestUtils.copyTestResourceToTemp("xml", "killbill-pom.xml");
+        ossParentPomXml = TestUtils.copyTestResourceToTemp("xml", "ossparent-pom.xml");
+        mavenMetadataXml = TestUtils.copyTestResourceToTemp("xml", "maven-metadata.xml");
 
         this.pluginDirectoryYml = TestUtils.copyTestResourceToTemp("/yaml/plugins_directory.yml");
 
@@ -62,16 +64,25 @@ public class TestAvailablePluginsComponentsFactory {
         Mockito.when(osgiKillbill.getKillbillNodesApi()).thenReturn(killbillNodesApi);
 
         final KPMClient httpClient = Mockito.mock(KPMClient.class);
-        Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("plugins_directory"))).thenReturn(pluginDirectoryYml);
-        Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("maven-metadata.xml"))).thenReturn(mavenMetadataXml);
-        Mockito.when(httpClient.downloadArtifactMetadata(Mockito.contains("killbill-oss-parent"))).thenReturn(ossParentPomXml);
-        Mockito.when(httpClient.downloadArtifactMetadata(Mockito.matches(KILLBILL_POM_REGEX))).thenReturn(killbillPomXml);
+        // There's 2 way to get plugins_directory.yml. See DefaultPluginsDirectoryDAO.downloadPluginDirectory()
+        Mockito.when(httpClient.downloadToTempOS(Mockito.contains("plugins_directory"), Mockito.anyString(), Mockito.anyString())).thenReturn(pluginDirectoryYml);
+        Mockito.when(httpClient.downloadToTempOS(Mockito.contains("plugins_directory"), Mockito.anyMap(), Mockito.anyString(), Mockito.anyString())).thenReturn(pluginDirectoryYml);
+
+        // There's 2 way to get maven-metadata.xml. See DefaultNexusMetadataFiles.getMavenMetadataXml()
+        Mockito.when(httpClient.downloadToTempOS(Mockito.contains("maven-metadata"), Mockito.anyString(), Mockito.anyString())).thenReturn(mavenMetadataXml);
+        Mockito.when(httpClient.downloadToTempOS(Mockito.contains("maven-metadata"), Mockito.anyMap(), Mockito.anyString(), Mockito.anyString())).thenReturn(mavenMetadataXml);
+
+        Mockito.when(httpClient.downloadToTempOS(Mockito.contains("killbill-oss-parent"), Mockito.anyMap(), Mockito.anyString(), Mockito.anyString())).thenReturn(ossParentPomXml);
+        Mockito.when(httpClient.downloadToTempOS(Mockito.matches(KILLBILL_POM_REGEX), Mockito.anyMap(), Mockito.anyString(), Mockito.anyString())).thenReturn(killbillPomXml);
 
         componentsFactory = new AvailablePluginsComponentsFactory(osgiKillbill, httpClient, new KpmProperties(TestUtils.getTestProperties()));
     }
 
     @AfterMethod(groups = "fast")
-    public void afterMethod() throws IOException {
+    public void afterMethod() {
+        FilesUtils.deleteIfExists(killbillPomXml);
+        FilesUtils.deleteIfExists(ossParentPomXml);
+        FilesUtils.deleteIfExists(mavenMetadataXml);
         FilesUtils.deleteIfExists(pluginDirectoryYml);
     }
 
@@ -114,8 +125,8 @@ public class TestAvailablePluginsComponentsFactory {
     }
 
     @Test(groups = "fast")
-    public void testCreateAvailablePluginsProvider() throws KPMPluginException {
-        // This test will return plugins with its version as long as createAvailablePluginsProvider() supplied
+    public void testCreatePluginsDirectoryDAO() throws KPMPluginException {
+        // This test will return plugins with its version as long as createPluginsDirectoryDAO() supplied
         // with <MAJOR.MINOR> killbill version listed in mocked plugins_directory.yml
         final PluginsDirectoryDAO pluginsDirectoryDAO = componentsFactory.createPluginsDirectoryDAO("0.24.2-SNAPSHOT", true);
         Assert.assertNotNull(pluginsDirectoryDAO);

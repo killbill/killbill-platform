@@ -42,14 +42,9 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
     private static final Logger logger = LoggerFactory.getLogger(EventsListener.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    // FIXME-TS-58: Remove @Deprecated and delete KPMWrapper once technical-support-58 done
-    @Deprecated
-    private final KPMWrapper kpmWrapper;
-
     private final PluginManager pluginManager;
 
-    public EventsListener(final KPMWrapper kpmWrapper, final PluginManager pluginManager) {
-        this.kpmWrapper = kpmWrapper;
+    public EventsListener(final PluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
 
@@ -98,12 +93,6 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
             final String pluginUri = props.get("pluginUri");
             if (pluginUri != null) {
                 try {
-                    // FIXME-TS-58: Remove this comments block once TS-58 done
-                    /*
-                    kpmWrapper.install(nodeCommandMetadata.getPluginKey(),
-                                       pluginUri,
-                                       nodeCommandMetadata.getPluginVersion(),
-                                       pluginType);*/
                     pluginManager.install(pluginUri, nodeCommandMetadata.getPluginKey(), nodeCommandMetadata.getPluginVersion());
                 } catch (final Exception e) {
                     logger.warn("Unable to install plugin {}", nodeCommandMetadata.getPluginKey(), e);
@@ -114,18 +103,6 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
                 final String pluginArtifactId = props.get("pluginArtifactId");
                 final String pluginGroupId = props.get("pluginGroupId");
                 final boolean forceDownload = "true".equals(props.get("forceDownload"));
-                /**
-                 * FIXME-TS-58: Remove this once TS-58 close
-                 *
-                kpmWrapper.install(nodeCommandMetadata.getPluginKey(),
-                                   kbVersion,
-                                   pluginArtifactId,
-                                   nodeCommandMetadata.getPluginVersion(),
-                                   pluginGroupId,
-                                   pluginPackaging,
-                                   pluginClassifier,
-                                   pluginType,
-                                   forceDownload);*/
                 pluginManager.install(nodeCommandMetadata.getPluginKey(),
                                       kbVersion,
                                       pluginGroupId,
@@ -135,7 +112,7 @@ public class EventsListener implements OSGIKillbillEventDispatcher.OSGIKillbillE
             }
         } else //noinspection ConstantConditions
             if ("UNINSTALL_PLUGIN".equals(commandType)) {
-                kpmWrapper.uninstall(nodeCommandMetadata.getPluginKey(), nodeCommandMetadata.getPluginVersion());
+                pluginManager.uninstall(nodeCommandMetadata.getPluginKey(), nodeCommandMetadata.getPluginVersion());
             }
     }
 

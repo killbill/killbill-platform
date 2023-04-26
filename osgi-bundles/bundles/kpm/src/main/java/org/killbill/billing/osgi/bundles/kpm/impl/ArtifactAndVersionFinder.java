@@ -19,10 +19,11 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.util.Optional;
 
-import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO.PluginIdentifiersModel;
+import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.commons.utils.Strings;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,13 +50,13 @@ class ArtifactAndVersionFinder {
 
     /**
      * <p>
-     *     This method trust the input. Thus, if {@code pluginArtifactId} and or {@code pluginVersion} is not null/empty,
-     *     it will return the input.
+     *     This method trust the input. Thus, if {@code pluginArtifactId} and {@code pluginVersion} is not null/empty,
+     *     it will return.
      * </p>
      * <p>
-     *     Unless {@code forceDownload} parameter set to {@code false}, This method will search in
-     *     {@code PluginIdentifiersDAO} first, by calling method {@link PluginIdentifiersDAO#getPluginIdentifiers()}
-     *     and filter it. If all {@code pluginArtifactId} and {@code pluginVersion} set in this phrase, this method will return.
+     *     If {@code forceDownload=false}, this method will search in {@code PluginIdentifiersDAO} first, by calling
+     *     {@link PluginIdentifiersDAO#getPluginIdentifiers()} method, and filter by {@code pluginKey}. If all
+     *     {@code pluginArtifactId} and {@code pluginVersion} found in this phrase, this method will return.
      * </p>
      * <p>
      *     If {@code PluginIdentifiersDAO#getPluginIdentifiers()} still not set artifactId and version, this method
@@ -64,7 +65,7 @@ class ArtifactAndVersionFinder {
      * </p>
      * <p>
      *     As last attempt, if version is found but artifactId still null/empty, this method will set artifactId with
-     *     {@code }
+     *     {@code PluginNamingResolver.of(pluginKey).getPluginName()}.
      * </p>
      * <p>This method will return {@link Optional#empty()} if none of above method having a result</p>
      */
@@ -75,62 +76,80 @@ class ArtifactAndVersionFinder {
                                                              final boolean forceDownload) {
         logger.info("#findArtifactAndVersion() kbVersion: {}, pluginKey: {}, artifactId: {}, pluginVersion: {}, forceDownload: {}",
                     killbillVersion, pluginKey, pluginArtifactId, pluginVersion, forceDownload);
+
         // Trust the input. We only search if input is not found.
         if (!Strings.isNullOrEmpty(pluginArtifactId) && !Strings.isNullOrEmpty(pluginVersion)) {
             return Optional.of(new ArtifactAndVersionModel(pluginArtifactId, pluginVersion));
         }
 
-        ArtifactAndVersionModel result = searchFromPluginsIdentifier(pluginKey, forceDownload);
-
+        ArtifactAndVersionModel result = this.searchFromPluginsIdentifier(pluginKey, forceDownload);
         if (result.isAttributesSet()) {
             return Optional.of(result);
         }
 
-        result = this.searchFromAvailablePlugins(killbillVersion, pluginKey, forceDownload);
-
+        result = this.searchFromPluginsDirectory(killbillVersion, pluginKey, forceDownload);
         if (result.isAttributesSet()) {
             return Optional.of(result);
         }
 
-        // If only artifactId that still null/empty ...
+        // If only artifactId that still null/empty, then use simple PluginNamingResolver approach as last attempt guess.
         if (!Strings.isNullOrEmpty(result.getVersion()) && Strings.isNullOrEmpty(result.getArtifactId())) {
-            // ... Then use simple PluginNamingResolver approach as last attempt guess.
-            result.setArtifactIdIfNull(PluginNamingResolver.of(pluginKey).getPluginName());
-            if (result.isAttributesSet()) {
-                logger.debug("#findArtifactAndVersion() pluginVersion found by AvailablePluginProvider. artifactId set by PluginNamingResolver: {}", result);
-                return Optional.of(result);
-            }
+            final String pluginNameAsArtifactId = PluginNamingResolver.of(pluginKey).getPluginName();
+            result.setArtifactIdIfNull(pluginNameAsArtifactId);
+
+            logger.debug("#findArtifactAndVersion() will set artifactId='{}' using PluginNamingResolver", pluginNameAsArtifactId);
+
+            return Optional.of(result);
         }
 
-        logger.info("#findArtifactAndVersion() will return empty object. PluginIdentifier and AvailablePlugins have no info about plugin key: {}", pluginKey);
+        logger.info("#findArtifactAndVersion() will return empty object. Cannot find plugin key: '{}' in PluginIdentifiers and PluginsDirectory", pluginKey);
         return Optional.empty();
     }
 
-    private ArtifactAndVersionModel searchFromPluginsIdentifier(final String pluginKey, final boolean forceDownload) {
-        ArtifactAndVersionModel result = new ArtifactAndVersionModel();
-        if (!forceDownload) {
-            final PluginIdentifiersModel model = pluginIdentifiersDAO.getPluginIdentifiers().stream()
-                                                                     .filter(m -> pluginKey.equals(m.getPluginKey()) && m.getPluginIdentifier() != null)
-                                                                     .findFirst().orElse(null);
+    /**
+     * Search artifact and version information using {@code PluginsIdentifiersDAO}.
+     *
+     * @param pluginKey pluginKey to search in {@code plugin_identifiers.json} file.
+     * @param forceDownload if {@code true}, then this method will be skipped and use
+     *                      {@link #searchFromPluginsDirectory(String, String, boolean)} instead.
+     * @return ArtifactAndVersionModel instance.
+     */
+    @VisibleForTesting
+    ArtifactAndVersionModel searchFromPluginsIdentifier(final String pluginKey, final boolean forceDownload) {
+        final ArtifactAndVersionModel result = new ArtifactAndVersionModel();
+        if (forceDownload) {
+            logger.debug("#searchFromPluginsIdentifier() forceDownload=true. Search will be skipped and use #searchFromPluginsDirectory() instead");
+            return result;
+        }
 
-            if (model != null && model.getPluginIdentifier() != null) {
-                logger.debug("#findArtifactAndVersion() found artifact/version from pluginIdentifier. value: {}", model);
-                result = new ArtifactAndVersionModel(model.getPluginIdentifier().getArtifactId(), model.getPluginIdentifier().getVersion());
-                if (result.isAttributesSet()) {
-                    logger.debug("#findArtifactAndVersion() ArtifactAndVersionModel all found using PluginIdentifier: {}", result);
-                    return result;
-                }
-            }
-            logger.debug("#findArtifactAndVersion() searchFromPluginsIdentifier() still have null/empty model attributes: {}", result);
+        final PluginIdentifiersModel model = pluginIdentifiersDAO.getPluginIdentifiers().stream()
+                                                                 .filter(m -> pluginKey.equals(m.getPluginKey()) && m.getPluginIdentifier() != null)
+                                                                 .findFirst().orElse(null);
+
+        if (model == null || model.getPluginIdentifier() == null) {
+            logger.debug("#searchFromPluginsIdentifier() with pluginKey: '{}' does not have any result", pluginKey);
+            return result;
+        }
+
+        logger.debug("#searchFromPluginsIdentifier() with pluginKey: '{}' found pluginIdentifier's artifact/version: {}", pluginKey, model);
+        result.setArtifactIdIfNull(model.getPluginIdentifier().getArtifactId());
+        result.setVersionIfNull(model.getPluginIdentifier().getVersion());
+        if (result.isAttributesSet()) {
+            logger.debug("#searchFromPluginsIdentifier() found all artifact and version attributes: {}", result);
+        } else {
+            logger.debug("#searchFromPluginsIdentifier() still have null/empty model attributes: {}", result);
         }
         return result;
     }
 
-    private ArtifactAndVersionModel searchFromAvailablePlugins(final String killbillVersion,
-                                                               final String pluginKey,
-                                                               final boolean forceDownload) {
-        logger.debug("#findArtifactAndVersion() using AvailablePluginsProvider#getAvailablePlugins() using pluginKey: {}", pluginKey);
+    @VisibleForTesting
+    ArtifactAndVersionModel searchFromPluginsDirectory(final String killbillVersion, final String pluginKey, final boolean forceDownload) {
+        logger.debug("#searchFromPluginsDirectory() using PluginsDirectoryDAO#createPluginsDirectoryDAO() using pluginKey: {}", pluginKey);
         final ArtifactAndVersionModel result = new ArtifactAndVersionModel();
+
+        // Naturally, this method use availablePluginsComponentsFactory.createPluginsDirectoryDAO() to list plugins,
+        // hence we need 'forceDownload' option. The 'forceDownload' behaviour may be truncated depends on
+        // availablePluginsComponentsFactory.createPluginsDirectoryDAO() implementation.
         final PluginsDirectoryModel model = availablePluginsComponentsFactory
                 .createPluginsDirectoryDAO(killbillVersion, forceDownload)
                 .getPlugins()
@@ -140,16 +159,17 @@ class ArtifactAndVersionFinder {
                 .orElse(null);
 
         if (model != null) {
-            logger.debug("#findArtifactAndVersion() found artifact/version from AvailablePluginsProvider: {}", model);
+            logger.debug("#searchFromPluginsDirectory() found artifact/version from PluginsDirectoryDAO: {}", model);
             result.setArtifactIdIfNull(model.getPluginArtifactId());
             result.setVersionIfNull(model.getPluginVersion());
-
-            if (result.isAttributesSet()) {
-                logger.debug("#findArtifactAndVersion() all ArtifactAndVersionModel set via searchFromAvailablePlugins(): {}", result);
-                return result;
-            }
-            logger.debug("#findArtifactAndVersion() artifact/version found, but ArtifactAndVersionModel still contains null/empty: {}", result);
         }
+
+        if (result.isAttributesSet()) {
+            logger.debug("#searchFromPluginsDirectory() all ArtifactAndVersionModel attributes set : {}", result);
+        } else {
+            logger.debug("#searchFromPluginsDirectory() one or more ArtifactAndVersionModel attribute(s) still contains null/empty: {}", result);
+        }
+
         return result;
     }
 

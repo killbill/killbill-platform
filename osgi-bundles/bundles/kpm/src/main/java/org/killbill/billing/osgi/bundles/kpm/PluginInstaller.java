@@ -22,9 +22,20 @@ import java.nio.file.Path;
 public interface PluginInstaller {
 
     /**
-     * Install plugin.
+     * Copy plugin JAR file from {@code downloadedFile} parameter to Kill Bill's {@bundlePath} directory (Kill Bill
+     * configuration property named {@code org.killbill.osgi.bundle.install.dir})
+     *
      * @return path where the plugin installed.
      * @throws KPMPluginException if something happened during installation
      */
-    Path install() throws KPMPluginException;
+    Path install(final Path downloadedFile, final String pluginKey, final String pluginVersion) throws KPMPluginException;
+
+    /**
+     * Remove plugin file from Kill Bill's {@code bundlePath} directory.
+     *
+     * @return latest plugin file if current {@code pluginKey} contains more than 1 plugin JAR (with different version),
+     *         or {@code null} if the removed plugin is the last plugin for that {@code pluginKey}
+     * @throws KPMPluginException if any error happened during removing plugin file from Kill Bill {@code bundlePath}
+     */
+    Path uninstall(final String pluginKey, final String pluginVersion) throws KPMPluginException;
 }

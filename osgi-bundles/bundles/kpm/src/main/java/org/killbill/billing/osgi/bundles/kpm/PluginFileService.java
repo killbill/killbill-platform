@@ -56,4 +56,6 @@ public interface PluginFileService {
      * @return symlink {@link Path}.
      */
     void createSymlink(@Nonnull final Path pluginDirectory) throws IOException;
+
+    Path getPluginDirByPluginKeyAndVersion(@Nonnull final String pluginKey, @Nonnull final String pluginVersion);
 }

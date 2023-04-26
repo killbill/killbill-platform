@@ -38,13 +38,11 @@
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
 
-    <!-- FIXME-TS-58 : Remove this once technical-support-58 done -->
     <Match>
-        <Class name="org.killbill.billing.osgi.bundles.kpm.KPMWrapper" />
-        <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
-    </Match>
-    <Match>
-        <Class name="org.killbill.billing.osgi.bundles.kpm.KPMWrapper" />
-        <Bug pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE" />
+        <Class name="org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginManager" />
+        <!-- Dereferenced at DefaultPluginManager.java:[line 225]Known null at DefaultPluginManager.java:[line 225]
+             NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE -->
+        <Method name="uninstall" params="java.lang.String, java.lang.String" />
+        <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
     </Match>
 </FindBugsFilter>

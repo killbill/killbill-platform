@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.killbill.commons.utils.io.Resources;
@@ -58,5 +59,17 @@ public class TestUtils {
         final Properties properties = new Properties();
         properties.setProperty("org.killbill.osgi.bundle.install.dir", getTestPath().toString());
         return properties;
+    }
+
+    @SafeVarargs
+    public static KpmProperties getKpmProperties(final String bundleInstallDir, final Entry<String, String>... additionalProperties) {
+        final Properties properties = new Properties();
+        properties.setProperty("org.killbill.osgi.bundle.install.dir", bundleInstallDir);
+        if (additionalProperties != null) {
+            for (final Entry<String, String> entry : additionalProperties) {
+                properties.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
+        return new KpmProperties(properties);
     }
 }

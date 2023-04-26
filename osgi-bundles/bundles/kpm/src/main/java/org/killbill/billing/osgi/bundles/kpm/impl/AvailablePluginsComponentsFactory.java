@@ -17,6 +17,8 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -29,6 +31,7 @@ import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.util.nodes.NodeInfo;
 import org.killbill.commons.utils.Preconditions;
@@ -44,16 +47,15 @@ import org.slf4j.LoggerFactory;
  * @see VersionsProvider
  * @see PluginsDirectoryDAO
  */
-public final class AvailablePluginsComponentsFactory {
+public class AvailablePluginsComponentsFactory {
 
     private final Logger logger = LoggerFactory.getLogger(AvailablePluginsComponentsFactory.class);
 
     private final OSGIKillbill osgiKillbill;
     private final KPMClient httpClient;
-    private final String nexusUrl;
-    private final String nexusRepository;
-    private final String pluginDirectoryUrl;
-    private final boolean bypassCache;
+    private final KpmProperties kpmProperties;
+    private final UrlResolverFactory urlResolverFactory;
+    private final boolean isCacheEnabled;
 
     private final Cache<CacheKey, VersionsProvider> versionsProviderCache;
     private final Cache<CacheKey, Set<PluginsDirectoryModel>> pluginDirectoryCache;
@@ -61,17 +63,16 @@ public final class AvailablePluginsComponentsFactory {
     public AvailablePluginsComponentsFactory(final OSGIKillbill osgiKillbill, final KPMClient httpClient, final KpmProperties kpmProperties) {
         this.osgiKillbill = osgiKillbill;
         this.httpClient = httpClient;
-
-        nexusUrl = kpmProperties.getNexusUrl();
-        nexusRepository = kpmProperties.getNexusRepository();
-        pluginDirectoryUrl = kpmProperties.availablePlugins().getPluginsDirectoryUrl();
+        this.kpmProperties = kpmProperties;
+        this.urlResolverFactory = new UrlResolverFactory(kpmProperties);
+        this.isCacheEnabled = kpmProperties.availablePlugins().cache().isEnabled();
 
         final int cacheSize = kpmProperties.availablePlugins().cache().getSize();
         final int expirationSec = kpmProperties.availablePlugins().cache().getExpirationSec();
-        bypassCache = kpmProperties.availablePlugins().cache().isBypass();
 
-        if (!bypassCache) {
-            // We cant set cache loaders in constructor. It's pretty expensive.
+        if (this.isCacheEnabled) {
+            // We cant set cache loaders in constructor, because "forceDownload" parameter also needed to determine
+            // if we need to load remotely or not
             versionsProviderCache = new DefaultCache<>(cacheSize, expirationSec, DefaultCache.noCacheLoader());
             pluginDirectoryCache = new DefaultCache<>(cacheSize, expirationSec, DefaultCache.noCacheLoader());
         } else {
@@ -80,23 +81,36 @@ public final class AvailablePluginsComponentsFactory {
         }
     }
 
-    Function<CacheKey, VersionsProvider> versionsProviderLoader() {
+    Function<CacheKey, VersionsProvider> getVersionsProviderLoader(final UriResolver uriResolver) {
         return key -> {
-            final NexusMetadataFiles nexusMetadataFiles = createNexusMetadataFiles(key.getVersion());
+            final String mavenMetadataUrl = kpmProperties.getNexusMavenMetadataUrl();
+            // FIXME-TS-58: https://github.com/killbill/killbill-platform/pull/134#discussion_r1144512376
+            final NexusMetadataFiles mavenMetadataFiles = new DefaultNexusMetadataFiles(httpClient, uriResolver, mavenMetadataUrl, key.getVersion());
             final NodeInfo nodeInfo = osgiKillbill.getKillbillNodesApi().getCurrentNodeInfo();
+
+            Path killbillPomXml = null;
+            Path ossParentPomXml = null;
             try {
-                return nodeInfo.getKillbillVersion().equals(key.getVersion()) ?
-                       new DefaultVersionsProvider(nexusMetadataFiles, nodeInfo) :
-                       new DefaultVersionsProvider(nexusMetadataFiles);
+                killbillPomXml = mavenMetadataFiles.getKillbillPomXml();
+                if (nodeInfo.getKillbillVersion().equals(key.getVersion())) {
+                    return new DefaultVersionsProvider(killbillPomXml, nodeInfo);
+                } else {
+                    ossParentPomXml = mavenMetadataFiles.getOssParentPomXml();
+                    return new DefaultVersionsProvider(killbillPomXml, ossParentPomXml);
+                }
             } catch (final Exception e) {
                 throw new KPMPluginException(String.format("Unable to get killbill version info: %s", key.getVersion()), e);
+            } finally {
+                FilesUtils.deleteIfExists(killbillPomXml);
+                FilesUtils.deleteIfExists(ossParentPomXml);
+                mavenMetadataFiles.cleanup();
             }
         };
     }
 
-    Function<CacheKey, Set<PluginsDirectoryModel>> pluginDirectoryLoader() {
+    Function<CacheKey, Set<PluginsDirectoryModel>> getPluginsDirectoryLoader(final UriResolver uriResolver) {
         return key -> {
-            final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, key.getVersion(), key.getUrl());
+            final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, uriResolver, key.getVersion());
             return pluginsDirectoryDAO.getPlugins();
         };
     }
@@ -108,21 +122,21 @@ public final class AvailablePluginsComponentsFactory {
      * @param forceDownload when it false, we just try to load from cache and no download operation
      */
     public VersionsProvider createVersionsProvider(final String killbillVersionOrLatest, final boolean forceDownload) throws KPMPluginException {
-        logger.debug("#createVersionsProvider() with version:{}, forceDownload:{}", killbillVersionOrLatest, forceDownload);
+        logger.debug("#createVersionsProvider() with version:{}, forceDownload:{}, cacheEnabled: {}", killbillVersionOrLatest, forceDownload, isCacheEnabled);
 
-        final CacheKey cacheKey = CacheKey.of(killbillVersionOrLatest, nexusUrl);
+        final UriResolver uriResolver = urlResolverFactory.getVersionsProviderUrlResolver();
+        final CacheKey cacheKey = CacheKey.of(killbillVersionOrLatest, uriResolver.getBaseUri());
 
-        if (bypassCache) {
-            return versionsProviderLoader().apply(cacheKey);
+        if (!isCacheEnabled) {
+            return getVersionsProviderLoader(uriResolver).apply(cacheKey);
         }
-        return versionsProviderCache.getOrLoad(cacheKey, forceDownload ? versionsProviderLoader() : key -> VersionsProvider.ZERO);
-    }
 
-    private NexusMetadataFiles createNexusMetadataFiles(final String killbillVersionOrLatest) {
-        // FIXME-TS-58: This FIXME updated. See more here:
-        //   https://github.com/killbill/killbill-platform/pull/134#discussion_r1144512376
-        //   (or see commit history for initial content)
-        return new SonatypeNexusMetadataFiles(httpClient, nexusUrl, nexusRepository, killbillVersionOrLatest);
+        final VersionsProvider result = versionsProviderCache.getOrLoad(cacheKey, forceDownload ?
+                                                                                  getVersionsProviderLoader(uriResolver) :
+                                                                                  key -> VersionsProvider.ZERO);
+        versionsProviderCache.put(cacheKey, result);
+
+        return result;
     }
 
     /**
@@ -140,20 +154,26 @@ public final class AvailablePluginsComponentsFactory {
     //   1. How this affected technical-support-93 (https://github.com/killbill/technical-support/issues/93) ?
     //   2. This probably make an open to overflow attack, where unexpected YAML URL passed and exception thrown multiple times
     public PluginsDirectoryDAO createPluginsDirectoryDAO(final String fixedKillbillVersion, final boolean forceDownload) throws KPMPluginException {
-        logger.debug("#createPluginsDirectoryDAO() with killbillVersion: {} and forceDownload: {}", fixedKillbillVersion, forceDownload);
+        logger.debug("#createPluginsDirectoryDAO() with killbillVersion: {}, forceDownload: {}, cacheEnabled: {}", fixedKillbillVersion, forceDownload, isCacheEnabled);
         // For validating version format
         final String version = PluginNamingResolver.getVersionFromString(fixedKillbillVersion);
         if (Strings.isNullOrEmpty(version)) {
-            throw new IllegalArgumentException(String.format("'%s' is not a valid killbill version in createAvailablePluginsProvider()", fixedKillbillVersion));
+            throw new IllegalArgumentException(String.format("'%s' is not a valid killbill version in createPluginsDirectoryDAO()", fixedKillbillVersion));
         }
 
-        final CacheKey cacheKey = CacheKey.of(version, pluginDirectoryUrl);
+        final CacheKey cacheKey = CacheKey.of(version, kpmProperties.pluginsDirectory().getUrl());
+        final UriResolver uriResolver = urlResolverFactory.getPluginDirectoryUrlResolver();
 
-        if (bypassCache) {
-            return () -> pluginDirectoryLoader().apply(cacheKey);
+        if (!isCacheEnabled) {
+            return () -> getPluginsDirectoryLoader(uriResolver).apply(cacheKey);
         }
 
-        return () -> pluginDirectoryCache.getOrLoad(cacheKey, forceDownload ? pluginDirectoryLoader() : key -> PluginsDirectoryDAO.NONE.getPlugins());
+        final PluginsDirectoryDAO result = () -> pluginDirectoryCache.getOrLoad(cacheKey, forceDownload ?
+                                                                                          getPluginsDirectoryLoader(uriResolver) :
+                                                                                          key -> Collections.emptySet());
+        pluginDirectoryCache.put(cacheKey, result.getPlugins());
+
+        return result;
     }
 
     /**

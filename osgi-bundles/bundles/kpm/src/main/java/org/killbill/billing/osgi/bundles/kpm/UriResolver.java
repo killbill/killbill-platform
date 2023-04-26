@@ -17,27 +17,17 @@
 
 package org.killbill.billing.osgi.bundles.kpm;
 
-import java.nio.file.Path;
+import java.util.Map;
 
-/**
- * Get (and download, if necessary) nexus metadata files, like pom.xml, maven-metadata.xml, etc.
- */
-public interface NexusMetadataFiles {
+public interface UriResolver {
 
-    /**
-     * Get published <a href="https://github.com/killbill/killbill/blob/master/pom.xml">killbill</a> pom.xml in implemented
-     * nexus repository.
-     */
-    Path getKillbillPomXml() throws Exception;
+    String getBaseUri();
 
-    /**
-     * Get published <a href="https://github.com/killbill/killbill-oss-parent/blob/master/pom.xml">killbill-oss-parent</a>
-     * pom.xml in nexus repository.
-     */
-    Path getOssParentPomXml() throws Exception;
+    AuthenticationMethod getAuthMethod();
 
-    /**
-     * Clean up internal path, if existed.
-     */
-    void cleanup();
+    Map<String, String> getHeaders();
+
+    enum AuthenticationMethod {
+        NONE, BASIC, TOKEN
+    }
 }

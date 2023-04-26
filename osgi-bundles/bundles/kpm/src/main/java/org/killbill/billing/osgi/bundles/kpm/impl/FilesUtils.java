@@ -20,20 +20,36 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * We have one at {@code org.killbill.commons.utils.io.Files}, but upgrading that class requires multiple steps. Maybe
  * some fix-me here?
  */
-class FilesUtils {
+public class FilesUtils {
 
-    static void deleteIfExists(final Path path) {
+    public static void deleteIfExists(final Path path) {
         if (path == null) {
             return;
         }
         try {
             Files.deleteIfExists(path);
         } catch (final IOException ignored) {
+        }
+    }
+
+    public static void deleteRecursively(final Path path) {
+        if (path == null) {
+            return;
+        }
+
+        // Comparator.reverseOrder() needed to make sure everything get deleted in correct order
+        try (final Stream<Path> stream = Files.walk(path).sorted(Comparator.reverseOrder())) {
+            stream.forEach(FilesUtils::deleteIfExists);
+        } catch (final IOException ignored) {
+        } finally {
+            deleteIfExists(path);
         }
     }
 }
