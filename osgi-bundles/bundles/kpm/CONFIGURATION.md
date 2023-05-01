@@ -12,8 +12,8 @@ org.killbill.billing.plugin.kpm.adminPassword=password
 
 # Configuration for KPMClient (Kill Bill's plugin HttpClient).
 org.killbill.billing.plugin.kpm.strictSSL=false
-org.killbill.billing.plugin.kpm.readTimeoutSec=false
-org.killbill.billing.plugin.kpm.connectTimeoutSec=false
+org.killbill.billing.plugin.kpm.readTimeoutSec=60
+org.killbill.billing.plugin.kpm.connectTimeoutSec=60
 
 
 # "org.killbill.billing.plugin.kpm.nexus<XXX>" properties exists because:
