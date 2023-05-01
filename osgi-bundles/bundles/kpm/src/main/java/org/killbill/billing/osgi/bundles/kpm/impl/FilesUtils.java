@@ -46,7 +46,11 @@ public class FilesUtils {
 
         // Comparator.reverseOrder() needed to make sure everything get deleted in correct order
         try (final Stream<Path> stream = Files.walk(path).sorted(Comparator.reverseOrder())) {
-            stream.forEach(FilesUtils::deleteIfExists);
+            stream.forEach(toDelete -> {
+                if (toDelete.startsWith(path)) {
+                    deleteIfExists(toDelete);
+                }
+            });
         } catch (final IOException ignored) {
         } finally {
             deleteIfExists(path);
