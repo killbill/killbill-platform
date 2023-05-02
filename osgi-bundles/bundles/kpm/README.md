@@ -48,7 +48,7 @@ In KPM Plugin, there are 2 types of repositories:
 
 ### About `plugins_directory.yml` File
 
-The `plugins_directory.yml` contains list of plugins that available to download via "Coordinate based plugin installation". 
+The `plugins_directory.yml` contains the list of plugins that are available to download via "Coordinate based plugin installation". 
 You can see default value and format of the file 
 [here](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml). To customize 
 `plugins_directory.yml` location, you can use following configurations:
