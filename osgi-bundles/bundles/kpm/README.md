@@ -74,14 +74,11 @@ There's 2 ways to install plugins via KPM plugin. After KPM platform bundles ins
 Installing plugin using upload form is the easiest way to getting started with Kill Bill plugin to install any plugin. 
 Just fill the form and valid plugin URI to download, and then you can start installing them.
 
-However, this is not recommended approach in production, for following reasons:
-
-1. No verification and validation performed: There is no file integrity verification options. There is no validation 
-   against current Kill Bill Version. Coordinate based plugin installation give you more fine-grained check whether 
-   plugins is compatible or not with current Kill Bill version against 
-   [plugins_directory.yml](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml) file.
-
-2. It doesn't always support microservices/multiple Kill Bill instance installation.
+However, this is not recommended approach because there's no verification and validation performed: There is no file 
+integrity verification options. There is no validation against current Kill Bill Version. Coordinate based plugin 
+installation give you more fine-grained check whether plugins is compatible or not with current Kill Bill version against 
+[plugins_directory.yml](https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml) 
+file.
 
 ### Coordinate based plugin installation
 
