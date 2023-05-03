@@ -35,7 +35,7 @@ public class TestKPMClient {
     private static final String PLUGIN_DIR = "https://raw.githubusercontent.com/killbill/killbill-cloud/master/kpm/lib/kpm/plugins_directory.yml";
     private static final String GITHUB_URL = "https://maven.pkg.github.com/killbill/qualpay-java-client/org/kill-bill/billing/thirdparty/qualpay-java-client/1.1.9/qualpay-java-client-1.1.9.pom";
     private static final String CLOUDSMITH_URL = "https://dl.cloudsmith.io/basic/some-org/testing/maven/org/kill-bill/billing/plugin/java/hello-world-plugin/2.0.1-SNAPSHOT/hello-world-plugin-2.0.1-20230412.141435-1.jar";
-    private static final String CLOUDSMITH_TOKEN_URL = "https://dl.cloudsmith.io/E1hjNP9rEXUG039u/killbill/resa-test/raw/files/maven-metadata.xml";
+    private static final String CLOUDSMITH_TOKEN_URL = "https://dl.cloudsmith.io/%s/killbill/%s/raw/files/maven-metadata.xml";
 
     private KPMClient kpmClient;
 
@@ -93,12 +93,17 @@ public class TestKPMClient {
         }
     }
 
-    @Test(groups = "slow", enabled = false, description = "set 'token' properly before running")
+    @Test(groups = "slow", enabled = false, description = "set 'token' and 'userSpecificsToken' properly before running")
     public void testCloudsmithWithToken() {
         final String token = "<cloudsmith-user-api-key>";
+        final String userSpecificsToken = "<your-cloudsmith-url-key>";
+        final String repositoryName = "<your-repository-name>";
         Path result = null;
         try {
-            result = kpmClient.downloadToTempOS(CLOUDSMITH_TOKEN_URL, tokenAuth(token), "maven-metadata", ".xml");
+            result = kpmClient.downloadToTempOS(String.format(CLOUDSMITH_TOKEN_URL, userSpecificsToken, repositoryName),
+                                                tokenAuth(token),
+                                                "maven-metadata",
+                                                ".xml");
             final String content = Files.readString(result);
             Assert.assertFalse(content.isEmpty());
             Assert.assertTrue(content.contains("latest"));
