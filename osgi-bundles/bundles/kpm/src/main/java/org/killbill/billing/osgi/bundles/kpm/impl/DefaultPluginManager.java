@@ -19,24 +19,25 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
-import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginInstaller;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.osgi.bundles.kpm.impl.CoordinateBasedPluginDownloader.DownloadResult;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
 
+import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,52 +48,48 @@ public class DefaultPluginManager implements PluginManager {
 
     private final OSGIKillbillAPI killbillApi;
     private final KPMClient httpClient;
-    private final PluginFileService pluginFileService;
     private final PluginIdentifiersDAO pluginIdentifiersDAO;
     private final AvailablePluginsComponentsFactory availablePluginsComponentsFactory;
     private final CoordinateBasedPluginDownloader pluginDownloader;
+    private final UrlResolverFactory urlResolverFactory;
+    private final PluginInstaller pluginInstaller;
     private final String adminUsername;
     private final String adminPassword;
 
-    public DefaultPluginManager(@Nonnull final OSGIKillbillAPI killbillApi, @Nonnull final Properties properties) {
+    public DefaultPluginManager(@Nonnull final OSGIKillbillAPI killbillApi, @Nonnull final KpmProperties kpmProperties) {
         this.killbillApi = killbillApi;
-        this.pluginFileService = createPluginFileService(properties);
-        this.pluginIdentifiersDAO = createPluginIdentifiersDAO(properties);
-        this.httpClient = createHttpClient(properties);
-        this.availablePluginsComponentsFactory = new AvailablePluginsComponentsFactory(killbillApi, httpClient, properties);
-        this.pluginDownloader = createPluginDownloader(properties);
+        this.urlResolverFactory = new UrlResolverFactory(kpmProperties);
+        this.pluginIdentifiersDAO = createPluginIdentifiersDAO(kpmProperties);
+        this.httpClient = createHttpClient(kpmProperties);
+        this.availablePluginsComponentsFactory = new AvailablePluginsComponentsFactory(killbillApi, httpClient, kpmProperties);
+        this.pluginDownloader = createCoordinateBasedPluginDownloader(kpmProperties);
+        this.pluginInstaller = new DefaultPluginInstaller(new DefaultPluginFileService(kpmProperties));
 
-        this.adminUsername = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminUsername"), "admin");
-        this.adminPassword = Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "adminPassword"), "password");
+        this.adminUsername = kpmProperties.getKillbillAdminUsername();
+        this.adminPassword = kpmProperties.getKillbillAdminPassword();
     }
 
     @VisibleForTesting
-    PluginFileService createPluginFileService(final Properties properties) {
-        return new DefaultPluginFileService(properties);
+    PluginIdentifiersDAO createPluginIdentifiersDAO(final KpmProperties kpmProperties) {
+        return new FileBasedPluginIdentifiersDAO(kpmProperties);
     }
 
     @VisibleForTesting
-    PluginIdentifiersDAO createPluginIdentifiersDAO(final Properties properties) {
-        return new FileBasedPluginIdentifiersDAO(properties);
-    }
-
-    @VisibleForTesting
-    KPMClient createHttpClient(final Properties properties) {
-        final boolean strictSSL = Boolean.parseBoolean(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "strictSSL"), "true"));
-        final int connectTimeOutMs = Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "connectTimeoutSec"), "60")) * 1000;
-        final int readTimeOutMs = Integer.parseInt(Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "readTimeoutSec"), "60")) * 1000;
-
+    KPMClient createHttpClient(final KpmProperties kpmProperties) {
         try {
             // If exceptions are thrown here, the plugin cannot work properly in the first place
-            return new KPMClient(strictSSL, connectTimeOutMs, readTimeOutMs);
+            return new KPMClient(kpmProperties.isStrictSSL(), kpmProperties.getConnectTimeoutSec() * 1000, kpmProperties.getReadTimeoutSec() * 1000);
         } catch (final GeneralSecurityException e) {
             throw new KPMPluginException("Cannot create KpmHttpClient, there's problem with SSL context creation.", e);
         }
     }
 
-    CoordinateBasedPluginDownloader createPluginDownloader(final Properties properties) {
+    CoordinateBasedPluginDownloader createCoordinateBasedPluginDownloader(final KpmProperties kpmProperties) {
         final ArtifactAndVersionFinder finder = new ArtifactAndVersionFinder(pluginIdentifiersDAO, availablePluginsComponentsFactory);
-        return new CoordinateBasedPluginDownloader(httpClient, finder, properties);
+        final UriResolver uriResolver = urlResolverFactory.getCoordinateBasedPluginDownloaderUrlResolver();
+        final boolean verifySSH = kpmProperties.pluginsInstall().coordinate().isVerifySHA1();
+        final boolean alwaysTryPublicRepo = kpmProperties.pluginsInstall().coordinate().isAlwaysTryPublicRepository();
+        return new CoordinateBasedPluginDownloader(httpClient, finder, uriResolver, verifySSH, alwaysTryPublicRepo);
     }
 
     private void notifyFileSystemChange(final PluginStateChange newState,
@@ -147,11 +144,10 @@ public class DefaultPluginManager implements PluginManager {
             final String fixedVersion = namingResolver.getPluginVersion();
             downloadedFile = downloadDirectory.resolve(pluginFileName);
             // Download
-            httpClient.downloadPlugin(uri, downloadedFile);
+            httpClient.download(uri, downloadedFile);
 
             // install
-            final PluginInstaller pluginInstaller = new URIBasedPluginInstaller(pluginFileService, downloadedFile, pluginKey, fixedVersion);
-            pluginInstaller.install();
+            pluginInstaller.install(downloadedFile, pluginKey, fixedVersion);
 
             // Add/update plugin identifier
             pluginIdentifiersDAO.add(pluginKey, fixedVersion);
@@ -162,7 +158,9 @@ public class DefaultPluginManager implements PluginManager {
             logger.error("Error when install plugin with URI:{}, key:{}, version:{}", uri, pluginKey, pluginVersion);
             throw new KPMPluginException(e);
         } finally {
+            final Path downloadDir = downloadedFile == null ? null : downloadedFile.getParent();
             FilesUtils.deleteIfExists(downloadedFile);
+            FilesUtils.deleteIfExists(downloadDir);
         }
     }
 
@@ -188,11 +186,8 @@ public class DefaultPluginManager implements PluginManager {
             groupId = downloadResult.getGroupId();
             artifactId = downloadResult.getArtifactId();
             pluginVersion = downloadResult.getPluginVersion();
-            // FIXME TS-93:
-            //   1. What happened if, just like github, we need username:password in URL?
-            //   2. What happened if, cloudsmith need authentication info in header or body?
-            final PluginInstaller pluginInstaller = new URIBasedPluginInstaller(pluginFileService, downloadedPath, pluginKey, pluginVersion);
-            installedPath = pluginInstaller.install();
+
+            installedPath = pluginInstaller.install(downloadedPath, pluginKey, pluginVersion);
 
             // Add/update plugin identifier
             pluginIdentifiersDAO.add(pluginKey, groupId, artifactId, pluginVersion);
@@ -200,20 +195,34 @@ public class DefaultPluginManager implements PluginManager {
             notifyFileSystemChange(PluginStateChange.NEW_VERSION, pluginKey, pluginVersion);
             logger.info("Plugin key: {} installed successfully via coordinate.", pluginKey);
         } catch (final Exception e) {
-            logger.error("Error when install pluginKey: '{}' with coordinate: Exception: {}", pluginKey, e);
+            logger.error("Error when install pluginKey: '{}' with coordinate. Exception: {}", pluginKey, e.getMessage());
             // If exception happened, installed file should be deleted.
             FilesUtils.deleteIfExists(installedPath);
             throw new KPMPluginException(e);
         } finally {
-            if (downloadResult != null) {
-                // FIXME-TS-93 : Check why this file not getting deleted
-                FilesUtils.deleteIfExists(downloadResult.getDownloadedPath());
+            if (downloadResult != null && downloadResult.getDownloadedPath() != null) {
+                FilesUtils.deleteRecursively(downloadResult.getDownloadedPath().getParent());
             }
         }
     }
 
     @Override
     public void uninstall(final String pluginKey, final String version) throws KPMPluginException {
+        // Uninstall from bundlesPath
+        final Path nextPluginByKey = pluginInstaller.uninstall(pluginKey, version);
+        // Update plugin_identifiers.json
+        final String nextPluginVersion = (nextPluginByKey == null || nextPluginByKey.getFileName() == null) ?
+                                         null :
+                                         PluginNamingResolver.getVersionFromString(nextPluginByKey.getFileName().toString());
+        if (Strings.isNullOrEmpty(nextPluginVersion)) {
+            // Last plugin by pluginKey. Just remove it.
+            pluginIdentifiersDAO.remove(pluginKey);
+        } else {
+            // Replace the version value
+            pluginIdentifiersDAO.add(pluginKey, nextPluginVersion);
+        }
 
+        // What if notifyFileSystemChange() implementation fails? Like, wrong username/password?
+        notifyFileSystemChange(PluginStateChange.DISABLED, pluginKey, version);
     }
 }

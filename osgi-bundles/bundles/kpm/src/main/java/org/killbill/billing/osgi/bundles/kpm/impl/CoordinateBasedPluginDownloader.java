@@ -22,12 +22,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.jar.JarFile;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
-import org.killbill.billing.osgi.bundles.kpm.PluginManager;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver;
 import org.killbill.billing.osgi.bundles.kpm.impl.ArtifactAndVersionFinder.ArtifactAndVersionModel;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
@@ -43,20 +42,24 @@ class CoordinateBasedPluginDownloader {
 
     private static final String KILLBILL_GROUP_ID = "org.kill-bill.billing.plugin.java";
 
-    private static final String SONATYPE_RELEASE_URL = "https://oss.sonatype.org/content/repositories/releases";
+    private static final String SONATYPE_RELEASE_URL = "https://oss.sonatype.org/content/repositories/releases/";
 
     private final KPMClient httpClient;
     private final Sha1Checker sha1Checker;
     private final ArtifactAndVersionFinder artifactAndVersionFinder;
+    private final UriResolver uriResolver;
+    private final boolean shouldTryPublicRepository;
 
-    private final String pluginRepository;
-
-    CoordinateBasedPluginDownloader(final KPMClient httpClient, final ArtifactAndVersionFinder artifactAndVersionFinder, final Properties properties) {
+    CoordinateBasedPluginDownloader(final KPMClient httpClient,
+                                    final ArtifactAndVersionFinder artifactAndVersionFinder,
+                                    final UriResolver uriResolver,
+                                    final boolean shouldVerify,
+                                    final boolean shouldTryPublicRepository) {
         this.httpClient = httpClient;
-        this.sha1Checker = new Sha1Checker(httpClient, properties);
-        this.pluginRepository = getPluginRepository(properties);
-
         this.artifactAndVersionFinder = artifactAndVersionFinder;
+        this.uriResolver = uriResolver;
+        this.sha1Checker = new Sha1Checker(httpClient, shouldVerify);
+        this.shouldTryPublicRepository = shouldTryPublicRepository;
     }
 
     DownloadResult download(final String pluginKey,
@@ -78,7 +81,7 @@ class CoordinateBasedPluginDownloader {
                 forceDownload);
 
         if (artifactAndVersionOpt.isEmpty()) {
-            // There's no need to search remotely. We don't know exact plugin artifact and version to find.
+            // There's no need to try download remotely. We don't know exact plugin artifact and version to download.
             throw new KPMPluginException("Unable to find 'pluginArtifactId' and/or 'pluginVersion'. This is required when install plugin via coordinate");
         }
 
@@ -88,17 +91,15 @@ class CoordinateBasedPluginDownloader {
         final String actualArtifactId = artifactAndVersion.getArtifactId();
         final String actualPluginVersion = artifactAndVersion.getVersion();
 
-        logger.debug("Try to download plugin from nexus URL");
-        Path result = downloadFromNexusUri(pluginKey, actualGroupId, actualArtifactId, actualPluginVersion);
-
+        Path result = downloadFromPluginInstallUrl(pluginKey, actualGroupId, actualArtifactId, actualPluginVersion);
         if (result != null && Files.exists(result)) {
-            logger.debug("Plugin found in nexus URL: {}", result);
+            logger.debug("Plugin found in pluginInstall.coordinate.url. Downloaded path: {}", result);
             return new DownloadResult(result, actualGroupId, actualArtifactId, actualPluginVersion);
         }
-        logger.debug("Plugin not found in nexus URL. Will try killbill public repository");
+
         result = downloadFromPublicKillbill(pluginKey, actualGroupId, actualArtifactId, actualPluginVersion);
         if (result != null && Files.exists(result)) {
-            logger.debug("Plugin found in killbill public repository: {}", result);
+            logger.debug("Plugin not found in pluginInstall.coordinate.url, BUT found in killbill public repository. Downloaded Path: {}", result);
             return new DownloadResult(result, actualGroupId, actualArtifactId, actualPluginVersion);
         }
 
@@ -110,23 +111,11 @@ class CoordinateBasedPluginDownloader {
         throw new KPMPluginException(msg);
     }
 
-    private String getPluginRepository(final Properties properties) {
-        final String pluginInstallRepoUrl = properties.getProperty(PluginManager.PROPERTY_PREFIX + "pluginInstall.pluginRepositoryUrl");
-        // Attempt to get value from
-        if (Strings.isNullOrEmpty(pluginInstallRepoUrl)) {
-            final String nexusUrl = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
-            final String nexusRepo = Objects.requireNonNullElse(properties.getProperty(PluginManager.PROPERTY_PREFIX + "nexusRepository"), "content/repositories/releases");
-            return nexusUrl + "/" + nexusRepo;
-        }
-        return pluginInstallRepoUrl;
-    }
-
     private Path doDownloadValidateAndVerify(final String pluginKey, final String version, final String pluginJarUrl, final String sha1Url) {
         try {
-            // FIXME-93: This is not support github and cloudsmith
             final String fileName = PluginNamingResolver.of(pluginKey, version).getPluginJarFileName();
             final Path downloadedFile = Files.createTempDirectory("kpm").resolve(fileName);
-            httpClient.downloadPlugin(pluginJarUrl, downloadedFile);
+            httpClient.download(pluginJarUrl, uriResolver.getHeaders(), downloadedFile);
 
             if (!Files.exists(downloadedFile) && Files.size(downloadedFile) <= 0L) {
                 throw new KPMPluginException(String.format("Unable to download file named as '%s' from %s", fileName, pluginKey));
@@ -136,7 +125,7 @@ class CoordinateBasedPluginDownloader {
             } else {
                 logger.debug("Downloaded plugin file is a valid JAR file");
             }
-            if (!sha1Checker.isDownloadedFileVerified(sha1Url, downloadedFile)) {
+            if (!sha1Checker.isDownloadedFileVerified(sha1Url, uriResolver.getHeaders(), downloadedFile)) {
                 throw new KPMPluginException("Plugin downloaded successfully, but SHA1 verification failed");
             } else {
                 logger.debug("Downloaded plugin file is verified");
@@ -145,27 +134,31 @@ class CoordinateBasedPluginDownloader {
         } catch (final IOException e) {
             throw new KPMPluginException("Problem when creating temporary file for download plugin", e);
         } catch (final Exception e) {
-            logger.error("There's problem when downloading plugin from: {}. Exception: {}", pluginJarUrl, e);
+            logger.error("There's problem when downloading plugin from: {}. Exception: {}", pluginJarUrl, e.getMessage());
             return null;
         }
     }
 
-    private Path downloadFromNexusUri(final String pluginKey, final String groupId, final String artifactId, final String version) {
-        final String jarUrl = pluginRepository + "/" + coordinateToUri(groupId, artifactId, version, ".jar");
-        final String sha1Url = pluginRepository + "/" + coordinateToUri(groupId, artifactId, version, ".jar.sha1");
-        // FIXME-93: This is not support github and cloudsmith
+    private Path downloadFromPluginInstallUrl(final String pluginKey, final String groupId, final String artifactId, final String version) {
+        final String jarUrl = uriResolver.getBaseUri() + "/" + coordinateToUri(groupId, artifactId, version, ".jar");
+        final String sha1Url = uriResolver.getBaseUri() + "/" + coordinateToUri(groupId, artifactId, version, ".jar.sha1");
+        logger.debug("#downloadFromPluginInstallUrl() . jarUrl: {}, sha1Url: {}", jarUrl, sha1Url);
+
         return doDownloadValidateAndVerify(pluginKey, version, jarUrl, sha1Url);
     }
 
     private Path downloadFromPublicKillbill(final String pluginKey, final String groupId, final String artifactId, final String version) {
-        // If downloadFromNexusUri() already from sonatype, then do no repeat, since this method should be invoked
-        // as last attempt.
-        if (pluginRepository.startsWith("https://oss.sonatype.org")) {
+        // If downloadFromNexusUri() already from sonatype/maven, then do not repeat.
+        // If shouldTryPublicRepository = false, then do not download.
+        if (uriResolver.getBaseUri().startsWith("https://oss.sonatype.org") ||
+            uriResolver.getBaseUri().startsWith("https://repo1.maven.org/maven2") ||
+            !this.shouldTryPublicRepository) {
             return null;
         }
 
         final String jarUrl =  SONATYPE_RELEASE_URL + coordinateToUri(groupId, artifactId, version, ".jar");
         final String sha1Url = SONATYPE_RELEASE_URL + coordinateToUri(groupId, artifactId, version, ".jar.sha1");
+        logger.debug("#downloadFromPublicKillbill() . jarUrl: {}, sha1Url: {}", jarUrl, sha1Url);
 
         return doDownloadValidateAndVerify(pluginKey, version, jarUrl, sha1Url);
     }

@@ -21,38 +21,42 @@ import java.nio.file.Path;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver.AuthenticationMethod;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SonatypeNexusMetadataFiles implements NexusMetadataFiles {
+class DefaultNexusMetadataFiles implements NexusMetadataFiles {
 
-    private final Logger logger = LoggerFactory.getLogger(SonatypeNexusMetadataFiles.class);
+    private final Logger logger = LoggerFactory.getLogger(DefaultNexusMetadataFiles.class);
 
     private final KPMClient httpClient;
+    private final UriResolver uriResolver;
+    private final String mavenMetadataXmlUrl;
+    private final String killbillVersionOrLatest;
 
     protected Path killbillPomXml;
     protected Path ossParentPomXml;
-    private final String basePath;
-    private final String killbillVersionOrLatest;
 
-    SonatypeNexusMetadataFiles(final KPMClient httpClient,
-                               final String nexusUrl,
-                               final String nexusRepository,
-                               final String killbillVersionOrLatest) {
+    DefaultNexusMetadataFiles(final KPMClient httpClient,
+                              final UriResolver uriResolver,
+                              final String mavenMetadataXmlUrl,
+                              final String killbillVersionOrLatest) {
         this.httpClient = httpClient;
-        this.basePath = String.format("%s/content/repositories/%s", nexusUrl, nexusRepository);
+        this.uriResolver = uriResolver;
+        this.mavenMetadataXmlUrl = mavenMetadataXmlUrl;
         this.killbillVersionOrLatest = killbillVersionOrLatest;
 
-        logger.debug("Will get killbill info from sonatype repository with basePath:{}, and killbillVersion:{}", basePath, killbillVersionOrLatest);
+        logger.debug("Will get killbill info from sonatype repository with basePath:{}, and killbillVersion:{}", uriResolver.getBaseUri(), killbillVersionOrLatest);
     }
 
     @Override
     public Path getKillbillPomXml() throws Exception {
         if (killbillPomXml == null) {
             final String killbillUrl = getKillbillUrl();
-            logger.debug("getKillbillPomXml() with killbillUrl:{}", killbillUrl);
-            killbillPomXml = httpClient.downloadArtifactMetadata(killbillUrl);
+            killbillPomXml = httpClient.downloadToTempOS(killbillUrl, uriResolver.getHeaders(), "killbill-pom", ".pom");
+            logger.debug("getKillbillPomXml() will download to: {} from killbillUrl:{}", killbillPomXml, killbillUrl);
         } else {
             logger.debug("getKillbillPomXml() is not null and the value is:{}", killbillPomXml);
         }
@@ -65,27 +69,42 @@ class SonatypeNexusMetadataFiles implements NexusMetadataFiles {
             if (killbillPomXml == null) {
                 killbillPomXml = getKillbillPomXml();
             }
-            ossParentPomXml = httpClient.downloadArtifactMetadata(getOssParentUrl());
+            ossParentPomXml = httpClient.downloadToTempOS(getOssParentUrl(), uriResolver.getHeaders(), "oss-parent-pom", ".pom");
         }
         return ossParentPomXml;
+    }
+
+    @Override
+    public void cleanup() {
+        FilesUtils.deleteIfExists(killbillPomXml);
+        FilesUtils.deleteIfExists(ossParentPomXml);
     }
 
     @VisibleForTesting
     String getKillbillUrl() throws Exception {
         final String actualKbVersion;
         if ("latest".equalsIgnoreCase(killbillVersionOrLatest)) {
-            final Path mavenMetadataXmlPath = httpClient.downloadArtifactMetadata(getMavenMetadataXmlUrl());
+            final Path mavenMetadataXmlPath = getMavenMetadataXml();
             final XmlParser mavenMetadataParser = new XmlParser(mavenMetadataXmlPath);
             actualKbVersion = mavenMetadataParser.getValue("/versioning/latest");
+            FilesUtils.deleteIfExists(mavenMetadataXmlPath);
         } else {
             actualKbVersion = killbillVersionOrLatest;
         }
-        return String.format("%s/org/kill-bill/billing/killbill/%s/killbill-%s.pom", basePath, actualKbVersion, actualKbVersion);
+        return String.format("%s/org/kill-bill/billing/killbill/%s/killbill-%s.pom", uriResolver.getBaseUri(), actualKbVersion, actualKbVersion);
     }
 
     @VisibleForTesting
-    String getMavenMetadataXmlUrl() {
-        return basePath + "/org/kill-bill/billing/killbill/maven-metadata.xml";
+    Path getMavenMetadataXml() {
+        final String[] fileNameAndExt = {"maven-metadata", ".xml"};
+        // Do not send any header if it is public repository
+        if (uriResolver.getAuthMethod() == AuthenticationMethod.NONE ||
+            mavenMetadataXmlUrl.contains("repo1.maven.org") ||
+            mavenMetadataXmlUrl.contains("oss.sonatype.org")) {
+            return httpClient.downloadToTempOS(mavenMetadataXmlUrl, fileNameAndExt);
+        } else {
+            return httpClient.downloadToTempOS(mavenMetadataXmlUrl, uriResolver.getHeaders(), fileNameAndExt);
+        }
     }
 
     @VisibleForTesting
@@ -95,6 +114,6 @@ class SonatypeNexusMetadataFiles implements NexusMetadataFiles {
         }
         final XmlParser xmlParser = new XmlParser(killbillPomXml);
         final String ossVersion = xmlParser.getValue("/parent/version");
-        return String.format("%s/org/kill-bill/billing/killbill-oss-parent/%s/killbill-oss-parent-%s.pom", basePath, ossVersion, ossVersion);
+        return String.format("%s/org/kill-bill/billing/killbill-oss-parent/%s/killbill-oss-parent-%s.pom", uriResolver.getBaseUri(), ossVersion, ossVersion);
     }
 }

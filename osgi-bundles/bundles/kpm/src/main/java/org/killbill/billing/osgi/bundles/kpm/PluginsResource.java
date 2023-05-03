@@ -35,12 +35,10 @@ import org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginManager;
 @Path("/plugins")
 public class PluginsResource {
 
-    private final KPMWrapper kpmWrapper;
     private final DefaultPluginManager pluginManager;
 
     @Inject
-    public PluginsResource(final KPMWrapper kpmWrapper, final DefaultPluginManager pluginManager) {
-        this.kpmWrapper = kpmWrapper;
+    public PluginsResource(final DefaultPluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
 

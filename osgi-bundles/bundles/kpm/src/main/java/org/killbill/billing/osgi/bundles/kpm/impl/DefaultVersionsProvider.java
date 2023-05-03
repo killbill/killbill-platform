@@ -17,6 +17,8 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.nio.file.Path;
+
 import org.killbill.billing.osgi.bundles.kpm.NexusMetadataFiles;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.util.nodes.NodeInfo;
@@ -37,11 +39,9 @@ class DefaultVersionsProvider implements VersionsProvider {
      * Consider to use {@code DefaultVersionsProvider(nexusMetadataFiles, NodeInfo)}, because this could reduce
      * one remote call because {@code apiVersion}, {@code pluginApiVersion}, etc. provided by {@code NodeInfo}.
      */
-    DefaultVersionsProvider(final NexusMetadataFiles nexusMetadataFiles) throws Exception {
-        Preconditions.checkNotNull(nexusMetadataFiles, "'nexusMetadata' is null");
-
-        final XmlParser killbillPomParser = new XmlParser(Preconditions.checkNotNull(nexusMetadataFiles.getKillbillPomXml()));
-        final XmlParser ossParentPomParser = new XmlParser(Preconditions.checkNotNull(nexusMetadataFiles.getOssParentPomXml()));
+    DefaultVersionsProvider(final Path killbillPomXml, final Path ossParentPomXml) throws Exception {
+        final XmlParser killbillPomParser = new XmlParser(Preconditions.checkNotNull(killbillPomXml));
+        final XmlParser ossParentPomParser = new XmlParser(Preconditions.checkNotNull(ossParentPomXml));
 
         fixedKbVersion = killbillPomParser.getValue("/version");
         ossParentVersion = killbillPomParser.getValue("/parent/version");
@@ -55,11 +55,11 @@ class DefaultVersionsProvider implements VersionsProvider {
     /**
      * See {@code DefaultVersionsProvider(NexusMetadataFiles)} constructor javadocs.
      */
-    DefaultVersionsProvider(final NexusMetadataFiles nexusMetadataFiles, final NodeInfo nodeInfo) throws Exception {
-        Preconditions.checkNotNull(nexusMetadataFiles, "'nexusMetadataFiles' is null");
+    DefaultVersionsProvider(final Path killbillPomXml, final NodeInfo nodeInfo) throws Exception {
+        Preconditions.checkNotNull(killbillPomXml, "'killbillPomXml' is null");
         Preconditions.checkNotNull(nodeInfo, "'nodeInfo' is null");
 
-        final XmlParser killbillPomParser = new XmlParser(nexusMetadataFiles.getKillbillPomXml());
+        final XmlParser killbillPomParser = new XmlParser(killbillPomXml);
         fixedKbVersion = killbillPomParser.getValue("/version");
         ossParentVersion = killbillPomParser.getValue("/parent/version");
         //

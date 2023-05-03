@@ -56,16 +56,15 @@ public class Activator extends KillbillActivatorBase {
         registrar = new OSGIKillbillRegistrar();
 
         final Properties properties = configProperties.getProperties();
-        final KPMWrapper kpmWrapper = new KPMWrapper(killbillAPI, properties);
+        final KpmProperties kpmProperties = new KpmProperties(properties);
 
-        final DefaultPluginManager pluginManager = new DefaultPluginManager(killbillAPI, properties);
-        eventsListener = new EventsListener(kpmWrapper, pluginManager);
+        final DefaultPluginManager pluginManager = new DefaultPluginManager(killbillAPI, kpmProperties);
+        eventsListener = new EventsListener(pluginManager);
 
         final Jackson jackson = new Jackson(PluginAppBuilder.DEFAULT_OBJECT_MAPPER);
         // JSON pass-through from KPM
         jackson.raw();
         final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).withJackson(jackson)
-                                                                     .withService(kpmWrapper)
                                                                      .withService(pluginManager)
                                                                      .withRouteClass(PluginsResource.class)
                                                                      .build();

@@ -28,6 +28,7 @@ import java.util.Set;
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver;
 import org.killbill.commons.utils.Strings;
 
 /**
@@ -39,12 +40,12 @@ class DefaultPluginsDirectoryDAO implements PluginsDirectoryDAO {
 
     private final KPMClient httpClient;
     private final String killbillVersion;
-    private final String pluginDirectoryYmlUrl;
+    private final UriResolver uriResolver;
 
-    DefaultPluginsDirectoryDAO(final KPMClient httpClient, final String semverBasedKbVersion, final String pluginDirectoryYmlUrl) {
+    DefaultPluginsDirectoryDAO(final KPMClient httpClient, final UriResolver uriResolver, final String semverBasedKbVersion) {
         this.httpClient = httpClient;
+        this.uriResolver = uriResolver;
         this.killbillVersion = semverBasedKbVersion;
-        this.pluginDirectoryYmlUrl = pluginDirectoryYmlUrl;
     }
 
     @Override
@@ -67,10 +68,11 @@ class DefaultPluginsDirectoryDAO implements PluginsDirectoryDAO {
     }
 
     Path downloadPluginDirectory() {
+        final String[] fileNameAndExt = {"plugins_directory", ".yml"};
         try {
-            return httpClient.downloadArtifactMetadata(pluginDirectoryYmlUrl);
+            return httpClient.downloadToTempOS(uriResolver.getBaseUri(), uriResolver.getHeaders(), fileNameAndExt);
         } catch (final Exception e) {
-            throw new KPMPluginException(String.format("Cannot get plugin directory YAML from URL: %s", pluginDirectoryYmlUrl), e);
+            throw new KPMPluginException(String.format("Cannot get plugin directory YAML from URL: %s", uriResolver.getBaseUri()), e);
         }
     }
 

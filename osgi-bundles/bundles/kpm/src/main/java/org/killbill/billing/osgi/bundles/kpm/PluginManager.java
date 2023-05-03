@@ -34,8 +34,6 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public interface PluginManager {
 
-    String PROPERTY_PREFIX = "org.killbill.billing.plugin.kpm.";
-
     GetAvailablePluginsModel getAvailablePlugins(@Nonnull final String kbVersion, final boolean forceDownload) throws KPMPluginException;
 
     void install(@Nonnull final String uri, @Nonnull final String pluginKey, @Nonnull final String pluginVersion) throws KPMPluginException;

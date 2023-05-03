@@ -23,12 +23,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
-import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
@@ -48,12 +47,12 @@ class FileBasedPluginIdentifiersDAO implements PluginIdentifiersDAO {
     @VisibleForTesting
     final File file;
 
-    public FileBasedPluginIdentifiersDAO(final Properties properties) {
+    public FileBasedPluginIdentifiersDAO(final KpmProperties kpmProperties) {
         objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(Include.NON_NULL);
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
-        final Path bundlesPath = PluginFileService.getBundlesPath(properties);
+        final Path bundlesPath = kpmProperties.getBundlesPath();
         final Path directory = Path.of(bundlesPath.toString(), "plugins");
 
         try {

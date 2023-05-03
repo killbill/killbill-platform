@@ -18,36 +18,27 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
-import java.util.Properties;
+import java.util.Collections;
 
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.mockito.Mockito;
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 public class TestSha1Checker {
 
-    private Properties properties;
-
-    @BeforeMethod(groups = "fast")
-    public void beforeMethod() {
-        properties = Mockito.mock(Properties.class);
-        Mockito.when(properties.getProperty("org.killbill.billing.plugin.kpm.pluginInstall.verifySHA1")).thenReturn("true");
-    }
-
     @Test(groups = "fast")
-    public void testDownloadedFileVerified() throws Exception {
+    public void testDownloadedFileVerified() {
         final KPMClient httpClient = Mockito.mock(KPMClient.class);
 
         final Path validPlugin = TestUtils.copyTestResourceToTemp("sha1", "valid-plugin.jar.txt");
         final Path validPluginSha1 = TestUtils.copyTestResourceToTemp("sha1", "valid-plugin.jar.txt.sha1");
 
-        Mockito.when(httpClient.downloadArtifactMetadata("valid")).thenReturn(validPluginSha1);
+        Mockito.when(httpClient.downloadToTempOS("valid", Collections.emptyMap(), "plugin", ".jar.sha1")).thenReturn(validPluginSha1);
 
-        Sha1Checker sha1Checker = new Sha1Checker(httpClient, properties);
-        boolean result = sha1Checker.isDownloadedFileVerified("valid", validPlugin);
+        Sha1Checker sha1Checker = new Sha1Checker(httpClient, true);
+        boolean result = sha1Checker.isDownloadedFileVerified("valid", Collections.emptyMap(), validPlugin);
 
         Assert.assertTrue(result);
 
@@ -57,10 +48,10 @@ public class TestSha1Checker {
         final Path invalidPlugin = TestUtils.copyTestResourceToTemp("sha1", "invalid-plugin.jar.txt");
         final Path invalidPluginSha1 = TestUtils.copyTestResourceToTemp("sha1", "invalid-plugin.jar.txt.sha1");
 
-        Mockito.when(httpClient.downloadArtifactMetadata("invalid")).thenReturn(invalidPluginSha1);
+        Mockito.when(httpClient.downloadToTempOS("invalid", Collections.emptyMap(), "plugin", ".jar.sha1")).thenReturn(invalidPluginSha1);
 
-        sha1Checker = new Sha1Checker(httpClient, properties);
-        result = sha1Checker.isDownloadedFileVerified("invalid", invalidPlugin);
+        sha1Checker = new Sha1Checker(httpClient, true);
+        result = sha1Checker.isDownloadedFileVerified("invalid", Collections.emptyMap(), invalidPlugin);
 
         Assert.assertFalse(result);
 

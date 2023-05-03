@@ -20,13 +20,16 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginsDirectoryDAO.PluginsDirectoryModel;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
+import org.killbill.billing.osgi.bundles.kpm.UriResolver;
 import org.killbill.commons.utils.Strings;
 import org.mockito.Mockito;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -35,6 +38,8 @@ public class TestDefaultPluginsDirectoryDAO {
     private Path pluginsDirectoryYml;
 
     private KPMClient httpClient;
+
+    private UriResolver uriResolver;
 
     @BeforeMethod(groups = "fast")
     public void beforeMethod() throws Exception {
@@ -47,12 +52,22 @@ public class TestDefaultPluginsDirectoryDAO {
 
         // In KPMClient #downloadArtifactMetadata() return tmp file instead file in src/test/resources
         httpClient = Mockito.mock(KPMClient.class);
-        Mockito.when(httpClient.downloadArtifactMetadata(Mockito.anyString())).thenReturn(pluginsDirectoryYml);
+        // There's 2 way to get plugins_directory.yml. See DefaultPluginsDirectoryDAO.downloadPluginDirectory()
+        Mockito.when(httpClient.downloadToTempOS(Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(pluginsDirectoryYml);
+        Mockito.when(httpClient.downloadToTempOS(Mockito.anyString(), Mockito.anyMap(), Mockito.anyString(), Mockito.anyString())).thenReturn(pluginsDirectoryYml);
+
+        final UrlResolverFactory urlResolverFactory = new UrlResolverFactory(new KpmProperties(TestUtils.getTestProperties()));
+        this.uriResolver = urlResolverFactory.getPluginDirectoryUrlResolver();
+    }
+
+    @AfterMethod(groups = "fast")
+    public void afterMethod() {
+        FilesUtils.deleteIfExists(pluginsDirectoryYml);
     }
 
     @Test(groups = "fast")
-    public void testGetPlugins() throws Exception {
-        final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, "0.24.0", pluginsDirectoryYml.toString());
+    public void testGetPlugins() {
+        final PluginsDirectoryDAO pluginsDirectoryDAO = new DefaultPluginsDirectoryDAO(httpClient, uriResolver, "0.24.0");
         for (final PluginsDirectoryModel availablePlugin : pluginsDirectoryDAO.getPlugins()) {
             Assert.assertNotNull(availablePlugin);
 

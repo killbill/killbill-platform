@@ -20,10 +20,10 @@ package org.killbill.billing.osgi.bundles.kpm.impl;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
+import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 
@@ -34,16 +34,13 @@ public class DefaultPluginFileService implements PluginFileService {
 
     private final Path bundlesPath;
 
-    public DefaultPluginFileService(final Properties properties) {
-        this.bundlesPath = PluginFileService.getBundlesPath(properties);
+    public DefaultPluginFileService(final KpmProperties kpmProperties) {
+        this.bundlesPath = kpmProperties.getBundlesPath();
     }
 
     @Override
     public Path createPluginDirectory(final String pluginKey, final String pluginVersion) throws IOException {
-        final PluginNamingResolver pluginNamingResolver = PluginNamingResolver.of(pluginKey, pluginVersion);
-        final String pluginName = pluginNamingResolver.getPluginName();
-        final String fixedVersion = pluginNamingResolver.getPluginVersion();
-        final Path pluginDirectory = Path.of(bundlesPath.toString(), "plugins", "java", pluginName, fixedVersion);
+        final Path pluginDirectory = getPluginDirByPluginKeyAndVersion(pluginKey ,pluginVersion);
         return Files.createDirectories(pluginDirectory);
     }
 
@@ -58,5 +55,13 @@ public class DefaultPluginFileService implements PluginFileService {
         // .... BUT symbolic link directory should not.
         Files.deleteIfExists(symlink);
         Files.createSymbolicLink(symlink, pluginDirectory);
+    }
+
+    @Override
+    public Path getPluginDirByPluginKeyAndVersion(@Nonnull final String pluginKey, @Nonnull final String pluginVersion) {
+        final PluginNamingResolver pluginNamingResolver = PluginNamingResolver.of(pluginKey, pluginVersion);
+        final String pluginName = pluginNamingResolver.getPluginName();
+        final String fixedVersion = pluginNamingResolver.getPluginVersion();
+        return Path.of(bundlesPath.toString(), "plugins", "java", pluginName, fixedVersion);
     }
 }

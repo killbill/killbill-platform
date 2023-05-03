@@ -22,11 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
+import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
-import org.killbill.billing.osgi.bundles.kpm.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,19 +36,19 @@ class Sha1Checker {
     private final KPMClient httpClient;
     private final boolean shouldVerify;
 
-    public Sha1Checker(final KPMClient httpClient, final Properties properties) {
+    public Sha1Checker(final KPMClient httpClient, final boolean shouldVerify) {
         this.httpClient = httpClient;
-        this.shouldVerify = Boolean.parseBoolean(properties.getProperty(PluginManager.PROPERTY_PREFIX + "pluginInstall.verifySHA1"));
+        this.shouldVerify = shouldVerify;
     }
 
-    boolean isDownloadedFileVerified(final String sha1Url, final Path downloadedPath) {
+    boolean isDownloadedFileVerified(final String sha1Url, final Map<String, String> requestHeaders, final Path downloadedPath) {
         if (!shouldVerify) {
             return true;
         }
 
         try (final InputStream downloadedPathStream = new FileInputStream(downloadedPath.toFile())) {
             final String downloadedPathSha1 = DigestUtils.sha1Hex(downloadedPathStream);
-            final String remoteSha1 = getOrLoadOriginalSha1(sha1Url);
+            final String remoteSha1 = getOrLoadOriginalSha1(sha1Url, requestHeaders);
             logger.debug("downloadedPathSha1: {}, remoteSha1: {}", downloadedPathSha1, remoteSha1);
 
             return downloadedPathSha1.equals(remoteSha1);
@@ -59,10 +58,10 @@ class Sha1Checker {
         }
     }
 
-    private String getOrLoadOriginalSha1(final String sha1Url) {
+    private String getOrLoadOriginalSha1(final String sha1Url, final Map<String, String> requestHeader) {
         Path result = null;
         try {
-            result = httpClient.downloadArtifactMetadata(sha1Url);
+            result = httpClient.downloadToTempOS(sha1Url, requestHeader, "plugin", ".jar.sha1");
             return Files.readString(result);
         } catch (final Exception ignored) {
         } finally {
