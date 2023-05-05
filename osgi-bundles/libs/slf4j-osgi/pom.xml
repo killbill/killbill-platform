@@ -28,7 +28,7 @@
     <artifactId>killbill-platform-osgi-bundles-lib-slf4j-osgi</artifactId>
     <name>killbill-platform-osgi-bundles-lib-slf4j-osgi</name>
     <properties>
-        <check.fail-spotbugs>false</check.fail-spotbugs>
+        <check.spotbugs-exclude-filter-file>spotbugs-exclude.xml</check.spotbugs-exclude-filter-file>
     </properties>
     <dependencies>
         <dependency>
