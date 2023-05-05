@@ -31,7 +31,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Predicate;
 import io.prometheus.client.SampleNameFilter;
@@ -44,7 +43,6 @@ public class KillBillExporter {
     private final CollectorRegistry registry;
     private final Predicate<String> sampleNameFilter;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public KillBillExporter(final CollectorRegistry registry, final Predicate<String> sampleNameFilter) {
         this.registry = registry;
         this.sampleNameFilter = sampleNameFilter;

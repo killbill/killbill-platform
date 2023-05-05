@@ -29,14 +29,11 @@
     <properties>
         <!-- io.prometheus libraries have duplicated classes... -->
         <check.skip-duplicate-finder>true</check.skip-duplicate-finder>
+        <check.spotbugs-exclude-filter-file>spotbugs-exclude.xml</check.spotbugs-exclude-filter-file>
         <osgi.private>org.killbill.billing.osgi.bundles.prometheus.*</osgi.private>
         <prometheus.version>0.15.0</prometheus.version>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient</artifactId>

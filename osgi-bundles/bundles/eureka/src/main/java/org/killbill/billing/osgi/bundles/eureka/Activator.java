@@ -45,7 +45,6 @@ import com.netflix.discovery.DefaultEurekaClientConfig;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.DiscoveryManager;
 import com.netflix.discovery.EurekaClient;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class Activator extends KillbillActivatorBase {
 
@@ -103,7 +102,6 @@ public class Activator extends KillbillActivatorBase {
         registrar.registerService(context, ServiceDiscoveryRegistry.class, serviceRegistry, props);
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP")
     private InstanceInfo createInstanceInfo(final EurekaInstanceConfig eurekaConfig) {
         // Build the lease information to be passed to the server based on eurekaConfig
         final LeaseInfo.Builder leaseInfoBuilder = LeaseInfo.Builder.newBuilder()

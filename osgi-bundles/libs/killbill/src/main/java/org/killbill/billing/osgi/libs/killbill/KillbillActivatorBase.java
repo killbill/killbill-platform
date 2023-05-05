@@ -33,8 +33,6 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public abstract class KillbillActivatorBase implements BundleActivator {
 
     private static final Logger logger = LoggerFactory.getLogger(KillbillActivatorBase.class);
@@ -61,7 +59,6 @@ public abstract class KillbillActivatorBase implements BundleActivator {
 
     private ScheduledFuture<?> restartFuture = null;
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Override
     public void start(final BundleContext context) throws Exception {
         // Keep it for now for backward compatibility purposes with existing plugins
