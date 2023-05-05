@@ -37,8 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 @Singleton
 public class KillbillHealthcheck implements HealthCheck {
 
@@ -51,10 +49,11 @@ public class KillbillHealthcheck implements HealthCheck {
     private Set<ServiceDiscoveryRegistry> serviceDiscoveryRegistries = Collections.emptySet();
     private OSGIServiceRegistration<ServiceDiscoveryRegistry> pluginServiceDiscoveryRegistries = null;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject
     public void setServiceDiscoveryRegistries(@Nullable final Set<ServiceDiscoveryRegistry> serviceDiscoveryRegistries) {
-        this.serviceDiscoveryRegistries = serviceDiscoveryRegistries;
+        if (serviceDiscoveryRegistries != null) {
+            this.serviceDiscoveryRegistries = Set.copyOf(serviceDiscoveryRegistries);
+        }
     }
 
     @Inject

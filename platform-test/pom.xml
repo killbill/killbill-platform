@@ -28,6 +28,9 @@
     <artifactId>killbill-platform-test</artifactId>
     <packaging>jar</packaging>
     <name>killbill-platform-test</name>
+    <properties>
+        <check.spotbugs-exclude-filter-file>spotbugs-exclude.xml</check.spotbugs-exclude-filter-file>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -49,10 +52,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
@@ -279,8 +278,8 @@
                         <phase>initialize</phase>
                         <configuration>
                             <tasks>
-                                <copy file="${basedir}/../osgi-bundles/tests/beatrix/target/killbill-platform-osgi-bundles-test-beatrix-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-beatrix-jar-with-dependencies.jar" />
-                                <copy file="${basedir}/../osgi-bundles/tests/payment/target/killbill-platform-osgi-bundles-test-payment-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-payment-jar-with-dependencies.jar" />
+                                <copy file="${basedir}/../osgi-bundles/tests/beatrix/target/killbill-platform-osgi-bundles-test-beatrix-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-beatrix-jar-with-dependencies.jar"/>
+                                <copy file="${basedir}/../osgi-bundles/tests/payment/target/killbill-platform-osgi-bundles-test-payment-${project.version}.jar" tofile="${basedir}/src/test/resources/killbill-osgi-bundles-test-payment-jar-with-dependencies.jar"/>
                             </tasks>
                         </configuration>
                     </execution>

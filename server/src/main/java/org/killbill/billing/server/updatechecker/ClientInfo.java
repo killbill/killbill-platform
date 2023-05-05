@@ -28,8 +28,6 @@ import org.killbill.commons.utils.StandardSystemProperty;
 import org.killbill.commons.utils.Strings;
 import org.skife.config.ConfigSource;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * Gather client-side information
  * <p/>
@@ -54,7 +52,6 @@ public class ClientInfo {
     private final ServletContext servletContext;
     private final ConfigSource props;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public ClientInfo(final ConfigSource configSource, final ServletContext servletContext) {
         this.servletContext = servletContext;
         this.props = configSource;
