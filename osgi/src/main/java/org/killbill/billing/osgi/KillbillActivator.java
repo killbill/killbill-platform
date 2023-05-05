@@ -67,9 +67,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class KillbillActivator implements BundleActivator, AllServiceListener {
 
     static final int PLUGIN_NAME_MAX_LENGTH = 40;
@@ -180,7 +177,7 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
     @Override
     public void start(final BundleContext context) throws Exception {
         this.context = context;
-        final Dictionary<String, String> props = new Hashtable<String, String>();
+        final Dictionary<String, String> props = new Hashtable<>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, "killbill");
 
         // Forward all core log entries to the OSGI LogService, so that plugins have access to them

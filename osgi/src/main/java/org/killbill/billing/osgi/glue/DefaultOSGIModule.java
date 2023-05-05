@@ -57,7 +57,6 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
@@ -68,7 +67,6 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
 
     private final EmbeddedDB osgiEmbeddedDB;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public DefaultOSGIModule(final KillbillConfigSource configSource,
                              final OSGIConfigProperties osgiConfigProperties,
                              final OSGIDataSourceConfig osgiDataSourceConfig,

@@ -43,8 +43,6 @@ import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class DefaultPluginsInfoApi implements PluginsInfoApi {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultPluginsInfoApi.class);
@@ -161,7 +159,6 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
         private final PluginState state;
         private final boolean isSelectedForStart;
 
-        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public DefaultPluginInfo(final String pluginKey, final String pluginSymbolicName, final String pluginName, final String version, final PluginState state, final boolean isSelectedForStart, final Set<PluginServiceInfo> services) {
             this.pluginKey = pluginKey;
             this.pluginSymbolicName = pluginSymbolicName;
@@ -169,7 +166,7 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             this.version = version;
             this.state = state;
             this.isSelectedForStart = isSelectedForStart;
-            this.services = services;
+            this.services = Set.copyOf(services);
         }
 
         @Override
@@ -192,10 +189,9 @@ public class DefaultPluginsInfoApi implements PluginsInfoApi {
             return version;
         }
 
-        @SuppressFBWarnings("EI_EXPOSE_REP")
         @Override
         public Set<PluginServiceInfo> getServices() {
-            return services;
+            return Set.copyOf(services);
         }
 
         @Override

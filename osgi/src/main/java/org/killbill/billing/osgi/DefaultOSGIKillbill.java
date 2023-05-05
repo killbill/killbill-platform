@@ -45,9 +45,6 @@ import org.killbill.billing.util.api.RecordIdApi;
 import org.killbill.billing.util.api.TagUserApi;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-@SuppressFBWarnings("EI_EXPOSE_REP")
 public class DefaultOSGIKillbill implements OSGIKillbill {
 
     private AccountUserApi accountUserApi;
