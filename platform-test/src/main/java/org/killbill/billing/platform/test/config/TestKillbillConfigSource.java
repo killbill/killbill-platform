@@ -34,8 +34,6 @@ import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.utils.io.Files;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
     private final String jdbcConnectionString;
@@ -51,7 +49,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this(file, dbTestingHelperKlass, Collections.emptyMap());
     }
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file);
 

@@ -46,8 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.weakref.jmx.Managed;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 // Run this check asynchronously as it executes database queries: when the healthcheck is integrated with a load balancer,
 // we don't want to DDOS the database as the polling interval is most likely in the order of a few seconds (or less).
 // Note: when the queues are configured in a sticky mode (e.g. on premise deployment), if this check fails, it means that
@@ -77,7 +75,6 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
     private final PersistentBus externalBus;
     private final NotificationQueueService notificationQueueService;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject
     public KillbillQueuesHealthcheck(final Clock clock,
                                      final NotificationQueueService notificationQueueService,

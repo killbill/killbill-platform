@@ -24,7 +24,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 // Initially forked from Dropwizard Metrics (Apache License 2.0).
 // Copyright (c) 2010-2013 Coda Hale, Yammer.com, 2014-2021 Dropwizard Team
@@ -44,7 +43,6 @@ public class InstrumentedAppender extends UnsynchronizedAppenderBase<ILoggingEve
      *
      * @param registry the metric registry
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public InstrumentedAppender(final MetricRegistry registry) {
         this.registry = registry;
         setName(Appender.class.getName());
