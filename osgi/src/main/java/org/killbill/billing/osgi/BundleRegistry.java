@@ -38,8 +38,6 @@ import org.osgi.framework.launch.Framework;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class BundleRegistry {
 
     private static final Logger log = LoggerFactory.getLogger(BundleRegistry.class);
@@ -168,7 +166,7 @@ public class BundleRegistry {
 
         public BundleWithMetadata(final BundleWithConfig bundleWithConfig) {
             super(bundleWithConfig.getBundle(), bundleWithConfig.getConfig());
-            serviceNames = new HashSet<PluginServiceInfo>();
+            serviceNames = new HashSet<>();
         }
 
         public String getPluginName() {
@@ -187,9 +185,8 @@ public class BundleRegistry {
             serviceNames.remove(new DefaultPluginServiceInfo(serviceTypeName, registrationName));
         }
 
-        @SuppressFBWarnings("EI_EXPOSE_REP")
         public Set<PluginServiceInfo> getServiceNames() {
-            return serviceNames;
+            return new HashSet<>(serviceNames);
         }
     }
 

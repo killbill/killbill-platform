@@ -55,10 +55,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 // Needs to be injected for the lifecycle logic
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class KillbillEventRetriableBusHandler extends RetryableService implements KillbillEventRetriableBusHandlerService {
 
     private final Logger logger = LoggerFactory.getLogger(KillbillEventRetriableBusHandler.class);

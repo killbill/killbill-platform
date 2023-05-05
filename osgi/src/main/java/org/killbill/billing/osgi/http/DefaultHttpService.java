@@ -33,9 +33,6 @@ import org.osgi.service.http.HttpContext;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-@SuppressFBWarnings("EI_EXPOSE_REP")
 @Singleton
 public class DefaultHttpService implements HttpService {
 

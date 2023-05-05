@@ -52,9 +52,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-@SuppressFBWarnings("EI_EXPOSE_REP")
 public class OSGIListener {
 
     private static final Logger logger = LoggerFactory.getLogger(OSGIListener.class);

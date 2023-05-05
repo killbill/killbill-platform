@@ -29,7 +29,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,9 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("EI_EXPOSE_REP")
 public class PluginFinder {
 
     static final String SELECTED_VERSION_LINK_NAME = "SET_DEFAULT";
@@ -99,7 +96,7 @@ public class PluginFinder {
     }
 
     public Map<String, LinkedList<PluginConfig>> getAllPlugins() {
-        return allPlugins;
+        return Map.copyOf(allPlugins);
     }
 
     public void reloadPlugins() throws PluginConfigException, IOException {
@@ -125,7 +122,6 @@ public class PluginFinder {
         return result;
     }
 
-    @SuppressFBWarnings("WMI_WRONG_MAP_ITERATOR")
     private <T extends PluginConfig> void loadPluginsIfRequired(final boolean reloadPlugins) throws PluginConfigException, IOException {
         synchronized (allPlugins) {
 
@@ -142,16 +138,14 @@ public class PluginFinder {
             // Order for each plugin  based on DefaultPluginConfig sort method:
             // (order first based on SELECTED_VERSION_LINK_NAME and then decreasing version number)
             //
-            final Iterator<String> pluginNamesIterator = allPlugins.keySet().iterator();
-            while (pluginNamesIterator.hasNext()) {
-                final String pluginName = pluginNamesIterator.next();
-                final LinkedList<PluginConfig> versionsForPlugin = allPlugins.get(pluginName);
+            for (final Entry<String, LinkedList<PluginConfig>> entry : allPlugins.entrySet()) {
+                final String pluginName = entry.getKey();
+                final LinkedList<PluginConfig> versionsForPlugin = entry.getValue();
                 // If all entries were disabled or the SELECTED_VERSION_LINK_NAME was disabled we end up with nothing, it is as if the plugin did not exist
                 if (versionsForPlugin.isEmpty()) {
-                    pluginNamesIterator.remove();
+                    allPlugins.remove(pluginName);
                     continue;
                 }
-
                 Collections.sort(versionsForPlugin);
                 // Make sure first entry is set with isSelectedForStart = true
                 final PluginConfig firstValue = versionsForPlugin.removeFirst();
