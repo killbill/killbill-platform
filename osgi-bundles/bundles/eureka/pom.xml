@@ -29,6 +29,7 @@
     <properties>
         <!-- http://jira.codehaus.org/browse/MRESOURCES-99 -->
         <build.timestamp>${maven.build.timestamp}</build.timestamp>
+        <check.spotbugs-exclude-filter-file>spotbugs-exclude.xml</check.spotbugs-exclude-filter-file>
         <osgi.private>org.killbill.billing.osgi.bundles.eureka.*</osgi.private>
     </properties>
     <dependencyManagement>
@@ -46,10 +47,6 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-annotations</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.netflix.archaius</groupId>
             <artifactId>archaius-core</artifactId>

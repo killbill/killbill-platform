@@ -35,7 +35,6 @@ import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.api.Snapshot;
 import org.killbill.commons.metrics.api.Timer;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.prometheus.client.Collector;
 
 // Inspired from io.prometheus.client.dropwizard.DropwizardExports (Apache-2.0 License)
@@ -43,7 +42,6 @@ public class KillBillCollector extends Collector {
 
     private final MetricRegistry registry;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public KillBillCollector(final MetricRegistry registry) {
         this.registry = registry;
     }

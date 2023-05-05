@@ -44,13 +44,10 @@ import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.billing.util.callcontext.TenantContext;
 import org.killbill.billing.util.entity.Pagination;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 public class TestPaymentPluginApi implements PaymentPluginApi {
 
     private final TestDao testDao;
 
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     public TestPaymentPluginApi(final TestDao testDao) {
         this.testDao = testDao;
     }

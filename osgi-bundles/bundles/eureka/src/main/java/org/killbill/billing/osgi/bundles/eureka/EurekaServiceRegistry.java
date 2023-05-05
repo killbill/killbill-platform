@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class EurekaServiceRegistry implements ServiceDiscoveryRegistry {
 
@@ -35,9 +34,6 @@ public class EurekaServiceRegistry implements ServiceDiscoveryRegistry {
 
     private final ApplicationInfoManager applicationInfoManager;
 
-    public static final String EUREKA_SERVICE_NAME = "eureka-service";
-
-    @SuppressFBWarnings("EI_EXPOSE_REP2")
     @Inject
     public EurekaServiceRegistry(final ApplicationInfoManager applicationInfoManager) {
         this.applicationInfoManager = applicationInfoManager;
