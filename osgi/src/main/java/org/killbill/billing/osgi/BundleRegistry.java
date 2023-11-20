@@ -21,6 +21,7 @@ package org.killbill.billing.osgi;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,15 +100,45 @@ public class BundleRegistry {
         registry.remove(pluginName);
     }
 
-    public void startBundles() {
+    public void startBundles(final List<String> mandatoryPlugins) {
+        log.info("List of mandatory plugins: {}",mandatoryPlugins);
+        final List<String> pluginsStarted = new LinkedList<>();
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             final boolean isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
 
-            if (!isBundleStarted) {
-                registry.remove(getPluginName(bundleWithConfig));
+            final String pluginName = getPluginName(bundleWithConfig);
+            if (isBundleStarted) {
+                pluginsStarted.add(pluginName);
+            }
+            else {
+                registry.remove(pluginName);
+            }
+
+        }
+
+        if (!mandatoryPlugins.isEmpty()) {
+            checkIfMandatoryPluginsAreStarted(pluginsStarted, mandatoryPlugins);
+        }
+        else {
+            log.info("Mandatory plugins not specified, skipping mandatory plugins check");
+        }
+
+    }
+
+    private void checkIfMandatoryPluginsAreStarted(List<String> pluginsStarted, List<String> mandatoryPlugins){
+        boolean allMandatoryPluginsStarted = true;
+        for (String pluginName: mandatoryPlugins) {
+            if(!pluginsStarted.contains(pluginName)) {
+                log.error("Mandatory plugin {} not started",pluginName); //TODO_1911 - Exit here?
+                allMandatoryPluginsStarted = false;
             }
         }
+        if(allMandatoryPluginsStarted) {
+            log.info("All mandatory plugins are started");
+        }
+
     }
+
 
     public void stopBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {

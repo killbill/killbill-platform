@@ -20,6 +20,7 @@
 package org.killbill.billing.osgi;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -98,8 +99,10 @@ public class DefaultOSGIService implements OSGIService {
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.START_PLUGIN)
     public void start() {
+        final String mandatoryPlugins = osgiConfig.getMandatoryPluginsList();
+        final List<String> mandatoryPluginsList = mandatoryPlugins != null && !mandatoryPlugins.isEmpty() ? List.of(mandatoryPlugins.split(",")) : Collections.emptyList();
         // This will call the start() method for the bundles
-        bundleRegistry.startBundles();
+        bundleRegistry.startBundles(mandatoryPluginsList);
         // Tell the plugins all bundles have started
         killbillActivator.sendEvent("org/killbill/billing/osgi/lifecycle/STARTED", new HashMap<String, String>());
     }

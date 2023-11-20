@@ -267,4 +267,9 @@ public interface OSGIConfig extends KillbillPlatformConfig {
     @Default("")
     public String getSystemBundleExportPackagesExtra();
 
+    @Config("org.killbill.billing.plugin.mandatory.plugins")
+    @Description("List of mandatory plugins")
+    @Default("")
+    public String getMandatoryPluginsList();
+
 }

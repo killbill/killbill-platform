@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration" detection-enabled="false">
     <file type="Osmorc" url="file://$PROJECT_DIR$/osgi-bundles/bundles/jruby" />
     <file type="Osmorc" url="file://$PROJECT_DIR$/osgi-bundles/bundles/kpm" />
