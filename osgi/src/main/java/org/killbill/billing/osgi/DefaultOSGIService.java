@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -100,7 +101,7 @@ public class DefaultOSGIService implements OSGIService {
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.START_PLUGIN)
     public void start() {
         final String mandatoryPlugins = osgiConfig.getMandatoryPluginsList();
-        final List<String> mandatoryPluginsList = mandatoryPlugins != null && !mandatoryPlugins.isEmpty() ? List.of(mandatoryPlugins.split(",")) : Collections.emptyList();
+        final Set<String> mandatoryPluginsList = mandatoryPlugins != null && !mandatoryPlugins.isEmpty() ? Set.of(mandatoryPlugins.split("\\s*,\\s*")) : Collections.emptySet();
         // This will call the start() method for the bundles
         bundleRegistry.startBundles(mandatoryPluginsList);
         // Tell the plugins all bundles have started

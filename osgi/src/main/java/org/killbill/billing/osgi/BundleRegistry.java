@@ -100,8 +100,8 @@ public class BundleRegistry {
         registry.remove(pluginName);
     }
 
-    public void startBundles(final List<String> mandatoryPlugins) {
-        log.info("List of mandatory plugins: {}",mandatoryPlugins);
+    public void startBundles(final Iterable<String> mandatoryPlugins) {
+        log.info("List of mandatory plugins: {}", mandatoryPlugins);
         final List<String> pluginsStarted = new LinkedList<>();
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             final boolean isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
@@ -116,7 +116,7 @@ public class BundleRegistry {
 
         }
 
-        if (!mandatoryPlugins.isEmpty()) {
+        if (mandatoryPlugins.iterator().hasNext()) {
             checkIfMandatoryPluginsAreStarted(pluginsStarted, mandatoryPlugins);
         }
         else {
@@ -125,15 +125,15 @@ public class BundleRegistry {
 
     }
 
-    private void checkIfMandatoryPluginsAreStarted(List<String> pluginsStarted, List<String> mandatoryPlugins){
+    private void checkIfMandatoryPluginsAreStarted(final List<String> pluginsStarted, final Iterable<String> mandatoryPlugins){
         boolean allMandatoryPluginsStarted = true;
         for (String pluginName: mandatoryPlugins) {
             if(!pluginsStarted.contains(pluginName)) {
-                log.error("Mandatory plugin {} not started",pluginName); //TODO_1911 - Exit here?
+                log.error("Mandatory plugin {} not started", pluginName); //TODO_1911 - Exit here?
                 allMandatoryPluginsStarted = false;
             }
         }
-        if(allMandatoryPluginsStarted) {
+        if (allMandatoryPluginsStarted) {
             log.info("All mandatory plugins are started");
         }
 
