@@ -99,7 +99,7 @@ public class DefaultOSGIService implements OSGIService {
     }
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.START_PLUGIN)
-    public void start() {
+    public void start() throws Exception {
         final String mandatoryPlugins = osgiConfig.getMandatoryPluginsList();
         final Set<String> mandatoryPluginsList = mandatoryPlugins != null && !mandatoryPlugins.isEmpty() ? Set.of(mandatoryPlugins.split("\\s*,\\s*")) : Collections.emptySet();
         // This will call the start() method for the bundles
