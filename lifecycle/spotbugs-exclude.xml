@@ -33,4 +33,10 @@
         <Method name="initialize" />
         <Bug pattern="EI_EXPOSE_REP2" />
     </Match>
+
+    <Match>
+        <Class name="org.killbill.billing.lifecycle.DefaultLifecycle" />
+        <Method name="doFireStage" />
+        <Bug pattern="DM_EXIT" />
+    </Match>
 </FindBugsFilter>

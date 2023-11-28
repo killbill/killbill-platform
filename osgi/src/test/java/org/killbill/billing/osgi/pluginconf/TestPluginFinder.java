@@ -210,6 +210,11 @@ public class TestPluginFinder {
             public String getSystemBundleExportPackagesExtra() {
                 return null;
             }
+            @Override
+            public String getMandatoryPluginsList() {
+                return null;
+            }
+
         };
     }
 

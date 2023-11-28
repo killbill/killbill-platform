@@ -21,6 +21,7 @@ package org.killbill.billing.osgi;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,15 +100,40 @@ public class BundleRegistry {
         registry.remove(pluginName);
     }
 
-    public void startBundles() {
+    public void startBundles(final Iterable<String> mandatoryPlugins) throws Exception {
+        log.info("List of mandatory plugins: {}", mandatoryPlugins);
+        final List<String> pluginsStarted = new LinkedList<>();
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             final boolean isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
 
-            if (!isBundleStarted) {
-                registry.remove(getPluginName(bundleWithConfig));
+            final String pluginName = getPluginName(bundleWithConfig);
+            if (isBundleStarted) {
+                pluginsStarted.add(pluginName);
+            } else {
+                registry.remove(pluginName);
+            }
+
+        }
+
+        if (mandatoryPlugins.iterator().hasNext()) {
+            checkIfMandatoryPluginsAreStarted(pluginsStarted, mandatoryPlugins);
+        }
+        else {
+            log.info("Mandatory plugins not specified, skipping mandatory plugins check");
+        }
+
+    }
+
+    private void checkIfMandatoryPluginsAreStarted(final List<String> pluginsStarted, final Iterable<String> mandatoryPlugins) throws Exception {
+        for (final String pluginName : mandatoryPlugins) {
+            if (!pluginsStarted.contains(pluginName)) {
+                log.warn("Mandatory plugin {} not started", pluginName);
+                throw new Exception("Mandatory plugin " + pluginName + " not started");
             }
         }
+        log.info("All mandatory plugins are started");
     }
+
 
     public void stopBundles() {
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
