@@ -101,7 +101,6 @@ public class BundleRegistry {
     }
 
     public void startBundles(final Iterable<String> mandatoryPlugins) throws Exception {
-        log.info("List of mandatory plugins: {}", mandatoryPlugins);
         final List<String> pluginsStarted = new LinkedList<>();
         for (final BundleWithConfig bundleWithConfig : bundleWithConfigs) {
             final boolean isBundleStarted = fileInstall.startBundle(bundleWithConfig.getBundle());
@@ -115,16 +114,17 @@ public class BundleRegistry {
 
         }
 
-        if (mandatoryPlugins != null && mandatoryPlugins.iterator().hasNext()) {
-            checkIfMandatoryPluginsAreStarted(pluginsStarted, mandatoryPlugins);
-        }
-        else {
-            log.info("Mandatory plugins not specified, skipping mandatory plugins check");
-        }
-
+        checkIfMandatoryPluginsAreStarted(pluginsStarted, mandatoryPlugins);
     }
 
     private void checkIfMandatoryPluginsAreStarted(final List<String> pluginsStarted, final Iterable<String> mandatoryPlugins) throws Exception {
+        log.info("List of mandatory plugins: {}", mandatoryPlugins);
+
+        if (mandatoryPlugins == null || !mandatoryPlugins.iterator().hasNext()) {
+            log.info("Mandatory plugins not specified, skipping mandatory plugins check");
+            return;
+        }
+
         for (final String pluginName : mandatoryPlugins) {
             if (!pluginsStarted.contains(pluginName)) {
                 log.warn("Mandatory plugin {} not started", pluginName);
