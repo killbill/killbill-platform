@@ -115,7 +115,7 @@ public class BundleRegistry {
 
         }
 
-        if (mandatoryPlugins.iterator().hasNext()) {
+        if (mandatoryPlugins != null && mandatoryPlugins.iterator().hasNext()) {
             checkIfMandatoryPluginsAreStarted(pluginsStarted, mandatoryPlugins);
         }
         else {

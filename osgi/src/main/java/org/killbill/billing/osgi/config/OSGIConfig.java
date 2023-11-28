@@ -19,9 +19,12 @@
 
 package org.killbill.billing.osgi.config;
 
+import java.util.Set;
+
 import org.killbill.billing.platform.api.KillbillPlatformConfig;
 import org.skife.config.Config;
 import org.skife.config.Default;
+import org.skife.config.DefaultNull;
 import org.skife.config.Description;
 
 public interface OSGIConfig extends KillbillPlatformConfig {
@@ -268,8 +271,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
     public String getSystemBundleExportPackagesExtra();
 
     @Config("org.killbill.billing.plugin.mandatory.plugins")
-    @Description("List of mandatory plugins")
-    @Default("")
-    public String getMandatoryPluginsList();
+    @Description("Comma separated list of mandatory plugins")
+    @DefaultNull
+    public Set<String> getMandatoryPlugins();
 
 }
