@@ -204,7 +204,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureLifecycle() {
-        install(new LifecycleModule());
+        install(new LifecycleModule(configSource));
     }
 
     protected void configureBuses() {

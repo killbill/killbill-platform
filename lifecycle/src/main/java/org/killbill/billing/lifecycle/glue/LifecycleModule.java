@@ -21,17 +21,32 @@ package org.killbill.billing.lifecycle.glue;
 
 import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
+import org.killbill.billing.lifecycle.config.LifecycleConfig;
+import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
+import org.skife.config.ConfigSource;
+import org.skife.config.ConfigurationObjectFactory;
 
 import com.google.inject.AbstractModule;
 
-public class LifecycleModule extends AbstractModule {
+public class LifecycleModule extends KillBillPlatformModuleBase {
+
+    public LifecycleModule(final KillbillConfigSource configSource) {
+        super(configSource);
+    }
 
     @Override
     protected void configure() {
         installLifecycle();
     }
 
+    protected void configureConfig() {
+        final LifecycleConfig lifecycleConfig = new ConfigurationObjectFactory(skifeConfigSource).build(LifecycleConfig.class);
+        bind(LifecycleConfig.class).toInstance(lifecycleConfig);
+    }
+
     protected void installLifecycle() {
+        configureConfig();
         bind(Lifecycle.class).to(DefaultLifecycle.class).asEagerSingleton();
     }
 }

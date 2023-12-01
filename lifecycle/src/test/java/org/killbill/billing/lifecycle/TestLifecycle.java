@@ -224,7 +224,7 @@ public class TestLifecycle {
 
         @Inject
         public LifecycleNoWarn(final Injector injector) {
-            super(injector);
+            super(injector, null);
         }
 
         @Override
