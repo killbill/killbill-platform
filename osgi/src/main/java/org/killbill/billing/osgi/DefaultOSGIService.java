@@ -100,10 +100,9 @@ public class DefaultOSGIService implements OSGIService {
 
     @LifecycleHandlerType(LifecycleHandlerType.LifecycleLevel.START_PLUGIN)
     public void start() throws Exception {
-        final String mandatoryPlugins = osgiConfig.getMandatoryPluginsList();
-        final Set<String> mandatoryPluginsList = mandatoryPlugins != null && !mandatoryPlugins.isEmpty() ? Set.of(mandatoryPlugins.split("\\s*,\\s*")) : Collections.emptySet();
+        final Set<String> mandatoryPlugins = osgiConfig.getMandatoryPlugins();
         // This will call the start() method for the bundles
-        bundleRegistry.startBundles(mandatoryPluginsList);
+        bundleRegistry.startBundles(mandatoryPlugins);
         // Tell the plugins all bundles have started
         killbillActivator.sendEvent("org/killbill/billing/osgi/lifecycle/STARTED", new HashMap<String, String>());
     }

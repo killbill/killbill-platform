@@ -22,6 +22,7 @@ package org.killbill.billing.osgi.pluginconf;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -211,7 +212,7 @@ public class TestPluginFinder {
                 return null;
             }
             @Override
-            public String getMandatoryPluginsList() {
+            public Set<String> getMandatoryPlugins() {
                 return null;
             }
 
