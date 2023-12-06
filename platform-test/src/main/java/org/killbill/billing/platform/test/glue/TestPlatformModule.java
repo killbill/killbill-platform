@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 
 import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
+import org.killbill.billing.lifecycle.config.LifecycleConfig;
 import org.killbill.billing.lifecycle.glue.BusModule;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
 import org.killbill.billing.osgi.api.PluginInfo;
@@ -84,6 +85,8 @@ public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
         } else {
             bind(Lifecycle.class).to(DefaultLifecycle.class).asEagerSingleton();
         }
+        final LifecycleConfig lifecycleConfig = new ConfigurationObjectFactory(skifeConfigSource).build(LifecycleConfig.class);
+        bind(LifecycleConfig.class).toInstance(lifecycleConfig);
     }
 
     protected void configureBus() {

@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.killbill.billing.lifecycle.api.Lifecycle;
+import org.killbill.billing.lifecycle.config.LifecycleConfig;
 import org.killbill.billing.platform.api.KillbillService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;
 import org.killbill.billing.platform.api.LifecycleHandlerType.LifecycleLevel;
@@ -52,26 +53,25 @@ public class DefaultLifecycle implements Lifecycle {
     // See https://github.com/killbill/killbill-commons/issues/143
     private final Map<LifecycleLevel, SortedSet<LifecycleHandler<? extends KillbillService>>> handlersByLevel;
 
-    private static final String EXIT_ON_LIFECYCLE_ERROR_PROPERTY = "org.killbill.server.exit.on.lifecycle.error";
-    private boolean exitOnError;
+    private final LifecycleConfig config;
 
     @Inject
-    public DefaultLifecycle(final Injector injector) {
-        this();
+    public DefaultLifecycle(final Injector injector, final LifecycleConfig config) {
+        this(config);
         final ServiceFinder<KillbillService> serviceFinder = new ServiceFinder<>(DefaultLifecycle.class.getClassLoader(), KillbillService.class.getName());
-        exitOnError = System.getProperty(EXIT_ON_LIFECYCLE_ERROR_PROPERTY) != null && Boolean.parseBoolean(System.getProperty(EXIT_ON_LIFECYCLE_ERROR_PROPERTY));
         init(serviceFinder, injector);
     }
 
     // For testing
     public DefaultLifecycle(final Iterable<? extends KillbillService> services) {
-        this();
+        this((LifecycleConfig) null);
         init(services);
     }
 
 
-    private DefaultLifecycle() {
+    private DefaultLifecycle(final LifecycleConfig config) {
         this.handlersByLevel = new ConcurrentHashMap<>();
+        this.config = config;
     }
 
     @Override
@@ -158,8 +158,8 @@ public class DefaultLifecycle implements Lifecycle {
                 method.invoke(target);
             } catch (final Exception e) {
                 logWarn("Killbill lifecycle failed to invoke lifecycle handler", e);
-                if (exitOnError) {
-                    log.info("{} is set, so exiting..", EXIT_ON_LIFECYCLE_ERROR_PROPERTY);
+                if (config.isServerExitOnLifecycleError()) {
+                    log.warn("Exiting as system was configured to exit on lifecycle error ");
                     System.exit(1);
                 }
             }
