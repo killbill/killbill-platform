@@ -159,7 +159,7 @@ public class DefaultLifecycle implements Lifecycle {
             } catch (final Exception e) {
                 logWarn("Killbill lifecycle failed to invoke lifecycle handler", e);
                 if (config.isServerExitOnLifecycleError()) {
-                    log.warn("Existing as system was configured to exist on lifecycle error ");
+                    log.warn("Exiting as system was configured to exit on lifecycle error ");
                     System.exit(1);
                 }
             }
