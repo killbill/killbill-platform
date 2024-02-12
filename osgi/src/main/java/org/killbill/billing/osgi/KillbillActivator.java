@@ -38,6 +38,7 @@ import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;
 import org.killbill.billing.control.plugin.api.PaymentControlPluginApi;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
+import org.killbill.billing.invoice.plugin.api.InvoiceFormatterFactory;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
 import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
@@ -137,6 +138,11 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
     @Inject
     public void addCurrencyPluginApiOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<CurrencyPluginApi> currencyProviderPluginRegistry) {
         allRegistrationHandlers.add(currencyProviderPluginRegistry);
+    }
+
+    @Inject
+    public void addInvoiceFormatterFactoryOSGIServiceRegistration(@Nullable final OSGIServiceRegistration<InvoiceFormatterFactory> invoiceFormatterFactoryRegistry) {
+        allRegistrationHandlers.add(invoiceFormatterFactoryRegistry);
     }
 
     @Inject
