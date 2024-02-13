@@ -33,6 +33,7 @@ import org.killbill.billing.entitlement.api.EntitlementApi;
 import org.killbill.billing.entitlement.api.SubscriptionApi;
 import org.killbill.billing.entitlement.plugin.api.EntitlementPluginApi;
 import org.killbill.billing.invoice.api.InvoiceUserApi;
+import org.killbill.billing.invoice.plugin.api.InvoiceFormatterFactory;
 import org.killbill.billing.invoice.plugin.api.InvoicePluginApi;
 import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
@@ -116,6 +117,7 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(PaymentPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CurrencyPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(CurrencyPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<InvoicePluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(InvoicePluginApi.class));
+        bind(new TypeLiteral<OSGIServiceRegistration<InvoiceFormatterFactory>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(InvoiceFormatterFactory.class));
         bind(new TypeLiteral<OSGIServiceRegistration<PaymentControlPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(PaymentControlPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<CatalogPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(CatalogPluginApi.class));
         bind(new TypeLiteral<OSGIServiceRegistration<EntitlementPluginApi>>() {}).toInstance(new TestPlatformPaymentProviderPluginRegistry<>(EntitlementPluginApi.class));
@@ -134,6 +136,8 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
         public TestPlatformPaymentProviderPluginRegistry(final Class<T> serviceType) {
             this.serviceType = serviceType;
         }
+
+
 
         @Override
         public void registerService(final OSGIServiceDescriptor desc, final T service) {
