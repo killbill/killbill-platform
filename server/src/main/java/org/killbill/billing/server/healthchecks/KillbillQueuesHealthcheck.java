@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.joda.time.DateTime;
+import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.Clock;
 import org.killbill.commons.health.api.HealthCheck;
@@ -79,11 +80,17 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
     public KillbillQueuesHealthcheck(final Clock clock,
                                      final NotificationQueueService notificationQueueService,
                                      final PersistentBus bus,
+                                     final KillbillServerConfig config,
                                      @Named("externalBus") final PersistentBus externalBus) {
         this.clock = clock;
         this.notificationQueueService = notificationQueueService;
         this.bus = bus;
         this.externalBus = externalBus;
+        if (config.isQueueHealthCheckEnabled()) {
+            activateHealthcheck();
+        } else {
+            deactivateHealthcheck();
+        }
     }
 
     @Managed(description = "Kill Bill queues healthcheck")
@@ -107,7 +114,13 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
 
     @Override
     public Result check() {
-        return check(SLIDING_WINDOW_SIZE, ALPHA);
+        if (healthcheckActive.get()) {
+            return check(SLIDING_WINDOW_SIZE, ALPHA);
+        } else {
+            logger.warn("Queue HealthCheck Disabled, Returning HealthyResult");
+            return new HealthyResultBuilder().createHealthyResult();
+        }
+
     }
 
     @VisibleForTesting
@@ -193,10 +206,11 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
             // Display the stats, regardless of the health status
             details.put(entry.getKey(), queueStats);
         }
-
         if (healthy || !healthcheckActive.get()) {
+            logger.info("System is healthy or healthcheck is disabled, Returning HealthyResult");
             return new HealthyResultBuilder().setDetails(details).createHealthyResult();
         } else {
+            logger.warn("System is unhealthy Returning UnHealthyResult");
             return new UnhealthyResultBuilder().setDetails(details).setMessage(stringBuilderForMessage.toString()).createUnhealthyResult();
         }
     }
