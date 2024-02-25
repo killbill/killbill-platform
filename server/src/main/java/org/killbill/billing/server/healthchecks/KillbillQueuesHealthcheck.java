@@ -206,10 +206,8 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
             details.put(entry.getKey(), queueStats);
         }
         if (healthy || !healthcheckActive.get()) {
-            logger.debug("System is healthy or healthcheck is disabled, returning HealthyResult");
             return new HealthyResultBuilder().setDetails(details).createHealthyResult();
         } else {
-            logger.debug("System is unhealthy, returning UnHealthyResult");
             return new UnhealthyResultBuilder().setDetails(details).setMessage(stringBuilderForMessage.toString()).createUnhealthyResult();
         }
     }
