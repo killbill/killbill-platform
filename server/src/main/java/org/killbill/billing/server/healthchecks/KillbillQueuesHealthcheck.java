@@ -117,7 +117,6 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
         if (healthcheckActive.get()) {
             return check(SLIDING_WINDOW_SIZE, ALPHA);
         } else {
-            logger.warn("Queue HealthCheck Disabled, Returning HealthyResult");
             return new HealthyResultBuilder().createHealthyResult();
         }
 
@@ -207,10 +206,10 @@ public class KillbillQueuesHealthcheck implements HealthCheck {
             details.put(entry.getKey(), queueStats);
         }
         if (healthy || !healthcheckActive.get()) {
-            logger.info("System is healthy or healthcheck is disabled, Returning HealthyResult");
+            logger.debug("System is healthy or healthcheck is disabled, returning HealthyResult");
             return new HealthyResultBuilder().setDetails(details).createHealthyResult();
         } else {
-            logger.warn("System is unhealthy Returning UnHealthyResult");
+            logger.debug("System is unhealthy, returning UnHealthyResult");
             return new UnhealthyResultBuilder().setDetails(details).setMessage(stringBuilderForMessage.toString()).createUnhealthyResult();
         }
     }
