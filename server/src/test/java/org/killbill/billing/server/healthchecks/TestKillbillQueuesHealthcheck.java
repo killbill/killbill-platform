@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
+import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.billing.server.healthchecks.KillbillQueuesHealthcheck.QueueStats;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
@@ -65,9 +66,13 @@ public class TestKillbillQueuesHealthcheck {
 
         clock = new ClockMock();
 
+        final KillbillServerConfig config = Mockito.mock(KillbillServerConfig.class);
+
+
         healthcheck = new KillbillQueuesHealthcheck(clock,
                                                     notificationQueueService,
                                                     bus,
+                                                    config,
                                                     externalBus);
         healthcheck.activateHealthcheck();
     }

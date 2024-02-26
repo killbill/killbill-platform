@@ -71,4 +71,9 @@ public interface KillbillServerConfig extends KillbillPlatformConfig {
     @Default("0s")
     @Description("Shutdown delay before starting shutdown sequence")
     public TimeSpan getShutdownDelay();
+
+    @Config(KILL_BILL_NAMESPACE + "server.queue.healthcheck")
+    @Default("true")
+    @Description("Whether queue healthcheck is enabled")
+    public boolean isQueueHealthCheckEnabled();
 }
