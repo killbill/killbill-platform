@@ -61,8 +61,8 @@ public class TestDefaultPluginManager {
     @Test(groups = "slow")
     public void testGetAvailablePlugins() {
         // Get plugin info from actual, default, killbill plugins_directory.yml. See DefaultPluginsDirectoryDAO
-        GetAvailablePluginsModel result = pluginManager.getAvailablePlugins("0.18.0", true);
-        Assert.assertEquals(result.getKillbillArtifactsVersion().getKillbill(), "0.18.0");
+        GetAvailablePluginsModel result = pluginManager.getAvailablePlugins("0.24.0", true);
+        Assert.assertEquals(result.getKillbillArtifactsVersion().getKillbill(), "0.24.0");
         Assert.assertFalse(result.getAvailablePlugins().isEmpty());
 
         try {

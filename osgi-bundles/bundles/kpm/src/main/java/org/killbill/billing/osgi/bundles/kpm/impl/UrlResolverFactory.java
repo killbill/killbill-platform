@@ -39,7 +39,7 @@ public class UrlResolverFactory {
     // add something like "/content/repositories" at this point.
     private String getValidUrlIfSonatype(final String url) {
         return url.contains("oss.sonatype.org") ?
-               String.format("%s/content/repositories/%s", kpmProperties.getNexusUrl(), kpmProperties.getNexusRepository()) :
+               String.format("%scontent/repositories/%s", kpmProperties.getNexusUrl(), kpmProperties.getNexusRepository()) :
                url;
     }
 
@@ -56,7 +56,7 @@ public class UrlResolverFactory {
         final AuthenticationMethod authMethod = AuthenticationMethod.valueOf(kpmProperties.getNexusAuthMethod().toUpperCase());
         switch (authMethod) {
             case NONE:
-                String baseUrl = getValidUrlIfSonatype(kpmProperties.getNexusUrl() + "/" + kpmProperties.getNexusRepository());
+                String baseUrl = getValidUrlIfSonatype(kpmProperties.getNexusUrl()  + kpmProperties.getNexusRepository());
                 return new NoneUriResolver(baseUrl);
 
             case BASIC:
