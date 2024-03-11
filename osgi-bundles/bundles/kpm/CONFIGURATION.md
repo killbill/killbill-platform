@@ -22,8 +22,8 @@ org.killbill.billing.plugin.kpm.connectTimeoutSec=60
 # 3. This is a required configuration to get Kill Bill version (See more AvailablePluginsComponentsFactory.createVersionsProvider() )
 # In codebase, if *.kpm.nexusUrl value not set, or contains "oss.sonatype.org", the final construct of URL would be 
 # ${*.kpm.nexusUrl} + "/content/repositories" + ${*.kpm.nexusRepository}. 
-org.killbill.billing.plugin.kpm.nexusUrl=https://oss.sonatype.org/
-org.killbill.billing.plugin.kpm.nexusRepository=releases
+org.killbill.billing.plugin.kpm.nexusUrl=https://oss.sonatype.org
+org.killbill.billing.plugin.kpm.nexusRepository=/releases
 
 # How Authentication header will construct. If none, then KPMPlugin will not send "Authorization" header when download 
 # any files. If BASIC, then *.kpm.nexusAuthToken value will be ignored and will use username/password values). 
