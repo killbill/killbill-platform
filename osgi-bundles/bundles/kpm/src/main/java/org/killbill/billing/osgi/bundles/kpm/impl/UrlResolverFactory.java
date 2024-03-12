@@ -39,7 +39,7 @@ public class UrlResolverFactory {
     // add something like "/content/repositories" at this point.
     private String getValidUrlIfSonatype(final String url) {
         return url.contains("oss.sonatype.org") ?
-               String.format("%scontent/repositories/%s", kpmProperties.getNexusUrl(), kpmProperties.getNexusRepository()) :
+               kpmProperties.getNexusUrl().concat("/content/repositories").concat(kpmProperties.getNexusRepository()) :
                url;
     }
 
@@ -56,17 +56,17 @@ public class UrlResolverFactory {
         final AuthenticationMethod authMethod = AuthenticationMethod.valueOf(kpmProperties.getNexusAuthMethod().toUpperCase());
         switch (authMethod) {
             case NONE:
-                String baseUrl = getValidUrlIfSonatype(kpmProperties.getNexusUrl()  + kpmProperties.getNexusRepository());
+                String baseUrl = getValidUrlIfSonatype(kpmProperties.getNexusUrl() + kpmProperties.getNexusRepository());
                 return new NoneUriResolver(baseUrl);
 
             case BASIC:
-                baseUrl = kpmProperties.getNexusUrl() + "/" + kpmProperties.getNexusRepository();
+                baseUrl = kpmProperties.getNexusUrl().concat(kpmProperties.getNexusRepository());
                 final String username = kpmProperties.getNexusAuthUsername();
                 final String password = kpmProperties.getNexusAuthPassword();
                 return new BasicUriResolver(baseUrl, username, password);
 
             case TOKEN:
-                baseUrl = kpmProperties.getNexusUrl() + "/" + kpmProperties.getNexusRepository();
+                baseUrl = kpmProperties.getNexusUrl().concat(kpmProperties.getNexusRepository());
                 return new TokenUriResolver(baseUrl, kpmProperties.getNexusAuthToken());
 
             default: throw new IllegalStateException("Unknown authentication method: " + kpmProperties.getNexusAuthMethod());

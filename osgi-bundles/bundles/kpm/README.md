@@ -35,7 +35,7 @@ In KPM Plugin, there are 2 types of repositories:
    The configurations path are:
    ```properties
    org.killbill.billing.plugin.kpm.nexusUrl=https://dl.cloudsmith.io/<any>/killbill/<account>
-   org.killbill.billing.plugin.kpm.nexusRepository=maven
+   org.killbill.billing.plugin.kpm.nexusRepository=/maven
    ```
    Configuration above will try to get killbill information from URI: `https://dl.cloudsmith.io/<any>/killbill/<account>/maven`
    You can set `*.kpm.nexusAuthMethod|nexusAuthUsername|nexusAuthPassword|nexusAuthToken` as needed. If your repository 

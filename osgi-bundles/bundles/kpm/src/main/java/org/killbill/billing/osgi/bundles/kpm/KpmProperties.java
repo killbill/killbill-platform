@@ -66,14 +66,14 @@ public final class KpmProperties {
      * @return get {@code org.killbill.billing.plugin.kpm.nexusUrl} property, or {@code https://oss.sonatype.org/} if not set.
      */
     public String getNexusUrl() {
-        return Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org/");
+        return Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusUrl"), "https://oss.sonatype.org");
     }
 
     /**
      * @return get {@code org.killbill.billing.plugin.kpm.nexusRepository} property, or {@code releases} if not set.
      */
     public String getNexusRepository() {
-        return Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "releases");
+        return Objects.requireNonNullElse(properties.getProperty(PROPERTY_PREFIX + "nexusRepository"), "/releases");
     }
 
     /**
@@ -243,7 +243,7 @@ public final class KpmProperties {
 
             /**
              * @return get {@code org.killbill.billing.plugin.kpm.pluginsInstall.coordinate.url} property, or
-             *         {@link #getNexusUrl()} {@code + "/" + } {@link #getNexusRepository()}.
+             *         {@link #getNexusUrl()} + {@link #getNexusRepository()}.
              */
             public String getUrl() {
                 return Objects.requireNonNullElse(

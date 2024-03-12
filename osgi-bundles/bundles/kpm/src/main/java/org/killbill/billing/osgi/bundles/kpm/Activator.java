@@ -57,6 +57,13 @@ public class Activator extends KillbillActivatorBase {
 
         final Properties properties = configProperties.getProperties();
         final KpmProperties kpmProperties = new KpmProperties(properties);
+        final KpmPropertiesValidator propertiesValidator = new KpmPropertiesValidator(kpmProperties);
+        try {
+            propertiesValidator.validate();
+        } catch (final KPMPluginException e) {
+            logger.error("Error validating KPM properties", e);
+            throw e;
+        }
 
         final DefaultPluginManager pluginManager = new DefaultPluginManager(killbillAPI, kpmProperties);
         eventsListener = new EventsListener(pluginManager);
