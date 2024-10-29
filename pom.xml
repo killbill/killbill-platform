@@ -25,7 +25,7 @@
         <version>0.146.41</version>
     </parent>
     <artifactId>killbill-platform</artifactId>
-    <version>0.41.12-SNAPSHOT</version>
+    <version>0.41.12</version>
     <packaging>pom</packaging>
     <name>killbill-platform</name>
     <description>Platform to build billing and payment infrastructures</description>
@@ -45,7 +45,7 @@
     <scm>
         <connection>scm:git:git://github.com/killbill/killbill-platform.git</connection>
         <developerConnection>scm:git:git@github.com:killbill/killbill-platform.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>killbill-platform-0.41.12</tag>
         <url>http://github.com/killbill/killbill-platform/tree/master</url>
     </scm>
     <issueManagement>
