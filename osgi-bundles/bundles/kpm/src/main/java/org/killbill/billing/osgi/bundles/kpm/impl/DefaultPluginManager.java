@@ -17,6 +17,8 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.util.Set;
@@ -25,9 +27,9 @@ import javax.annotation.Nonnull;
 
 import org.killbill.billing.osgi.api.PluginStateChange;
 import org.killbill.billing.osgi.bundles.kpm.KPMClient;
+import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginFileService;
-import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginInstaller;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager;
@@ -36,7 +38,7 @@ import org.killbill.billing.osgi.bundles.kpm.UriResolver;
 import org.killbill.billing.osgi.bundles.kpm.VersionsProvider;
 import org.killbill.billing.osgi.bundles.kpm.impl.CoordinateBasedPluginDownloader.DownloadResult;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
-
+import org.killbill.billing.plugin.util.http.InvalidRequest;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.slf4j.Logger;
@@ -78,7 +80,9 @@ public class DefaultPluginManager implements PluginManager {
     KPMClient createHttpClient(final KpmProperties kpmProperties) {
         try {
             // If exceptions are thrown here, the plugin cannot work properly in the first place
-            return new KPMClient(kpmProperties.isStrictSSL(), kpmProperties.getConnectTimeoutSec() * 1000, kpmProperties.getReadTimeoutSec() * 1000);
+            return new KPMClient(kpmProperties.isStrictSSL(),
+                                 kpmProperties.getConnectTimeoutSec() * 1000,
+                                 kpmProperties.getReadTimeoutSec() * 1000);
         } catch (final GeneralSecurityException e) {
             throw new KPMPluginException("Cannot create KpmHttpClient, there's problem with SSL context creation.", e);
         }
@@ -154,9 +158,38 @@ public class DefaultPluginManager implements PluginManager {
 
             notifyFileSystemChange(PluginStateChange.NEW_VERSION, pluginKey, fixedVersion);
 
+        } catch (final InvalidRequest e) {
+            String responseInfo = "";
+            if (e.getResponse() != null) {
+                responseInfo += "HTTP status: " + e.getResponse().statusCode() + ". ";
+            }
+
+            responseInfo += "Error: " + e.getMessage();
+
+            logger.error("Invalid request during plugin installation: URI={}, key={}, version={}. {}",
+                         uri, pluginKey, pluginVersion, responseInfo, e);
+
+            throw new KPMPluginException("Invalid request for URI: " + uri + ". " + responseInfo, e);
+        } catch (final InterruptedException e) {
+            logger.error("Plugin installation was interrupted: URI={}, key={}, version={}",
+                         uri, pluginKey, pluginVersion, e);
+
+            throw new KPMPluginException("Plugin installation was interrupted", e);
+        } catch (final URISyntaxException e) {
+            logger.error("Invalid URI syntax: URI={}, key={}, version={}",
+                         uri, pluginKey, pluginVersion, e);
+
+            throw new KPMPluginException("Invalid URI syntax: " + uri + ". Verify the URL is correctly formatted.", e);
+        } catch (final IOException e) {
+            logger.error("I/O error during plugin installation: URI={}, key={}, version={}",
+                         uri, pluginKey, pluginVersion, e);
+
+            throw new KPMPluginException("I/O error occurred during plugin installation. Check file system and network connectivity.", e);
         } catch (final Exception e) {
-            logger.error("Error when install plugin with URI:{}, key:{}, version:{}", uri, pluginKey, pluginVersion);
-            throw new KPMPluginException(e);
+            logger.error("Unexpected error during plugin installation: URI={}, key={}, version={}.",
+                         uri, pluginKey, pluginVersion, e);
+
+            throw new KPMPluginException("Unexpected error occurred during plugin installation", e);
         } finally {
             final Path downloadDir = downloadedFile == null ? null : downloadedFile.getParent();
             FilesUtils.deleteIfExists(downloadedFile);
@@ -171,7 +204,8 @@ public class DefaultPluginManager implements PluginManager {
                         String artifactId,
                         String pluginVersion,
                         final boolean forceDownload) throws KPMPluginException {
-        logger.info("Install plugin via coordinate. key:{}, kbVersion:{}, version:{}, groupId:{}, artifactId:{}", pluginKey, kbVersion, pluginVersion, groupId, artifactId);
+        logger.info("Install plugin via coordinate. key:{}, kbVersion:{}, version:{}, groupId:{}, artifactId:{}",
+                    pluginKey, kbVersion, pluginVersion, groupId, artifactId);
 
         DownloadResult downloadResult = null;
         Path installedPath = null;
