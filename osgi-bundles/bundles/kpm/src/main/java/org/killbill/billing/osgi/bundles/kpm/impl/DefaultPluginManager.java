@@ -101,10 +101,13 @@ public class DefaultPluginManager implements PluginManager {
                                         final String pluginVersion) {
         try {
             logger.info("Notifying Kill Bill: state='{}', pluginKey='{}', pluginVersion={}", newState, pluginKey, pluginVersion);
+
             killbillApi.getSecurityApi().login(adminUsername, adminPassword);
+
+            final PluginNamingResolver pluginNamingResolver = PluginNamingResolver.of(pluginKey);
             killbillApi.getPluginsInfoApi().notifyOfStateChanged(newState,
                                                                  pluginKey,
-                                                                 null, // Not needed
+                                                                 pluginNamingResolver.getPluginName(),
                                                                  pluginVersion,
                                                                  null /* Unused */);
         } finally {
