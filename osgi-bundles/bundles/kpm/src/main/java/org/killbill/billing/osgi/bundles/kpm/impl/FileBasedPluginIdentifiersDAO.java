@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +33,8 @@ import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -40,6 +43,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 class FileBasedPluginIdentifiersDAO implements PluginIdentifiersDAO {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileBasedPluginIdentifiersDAO.class);
     private static final String FILE_NAME = "plugin_identifiers.json";
 
     private final ObjectMapper objectMapper;
@@ -69,6 +73,16 @@ class FileBasedPluginIdentifiersDAO implements PluginIdentifiersDAO {
     @VisibleForTesting
     Map<String, PluginIdentifierModel> loadFileContent() {
         try {
+            final Map<String, PluginIdentifierModel> emptyPluginMap = new HashMap<>();
+
+            if (!file.exists() || file.length() == 0 || Files.readString(file.toPath()).isBlank()) {
+                logger.info("File {} is missing or empty. Initializing with an empty JSON object", file.getAbsolutePath());
+
+                objectMapper.writeValue(file, emptyPluginMap);
+
+                return emptyPluginMap;
+            }
+
             return objectMapper.readValue(file, new TypeReference<>() {});
         } catch (final IOException e) {
             throw new KPMPluginException(String.format("Cannot load %s content", file), e);
@@ -128,8 +142,9 @@ class FileBasedPluginIdentifiersDAO implements PluginIdentifiersDAO {
 
     @Override
     public Set<PluginIdentifiersModel> getPluginIdentifiers() {
-        return loadFileContent().entrySet().stream()
-                .map(entry -> new PluginIdentifiersModel(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toUnmodifiableSet());
+        return loadFileContent().entrySet()
+                                .stream()
+                                .map(entry -> new PluginIdentifiersModel(entry.getKey(), entry.getValue()))
+                                .collect(Collectors.toUnmodifiableSet());
     }
 }
