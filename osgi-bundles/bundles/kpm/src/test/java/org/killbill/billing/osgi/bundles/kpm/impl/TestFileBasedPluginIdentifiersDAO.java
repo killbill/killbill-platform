@@ -17,15 +17,19 @@
 
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Map;
+
+import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
+import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO.PluginIdentifierModel;
 import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.Map;
 
 public class TestFileBasedPluginIdentifiersDAO {
 
@@ -58,6 +62,26 @@ public class TestFileBasedPluginIdentifiersDAO {
         Assert.assertNotNull(pluginIdentifierModel);
         Assert.assertEquals(pluginIdentifierModel.getPluginName(), pluginNamingResolver.getPluginName());
         Assert.assertEquals(pluginIdentifierModel.getVersion(), pluginNamingResolver.getPluginVersion());
+    }
+
+    @Test(groups = "fast", expectedExceptions = KPMPluginException.class)
+    void testLoadFileContentInvalidJson() throws IOException {
+        try (final FileWriter writer = new FileWriter(pluginIdentifiersDAO.file, false)) {
+            writer.write("INVALID_JSON_CONTENT");
+        }
+
+        pluginIdentifiersDAO.loadFileContent();
+    }
+
+    @Test(groups = "fast")
+    void testLoadFileContentEmptyJson() throws IOException {
+        try (final FileWriter writer = new FileWriter(pluginIdentifiersDAO.file)) {
+            writer.write(" ");
+        }
+
+        final Map<String, PluginIdentifiersDAO.PluginIdentifierModel> pluginIdentifierModelMap = pluginIdentifiersDAO.loadFileContent();
+
+        Assert.assertTrue(pluginIdentifierModelMap.isEmpty());
     }
 
     @Test(groups = "fast")

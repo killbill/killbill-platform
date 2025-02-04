@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -169,11 +170,16 @@ public class PluginFinder {
 
         try {
             identifiers.clear();
-            final Map<String, PluginIdentifier> map = mapper.readValue(identifierFile, new TypeReference<Map<String, PluginIdentifier>>() {});
+
+            if (identifierFile.length() == 0 || Files.readString(identifierFile.toPath()).isBlank()) {
+                logger.info("File {} is missing or empty. Initializing with an empty JSON object", identifierFile.getAbsolutePath());
+
+                mapper.writeValue(identifierFile, new HashMap<>());
+            }
+            final Map<String, PluginIdentifier> map = mapper.readValue(identifierFile, new TypeReference<>() {});
             identifiers.putAll(map);
         } catch (final IOException e) {
             logger.warn("Exception when parsing " + IDENTIFIERS_FILE_NAME + ":", e);
-            return;
         }
     }
 
