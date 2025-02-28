@@ -47,6 +47,8 @@ class DefaultPluginInstaller implements PluginInstaller {
      */
     @Override
     public Path install(final Path downloadedFile, final String pluginKey, final String pluginVersion) throws KPMPluginException {
+        logger.info("Starting installation of plugin: {} version: {}", pluginKey, pluginVersion);
+
         try {
             // Make directory
             final Path pluginDirectory = pluginFileService.createPluginDirectory(pluginKey, pluginVersion);
@@ -56,17 +58,25 @@ class DefaultPluginInstaller implements PluginInstaller {
                                            pluginDirectory.resolve(PluginNamingResolver.of(pluginKey, pluginVersion).getPluginJarFileName()),
                                            StandardCopyOption.REPLACE_EXISTING);
 
+            logger.info("Copied plugin file to: {}", result);
+
             // Make symlink
             pluginFileService.createSymlink(pluginDirectory);
 
+            logger.info("Created symlink for plugin: {} version: {}", pluginKey, pluginVersion);
+
             return result;
         } catch (final IOException e) {
+            logger.error("Failed to install plugin: {} version: {} due to error: {}", pluginKey, pluginVersion, e.getMessage(), e);
+
             throw new KPMPluginException(String.format("Unable to install plugin with key: %s", pluginKey), e);
         }
     }
 
     @Override
     public Path uninstall(final String pluginKey, final String pluginVersion) throws KPMPluginException {
+        logger.info("Starting uninstallation of plugin: {} version: {}", pluginKey, pluginVersion);
+
         try {
             final PluginNamingResolver namingResolver = PluginNamingResolver.of(pluginKey, pluginVersion);
             // Example value: <bundlesPath>/plugins/java/some-plugins/1.2.3/
@@ -75,10 +85,11 @@ class DefaultPluginInstaller implements PluginInstaller {
             final Path pluginFile = pluginDirectory.resolve(namingResolver.getPluginJarFileName());
             // Example value: <bundlesPath>/plugins/java/some-plugins/
             final Path parentOfPluginDir = pluginDirectory.getParent();
-            logger.debug("#uninstall() key{}-{}. Is Exists? dir:{}, file:{}", pluginKey, pluginVersion, Files.exists(pluginDirectory), Files.exists(pluginFile));
+
+            logger.debug("Uninstalling plugin: {} version: {}. Exists? dir: {}, file: {}", pluginKey, pluginVersion, Files.exists(pluginDirectory), Files.exists(pluginFile));
 
             FilesUtils.deleteRecursively(pluginDirectory);
-            logger.debug("#uninstall() Is still exists after deleteRecursively()? dir: {}, file: {}", Files.exists(pluginDirectory), Files.exists(pluginFile));
+            logger.info("Deleted plugin directory: {}", pluginDirectory);
 
             final String symlinkName = DefaultPluginFileService.DEFAULT_SYMLINK_NAME;
             try (final Stream<Path> stream = Files.list(parentOfPluginDir)) {
@@ -93,19 +104,23 @@ class DefaultPluginInstaller implements PluginInstaller {
                         .filter(path -> !path.getFileName().toString().equals(symlinkName))
                         .max(Comparator.naturalOrder())
                         .orElse(null);
-                logger.debug("nextLatestPluginForKey: {}", nextLatestPluginForKey);
+
                 if (nextLatestPluginForKey != null) {
                     pluginFileService.createSymlink(nextLatestPluginForKey);
+                    logger.info("Updated symlink to point to: {}", nextLatestPluginForKey);
                     return nextLatestPluginForKey;
                 } else {
                     // Removed plugin is the last plugin by key. Delete the pluginKey directory
                     FilesUtils.deleteIfExists(parentOfPluginDir);
+                    logger.info("Deleted empty plugin directory: {}", parentOfPluginDir);
                 }
             }
         } catch (final IOException e) {
-            final String msg = String.format("Cannot uninstall: %s version: %s, because %s", pluginKey, pluginVersion, e.getMessage());
-            throw new KPMPluginException(msg, e);
+            logger.error("Failed to uninstall plugin: {} version: {} due to error: {}", pluginKey, pluginVersion, e.getMessage(), e);
+
+            throw new KPMPluginException(String.format("Cannot uninstall: %s version: %s", pluginKey, pluginVersion), e);
         }
+
         return null;
     }
 }

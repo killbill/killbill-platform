@@ -33,8 +33,12 @@ import org.killbill.billing.plugin.util.http.HttpClient;
 import org.killbill.billing.plugin.util.http.InvalidRequest;
 import org.killbill.billing.plugin.util.http.ResponseFormat;
 import org.killbill.commons.utils.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KPMClient extends HttpClient {
+
+    private final Logger logger = LoggerFactory.getLogger(KPMClient.class);
 
     public KPMClient(final boolean strictSSL,
                      final int connectTimeoutMs,
@@ -44,8 +48,10 @@ public class KPMClient extends HttpClient {
 
     @Override
     protected Builder getBuilderWithHeaderAndQuery(final String verb, final String url, final Map<String, String> headers, final Map<String, String> queryParams) throws URISyntaxException {
+        logger.debug("Building request: verb={}, url={}, headers={}, queryParams={}", verb, url, headers, queryParams);
         final Builder builder = super.getBuilderWithHeaderAndQuery(verb, url, headers, queryParams);
         builder.setHeader("User-Agent", "KillBill/kpm-plugin/1.0");
+
         return builder;
     }
 
@@ -60,8 +66,13 @@ public class KPMClient extends HttpClient {
     }
 
     public void download(final String uri, final Map<String, String> headers, final Path target) throws InvalidRequest, IOException, URISyntaxException, InterruptedException {
+        logger.info("Starting download: uri={}, target={}", uri, target);
         try (final InputStream is = doCall(GET, uri, null, Collections.emptyMap(), headers, InputStream.class, ResponseFormat.RAW)) {
             Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Download completed: uri={}, target={}", uri, target);
+        } catch (final Exception e) {
+            logger.error("Download failed: uri={}, target={}, error={}", uri, target, e.getMessage(), e);
+            throw e;
         }
     }
 
@@ -96,6 +107,7 @@ public class KPMClient extends HttpClient {
         } catch (final Exception e) {
             throw new RuntimeException(String.format("Error when GET request to '%s', because: %s", url, e.getMessage()), e);
         }
+
         return target;
     }
 
@@ -115,7 +127,7 @@ public class KPMClient extends HttpClient {
                 }
             }
         } catch (final IOException ex) {
-            throw new RuntimeException("Cannot create temp file for downloaded file because: " + ex.getMessage());
+            throw new RuntimeException("Cannot create temp file for downloaded file because: " + ex.getMessage(), ex);
         }
     }
 }
