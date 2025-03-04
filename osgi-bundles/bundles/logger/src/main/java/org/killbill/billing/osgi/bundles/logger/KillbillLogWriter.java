@@ -52,8 +52,10 @@ public class KillbillLogWriter implements BundleListener, FrameworkListener, Ser
     public void log(final ServiceReference serviceReference, final int level, final String message, final Throwable exception) {
         final Bundle bundle = serviceReference == null ? null : serviceReference.getBundle();
 
+        final String loggerName = message.split("; ")[0];
+
         // Forward the log to HTTP consumers
-        logEntriesManager.recordEvent(new LogEntryJson(bundle, level, message, exception));
+        logEntriesManager.recordEvent(new LogEntryJson(bundle, level, loggerName, message, exception));
 
         if (serviceReference != null && "true".equals(serviceReference.getProperty("KILL_BILL_ROOT_LOGGING"))) {
             // LogEntry comes from Logback already (see OSGIAppender), ignore

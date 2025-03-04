@@ -34,10 +34,11 @@ public class LogEntryJson {
     private final UUID id;
     private final String level;
     private final String name;
+    private final String logger;
     private final String message;
     private final Long time;
 
-    public LogEntryJson(final Bundle bundle, final int intLevel, final String message, final Throwable exception) {
+    public LogEntryJson(final Bundle bundle, final int intLevel, final String loggerName, final String message, final Throwable exception) {
         id = UUID.randomUUID();
 
         if (intLevel == LogService.LOG_ERROR) {
@@ -64,8 +65,13 @@ public class LogEntryJson {
             name = bundle.getSymbolicName();
         }
 
+        this.logger = loggerName;
         this.message = message;
         this.time = System.currentTimeMillis();
+    }
+
+    public String getLogger() {
+        return logger;
     }
 
     public UUID getId() {
@@ -98,6 +104,7 @@ public class LogEntryJson {
             sb.append("\"id\":\"").append(id).append("\"");
             sb.append(", \"level\":\"").append(level).append("\"");
             sb.append(", \"name\":\"").append(name).append("\"");
+            sb.append(", \"logger\":\"").append(logger).append("\"");
             sb.append(", \"message\":\"").append(message).append("\"");
             sb.append(", \"time\":\"").append(time).append("\"");
             sb.append('}');
