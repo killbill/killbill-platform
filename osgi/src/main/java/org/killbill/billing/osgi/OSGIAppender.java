@@ -81,7 +81,11 @@ public class OSGIAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
             }
         }
 
-        logService.log(SR, level, eventObject.getFormattedMessage(), t);
+        final String loggerName = eventObject.getLoggerName();
+
+        final String msg = loggerName + "; " + eventObject.getFormattedMessage();
+
+        logService.log(SR, level, msg, t);
     }
 
     private static final class RootBundleLogbackServiceReference implements ServiceReference {

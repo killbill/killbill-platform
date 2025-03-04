@@ -100,7 +100,7 @@ public class DefaultPluginManager implements PluginManager {
                                         final String pluginKey,
                                         final String pluginVersion) {
         try {
-            logger.info("Notifying Kill Bill: state='{}', pluginKey='{}', pluginVersion={}", newState, pluginKey, pluginVersion);
+            logger.info("Notifying Kill Bill of plugin state change: state='{}', pluginKey='{}', pluginVersion={}", newState, pluginKey, pluginVersion);
 
             killbillApi.getSecurityApi().login(adminUsername, adminPassword);
 
@@ -110,6 +110,8 @@ public class DefaultPluginManager implements PluginManager {
                                                                  pluginNamingResolver.getPluginName(),
                                                                  pluginVersion,
                                                                  null /* Unused */);
+
+            logger.info("Successfully notified Kill Bill of plugin state change: pluginKey={}, pluginVersion={}", pluginKey, pluginVersion);
         } finally {
             killbillApi.getSecurityApi().logout();
         }
@@ -118,6 +120,7 @@ public class DefaultPluginManager implements PluginManager {
     @Override
     public GetAvailablePluginsModel getAvailablePlugins(@Nonnull final String kbVersion,
                                                         final boolean forceDownload) throws KPMPluginException {
+        logger.info("Fetching available plugins for Kill Bill version: {}, forceDownload: {}", kbVersion, forceDownload);
         final GetAvailablePluginsModel result = new GetAvailablePluginsModel();
 
         final VersionsProvider versionsProvider = availablePluginsComponentsFactory.createVersionsProvider(kbVersion, forceDownload);
@@ -133,6 +136,8 @@ public class DefaultPluginManager implements PluginManager {
                 .getPlugins();
         plugins.forEach(entry -> result.addPlugins(entry.getPluginKey(), entry.getPluginVersion()));
 
+        logger.info("Successfully fetched {} available plugins for Kill Bill version: {}", plugins.size(), kbVersion);
+
         return result;
     }
 
@@ -140,7 +145,7 @@ public class DefaultPluginManager implements PluginManager {
     public void install(@Nonnull final String uri,
                         @Nonnull final String pluginKey,
                         @Nonnull final String pluginVersion) throws KPMPluginException {
-        logger.debug("Installing plugin via URL for key: {}, pluginVersion: {}, uri: {}", pluginKey, pluginVersion, uri);
+        logger.info("Starting installation of plugin: pluginKey={}, pluginVersion={}, uri={}", pluginKey, pluginVersion, uri);
 
         Path downloadedFile = null;
         final PluginNamingResolver namingResolver = PluginNamingResolver.of(pluginKey, pluginVersion, uri);
@@ -161,6 +166,7 @@ public class DefaultPluginManager implements PluginManager {
 
             notifyFileSystemChange(PluginStateChange.NEW_VERSION, pluginKey, fixedVersion);
 
+            logger.info("Plugin installed successfully: pluginKey={}, pluginVersion={}", pluginKey, pluginVersion);
         } catch (final InvalidRequest e) {
             String responseInfo = "";
             if (e.getResponse() != null) {
@@ -207,8 +213,8 @@ public class DefaultPluginManager implements PluginManager {
                         String artifactId,
                         String pluginVersion,
                         final boolean forceDownload) throws KPMPluginException {
-        logger.info("Install plugin via coordinate. key:{}, kbVersion:{}, version:{}, groupId:{}, artifactId:{}",
-                    pluginKey, kbVersion, pluginVersion, groupId, artifactId);
+        logger.info("Starting coordinate-based plugin installation: " +
+                    "pluginKey={}, kbVersion={}, version={}, groupId={}, artifactId={}", pluginKey, kbVersion, pluginVersion, groupId, artifactId);
 
         DownloadResult downloadResult = null;
         Path installedPath = null;
@@ -230,9 +236,12 @@ public class DefaultPluginManager implements PluginManager {
             pluginIdentifiersDAO.add(pluginKey, groupId, artifactId, pluginVersion);
 
             notifyFileSystemChange(PluginStateChange.NEW_VERSION, pluginKey, pluginVersion);
-            logger.info("Plugin key: {} installed successfully via coordinate.", pluginKey);
+
+            logger.info("Successfully installed plugin via coordinate: pluginKey={}, version={}", pluginKey, pluginVersion);
         } catch (final Exception e) {
-            logger.error("Error when install pluginKey: '{}' with coordinate. Exception: {}", pluginKey, e.getMessage());
+            logger.error("Error installing plugin via coordinate: pluginKey={}, version={}, error={}",
+                         pluginKey, pluginVersion, e.getMessage(), e);
+
             // If exception happened, installed file should be deleted.
             FilesUtils.deleteIfExists(installedPath);
             throw new KPMPluginException(e);
@@ -245,21 +254,30 @@ public class DefaultPluginManager implements PluginManager {
 
     @Override
     public void uninstall(final String pluginKey, final String version) throws KPMPluginException {
-        // Uninstall from bundlesPath
-        final Path nextPluginByKey = pluginInstaller.uninstall(pluginKey, version);
-        // Update plugin_identifiers.json
-        final String nextPluginVersion = (nextPluginByKey == null || nextPluginByKey.getFileName() == null) ?
-                                         null :
-                                         PluginNamingResolver.getVersionFromString(nextPluginByKey.getFileName().toString());
-        if (Strings.isNullOrEmpty(nextPluginVersion)) {
-            // Last plugin by pluginKey. Just remove it.
-            pluginIdentifiersDAO.remove(pluginKey);
-        } else {
-            // Replace the version value
-            pluginIdentifiersDAO.add(pluginKey, nextPluginVersion);
-        }
+        logger.info("Starting uninstallation of plugin: pluginKey={}, version={}", pluginKey, version);
 
-        // What if notifyFileSystemChange() implementation fails? Like, wrong username/password?
-        notifyFileSystemChange(PluginStateChange.DISABLED, pluginKey, version);
+        try {
+            // Uninstall from bundlesPath
+            final Path nextPluginByKey = pluginInstaller.uninstall(pluginKey, version);
+            // Update plugin_identifiers.json
+            final String nextPluginVersion = (nextPluginByKey == null || nextPluginByKey.getFileName() == null) ?
+                                             null :
+                                             PluginNamingResolver.getVersionFromString(nextPluginByKey.getFileName().toString());
+            if (Strings.isNullOrEmpty(nextPluginVersion)) {
+                // Last plugin by pluginKey. Just remove it.
+                pluginIdentifiersDAO.remove(pluginKey);
+            } else {
+                // Replace the version value
+                pluginIdentifiersDAO.add(pluginKey, nextPluginVersion);
+            }
+
+            // What if notifyFileSystemChange() implementation fails? Like, wrong username/password?
+            notifyFileSystemChange(PluginStateChange.DISABLED, pluginKey, version);
+
+            logger.info("Successfully uninstalled plugin: pluginKey={}, version={}", pluginKey, version);
+        } catch (final Exception e) {
+            logger.error("Error uninstalling plugin: pluginKey={}, version={}, error={}", pluginKey, version, e.getMessage(), e);
+            throw new KPMPluginException("Uninstallation failed for plugin " + pluginKey, e);
+        }
     }
 }
