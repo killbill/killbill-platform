@@ -54,8 +54,14 @@ public class KillbillLogWriter implements BundleListener, FrameworkListener, Ser
 
         final String loggerName = message.split("; ")[0];
 
+        final Map<String, String> mdcContext = MDC.getCopyOfContextMap();
+        final String userToken = mdcContext != null ? mdcContext.get("kb.userToken") : null;
+        final String tenantRecordId = mdcContext != null ? mdcContext.get("kb.tenantRecordId") : null;
+        final String accountRecordId = mdcContext != null ? mdcContext.get("kb.accountRecordId") : null;
+
         // Forward the log to HTTP consumers
-        logEntriesManager.recordEvent(new LogEntryJson(bundle, level, loggerName, message, exception));
+        logEntriesManager.recordEvent(new LogEntryJson(bundle, level, loggerName, message, userToken,
+                                                       tenantRecordId, accountRecordId, exception));
 
         if (serviceReference != null && "true".equals(serviceReference.getProperty("KILL_BILL_ROOT_LOGGING"))) {
             // LogEntry comes from Logback already (see OSGIAppender), ignore
