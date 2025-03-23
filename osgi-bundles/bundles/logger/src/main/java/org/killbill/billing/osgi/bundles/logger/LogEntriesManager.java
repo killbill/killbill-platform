@@ -32,10 +32,13 @@ import org.killbill.commons.utils.collect.EvictingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("UnstableApiUsage")
 public class LogEntriesManager implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(LogEntriesManager.class);
+
+    public static final String SSE_CACHE_SIZE_PROPERTY = "org.killbill.sse.cache.size";
+
+    public static final int DEFAULT_SSE_CACHE_SIZE = 5000;
 
     private final Map<UUID, EvictingQueue<LogEntryJson>> sseIDsCaches;
     private final EvictingQueue<LogEntryJson> rootCache;
@@ -55,7 +58,19 @@ public class LogEntriesManager implements Closeable {
     }
 
     public EvictingQueue<LogEntryJson> subscribe(final UUID cacheId, @Nullable final UUID lastEventId) {
-        final EvictingQueue<LogEntryJson> cache = new EvictingQueue<>(500);
+        int sseCacheSize = DEFAULT_SSE_CACHE_SIZE;
+
+        final String sseCacheSizeStr = System.getProperty(SSE_CACHE_SIZE_PROPERTY);
+
+        if (sseCacheSizeStr != null) {
+            try {
+                sseCacheSize = Integer.parseInt(sseCacheSizeStr);
+            } catch (final NumberFormatException e) {
+                logger.warn("Invalid SSE cache size '{}', using default {}", sseCacheSizeStr, DEFAULT_SSE_CACHE_SIZE);
+            }
+        }
+
+        final EvictingQueue<LogEntryJson> cache = new EvictingQueue<>(sseCacheSize);
         synchronized (sseIDsCaches) {
             sseIDsCaches.put(cacheId, cache);
             if (rootCache != null) {
@@ -75,7 +90,8 @@ public class LogEntriesManager implements Closeable {
             }
         }
         // Logging should be done outside the synchronized block to avoid any deadlock (the log entry will be put in the caches)
-        logger.info("Created new cache {} ({} active)", cacheId, sseIDsCaches.size());
+        logger.info("Created new cache {} ({} active, cache size: {})", cacheId, sseIDsCaches.size(), sseCacheSize);
+
         return cache;
     }
 

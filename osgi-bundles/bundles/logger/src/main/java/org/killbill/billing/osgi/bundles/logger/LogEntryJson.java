@@ -37,8 +37,18 @@ public class LogEntryJson {
     private final String logger;
     private final String message;
     private final Long time;
+    private final String userToken;
+    private final String tenantRecordId;
+    private final String accountRecordId;
 
-    public LogEntryJson(final Bundle bundle, final int intLevel, final String loggerName, final String message, final Throwable exception) {
+    public LogEntryJson(final Bundle bundle,
+                        final int intLevel,
+                        final String loggerName,
+                        final String message,
+                        final String userToken,
+                        final String tenantRecordId,
+                        final String accountRecordId,
+                        final Throwable exception) {
         id = UUID.randomUUID();
 
         if (intLevel == LogService.LOG_ERROR) {
@@ -68,6 +78,9 @@ public class LogEntryJson {
         this.logger = loggerName;
         this.message = message;
         this.time = System.currentTimeMillis();
+        this.userToken = userToken;
+        this.accountRecordId = accountRecordId;
+        this.tenantRecordId = tenantRecordId;
     }
 
     public String getLogger() {
@@ -94,6 +107,18 @@ public class LogEntryJson {
         return time;
     }
 
+    public String getUserToken() {
+        return userToken;
+    }
+
+    public String getTenantRecordId() {
+        return tenantRecordId;
+    }
+
+    public String getAccountRecordId() {
+        return accountRecordId;
+    }
+
     @Override
     public String toString() {
         try {
@@ -105,6 +130,9 @@ public class LogEntryJson {
             sb.append(", \"level\":\"").append(level).append("\"");
             sb.append(", \"name\":\"").append(name).append("\"");
             sb.append(", \"logger\":\"").append(logger).append("\"");
+            sb.append(", \"userToken\":\"").append(userToken).append("\"");
+            sb.append(", \"tenantRecordId\":\"").append(tenantRecordId).append("\"");
+            sb.append(", \"accountRecordId\":\"").append(accountRecordId).append("\"");
             sb.append(", \"message\":\"").append(message).append("\"");
             sb.append(", \"time\":\"").append(time).append("\"");
             sb.append('}');
@@ -135,6 +163,18 @@ public class LogEntryJson {
         if (message != null ? !message.equals(that.message) : that.message != null) {
             return false;
         }
+        if (userToken != null ? !userToken.equals(that.userToken) : that.userToken != null) {
+            return false;
+        }
+
+        if (tenantRecordId != null ? !tenantRecordId.equals(that.tenantRecordId) : that.tenantRecordId != null) {
+            return false;
+        }
+
+        if (accountRecordId != null ? !accountRecordId.equals(that.accountRecordId) : that.accountRecordId != null) {
+            return false;
+        }
+
         return time != null ? time.equals(that.time) : that.time == null;
     }
 
@@ -144,6 +184,9 @@ public class LogEntryJson {
         result = 31 * result + (level != null ? level.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (message != null ? message.hashCode() : 0);
+        result = 31 * result + (userToken != null ? userToken.hashCode() : 0);
+        result = 31 * result + (tenantRecordId != null ? tenantRecordId.hashCode() : 0);
+        result = 31 * result + (accountRecordId != null ? accountRecordId.hashCode() : 0);
         result = 31 * result + (time != null ? time.hashCode() : 0);
         return result;
     }
