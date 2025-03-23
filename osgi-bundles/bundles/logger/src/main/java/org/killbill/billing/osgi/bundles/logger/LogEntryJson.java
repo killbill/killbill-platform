@@ -163,6 +163,18 @@ public class LogEntryJson {
         if (message != null ? !message.equals(that.message) : that.message != null) {
             return false;
         }
+        if (userToken != null ? !userToken.equals(that.userToken) : that.userToken != null) {
+            return false;
+        }
+
+        if (tenantRecordId != null ? !tenantRecordId.equals(that.tenantRecordId) : that.tenantRecordId != null) {
+            return false;
+        }
+
+        if (accountRecordId != null ? !accountRecordId.equals(that.accountRecordId) : that.accountRecordId != null) {
+            return false;
+        }
+
         return time != null ? time.equals(that.time) : that.time == null;
     }
 
@@ -172,6 +184,9 @@ public class LogEntryJson {
         result = 31 * result + (level != null ? level.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (message != null ? message.hashCode() : 0);
+        result = 31 * result + (userToken != null ? userToken.hashCode() : 0);
+        result = 31 * result + (tenantRecordId != null ? tenantRecordId.hashCode() : 0);
+        result = 31 * result + (accountRecordId != null ? accountRecordId.hashCode() : 0);
         result = 31 * result + (time != null ? time.hashCode() : 0);
         return result;
     }

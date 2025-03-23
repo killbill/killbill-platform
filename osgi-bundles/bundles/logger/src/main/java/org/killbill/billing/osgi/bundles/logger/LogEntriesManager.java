@@ -20,8 +20,6 @@
 package org.killbill.billing.osgi.bundles.logger;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,12 +28,10 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.commons.utils.collect.EvictingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("UnstableApiUsage")
 public class LogEntriesManager implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(LogEntriesManager.class);
@@ -62,16 +58,9 @@ public class LogEntriesManager implements Closeable {
     }
 
     public EvictingQueue<LogEntryJson> subscribe(final UUID cacheId, @Nullable final UUID lastEventId) {
-        final DefaultKillbillConfigSource defaultKillbillConfigSource;
-        try {
-            defaultKillbillConfigSource = new DefaultKillbillConfigSource();
-        } catch (final IOException | URISyntaxException e) {
-            throw new RuntimeException("Failed to initialize Killbill config source", e);
-        }
-
         int sseCacheSize = DEFAULT_SSE_CACHE_SIZE;
 
-        final String sseCacheSizeStr = defaultKillbillConfigSource.getString(SSE_CACHE_SIZE_PROPERTY);
+        final String sseCacheSizeStr = System.getProperty(SSE_CACHE_SIZE_PROPERTY);
 
         if (sseCacheSizeStr != null) {
             try {

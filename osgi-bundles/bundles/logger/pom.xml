@@ -76,10 +76,6 @@
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>
-            <artifactId>killbill-platform-base</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-platform-osgi-api</artifactId>
             <scope>provided</scope>
         </dependency>
