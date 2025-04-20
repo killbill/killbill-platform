@@ -23,11 +23,8 @@ import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.config.LifecycleConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
-import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
-
-import com.google.inject.AbstractModule;
 
 public class LifecycleModule extends KillBillPlatformModuleBase {
 
@@ -41,7 +38,7 @@ public class LifecycleModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureConfig() {
-        final LifecycleConfig lifecycleConfig = new ConfigurationObjectFactory(skifeConfigSource).build(LifecycleConfig.class);
+        final LifecycleConfig lifecycleConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(LifecycleConfig.class);
         bind(LifecycleConfig.class).toInstance(lifecycleConfig);
     }
 

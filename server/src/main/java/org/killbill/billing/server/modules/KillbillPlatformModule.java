@@ -35,6 +35,7 @@ import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
@@ -56,7 +57,6 @@ import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.guice.MetricsInstrumentationModule;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.TimingCollector;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
@@ -67,7 +67,6 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
-
 import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillPlatformModuleBase {
@@ -123,10 +122,10 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureDao() {
-        daoConfig = new ConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
+        daoConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
         bind(DaoConfig.class).toInstance(daoConfig);
 
-        mainRoDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(MainRoDaoConfig.class);
+        mainRoDataSourceConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(MainRoDaoConfig.class);
         bind(MainRoDaoConfig.class).toInstance(mainRoDataSourceConfig);
 
         final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();
@@ -217,7 +216,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        final OSGIDataSourceConfig osgiDataSourceConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         final EmbeddedDB osgiEmbeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
         bind(EmbeddedDB.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toInstance(osgiEmbeddedDB);
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, osgiEmbeddedDB));

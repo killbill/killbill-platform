@@ -29,6 +29,7 @@ import javax.servlet.ServletContextEvent;
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillConfigSource;
+import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.server.config.KillbillServerConfig;
@@ -65,7 +66,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -131,7 +131,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void initializeConfig() throws IOException, URISyntaxException {
         configSource = getConfigSource();
 
-        final ConfigurationObjectFactory configFactory = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
+        final ConfigurationObjectFactory configFactory = new AugmentedConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
         config = configFactory.build(KillbillServerConfig.class);
     }
 
