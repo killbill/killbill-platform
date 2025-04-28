@@ -52,7 +52,6 @@ import org.killbill.billing.osgi.api.OSGISingleServiceRegistration;
 import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
-import org.killbill.billing.platform.config.RuntimeKillbillConfigRegistry;
 import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.clock.Clock;
@@ -90,8 +89,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
     private final JNDIManager jndiManager;
     private final MetricRegistry metricsRegistry;
     private final BundleRegistry bundleRegistry;
-
-    private final RuntimeKillbillConfigRegistry runtimeKillbillConfigRegistry;
     private final List<OSGIServiceRegistrable> allRegistrationHandlers;
 
     private BundleContext context = null;
@@ -108,7 +105,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
                              final MetricRegistry metricsRegistry,
-                             final RuntimeKillbillConfigRegistry runtimeKillbillConfigRegistry,
                              final JNDIManager jndiManager) {
         this.osgiKillbill = osgiKillbill;
         this.bundleRegistry = bundleRegistry;
@@ -120,7 +116,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
         this.configProperties = configProperties;
         this.jndiManager = jndiManager;
         this.metricsRegistry = metricsRegistry;
-        this.runtimeKillbillConfigRegistry = new RuntimeKillbillConfigRegistry();
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistrable>();
     }
@@ -214,7 +209,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
         registrar.registerService(context, Clock.class, clock, props);
         registrar.registerService(context, MetricRegistry.class, metricsRegistry, props);
-        registrar.registerService(context, RuntimeKillbillConfigRegistry.class, runtimeKillbillConfigRegistry, props);
 
         context.addServiceListener(this);
 

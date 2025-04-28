@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Augmented version of {@link ConfigurationObjectFactory} that collects resolved config properties
- * at runtime and registers them in {@link RuntimeKillbillConfigRegistry}.
+ * at runtime and registers them in {@link DefaultKillbillConfigSource}.
  */
 public class AugmentedConfigurationObjectFactory extends ConfigurationObjectFactory {
 
@@ -55,7 +55,7 @@ public class AugmentedConfigurationObjectFactory extends ConfigurationObjectFact
                     final Object value = method.invoke(instance);
                     final String[] keys = configAnnotation.value();
                     Arrays.stream(keys)
-                          .forEach(key -> RuntimeKillbillConfigRegistry.addConfig(key, value));
+                          .forEach(key -> DefaultKillbillConfigSource.addRuntimeProperties(key, value));
 
                 } catch (final IllegalAccessException | InvocationTargetException e) {
                     log.warn("Failed to resolve config method: {}", method.getName(), e);

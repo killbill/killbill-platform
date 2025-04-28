@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
@@ -66,6 +67,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private static volatile int GMT_WARNING = NOT_SHOWN;
     private static volatile int ENTROPY_WARNING = NOT_SHOWN;
+
+    private static final Map<String, Optional<Object>> RUNTIME_CONFIGS = new ConcurrentHashMap<>();
 
     private final Properties properties;
 
@@ -123,7 +126,18 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         // We have TestDefaultKillbillConfigSource#testGetProperties() that cover this, but seems like this is similar
         // to one of our chicken-egg problem? (see loadPropertiesFromFileOrSystemProperties() below)
         properties.stringPropertyNames().forEach(key -> result.setProperty(key, properties.getProperty(key)));
+
+        RUNTIME_CONFIGS.forEach((key, optionalValue) -> {
+            if (!result.containsKey(key)) {
+                result.setProperty(key, optionalValue.map(Object::toString).orElse(""));
+            }
+        });
+
         return result;
+    }
+
+    public static void addRuntimeProperties(final String key, final Object value) {
+        RUNTIME_CONFIGS.put(key, Optional.ofNullable(value));
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
