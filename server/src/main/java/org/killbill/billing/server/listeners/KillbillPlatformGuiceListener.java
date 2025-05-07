@@ -29,7 +29,6 @@ import javax.servlet.ServletContextEvent;
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.platform.api.KillbillConfigSource;
-import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.server.config.KillbillServerConfig;
@@ -51,8 +50,8 @@ import org.killbill.commons.skeleton.modules.BaseServerModuleBuilder;
 import org.killbill.commons.skeleton.modules.JMXModule;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.notificationq.api.NotificationQueueService;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +130,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void initializeConfig() throws IOException, URISyntaxException {
         configSource = getConfigSource();
 
-        final ConfigurationObjectFactory configFactory = new AugmentedConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
+        final AugmentedConfigurationObjectFactory configFactory = new AugmentedConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
         config = configFactory.build(KillbillServerConfig.class);
     }
 

@@ -23,8 +23,8 @@ import org.killbill.billing.lifecycle.DefaultLifecycle;
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.config.LifecycleConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
-import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 
 public class LifecycleModule extends KillBillPlatformModuleBase {
 

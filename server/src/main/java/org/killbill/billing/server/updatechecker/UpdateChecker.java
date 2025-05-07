@@ -23,8 +23,8 @@ import java.io.IOException;
 
 import javax.servlet.ServletContext;
 
-import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.server.config.UpdateCheckConfig;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

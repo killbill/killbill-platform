@@ -29,7 +29,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.TimeZone;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
@@ -39,6 +38,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.xmlloader.UriAccessor;
+import org.skife.config.RuntimeConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +67,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private static volatile int GMT_WARNING = NOT_SHOWN;
     private static volatile int ENTROPY_WARNING = NOT_SHOWN;
-
-    private static final Map<String, Optional<Object>> RUNTIME_CONFIGS = new ConcurrentHashMap<>();
 
     private final Properties properties;
 
@@ -127,17 +125,13 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         // to one of our chicken-egg problem? (see loadPropertiesFromFileOrSystemProperties() below)
         properties.stringPropertyNames().forEach(key -> result.setProperty(key, properties.getProperty(key)));
 
-        RUNTIME_CONFIGS.forEach((key, optionalValue) -> {
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!result.containsKey(key)) {
-                result.setProperty(key, optionalValue.map(Object::toString).orElse(""));
+                result.setProperty(key, value);
             }
         });
 
         return result;
-    }
-
-    public static void addRuntimeProperties(final String key, final Object value) {
-        RUNTIME_CONFIGS.put(key, Optional.ofNullable(value));
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {

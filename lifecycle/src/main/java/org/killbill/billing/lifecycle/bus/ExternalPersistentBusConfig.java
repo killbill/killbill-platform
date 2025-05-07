@@ -21,8 +21,8 @@ package org.killbill.billing.lifecycle.bus;
 
 import java.util.Map;
 
-import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.bus.api.PersistentBusConfig;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
 import org.skife.config.TimeSpan;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class ExternalPersistentBusConfig extends PersistentBusConfig {
     public ExternalPersistentBusConfig(final ConfigSource configSource) {
         // See org.killbill.billing.util.glue.BusModule
         internalPersistentBusConfig = new AugmentedConfigurationObjectFactory(configSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                         Map.of("instanceName", MAIN_BUS_NAME));
+                                                                                                                  Map.of("instanceName", MAIN_BUS_NAME));
         externalPersistentBusConfig = new AugmentedConfigurationObjectFactory(configSource).buildWithReplacements(PersistentBusConfig.class,
                                                                                                          Map.of("instanceName", EXTERNAL_BUS_NAME));
     }

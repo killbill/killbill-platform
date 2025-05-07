@@ -22,10 +22,10 @@ package org.killbill.billing.platform.glue;
 import java.util.Map;
 
 import org.killbill.billing.platform.api.KillbillConfigSource;
-import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.notificationq.DefaultNotificationQueueService;
 import org.killbill.notificationq.api.NotificationQueueConfig;
 import org.killbill.notificationq.api.NotificationQueueService;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 
 public class NotificationQueueModule extends KillBillPlatformModuleBase {
 

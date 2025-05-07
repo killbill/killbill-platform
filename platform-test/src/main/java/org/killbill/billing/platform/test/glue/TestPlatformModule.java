@@ -33,7 +33,6 @@ import org.killbill.billing.osgi.glue.DefaultOSGIModule;
 import org.killbill.billing.osgi.glue.OSGIDataSourceConfig;
 import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.billing.platform.api.KillbillService;
-import org.killbill.billing.platform.config.AugmentedConfigurationObjectFactory;
 import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.NotificationQueueModule;
 import org.killbill.billing.platform.jndi.JNDIManager;
@@ -42,6 +41,7 @@ import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeCommand;
 import org.killbill.billing.util.nodes.NodeInfo;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 
 public abstract class TestPlatformModule extends KillBillPlatformModuleBase {
 
