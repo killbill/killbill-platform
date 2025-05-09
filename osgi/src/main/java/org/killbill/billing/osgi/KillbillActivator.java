@@ -55,6 +55,7 @@ import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.platform.jndi.JNDIManager;
 import org.killbill.billing.usage.plugin.api.UsagePluginApi;
 import org.killbill.clock.Clock;
+import org.killbill.commons.health.api.HealthCheckRegistry;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.osgi.framework.AllServiceListener;
 import org.osgi.framework.BundleActivator;
@@ -95,6 +96,8 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
     private ServiceTracker<LogService, LogService> logTracker;
     private OSGIAppender osgiAppender = null;
 
+    private HealthCheckRegistry healthCheckRegistry;
+
     @Inject
     public KillbillActivator(@Named(DefaultOSGIModule.OSGI_DATA_SOURCE_ID) final DataSource dataSource,
                              final OSGIKillbill osgiKillbill,
@@ -105,6 +108,7 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
                              final MetricRegistry metricsRegistry,
+                             final HealthCheckRegistry healthCheckRegistry,
                              final JNDIManager jndiManager) {
         this.osgiKillbill = osgiKillbill;
         this.bundleRegistry = bundleRegistry;
@@ -116,6 +120,7 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
         this.configProperties = configProperties;
         this.jndiManager = jndiManager;
         this.metricsRegistry = metricsRegistry;
+        this.healthCheckRegistry = healthCheckRegistry;
         this.registrar = new OSGIKillbillRegistrar();
         this.allRegistrationHandlers = new LinkedList<OSGIServiceRegistrable>();
     }
@@ -209,6 +214,7 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);
         registrar.registerService(context, Clock.class, clock, props);
         registrar.registerService(context, MetricRegistry.class, metricsRegistry, props);
+        registrar.registerService(context, HealthCheckRegistry.class, healthCheckRegistry, props);
 
         context.addServiceListener(this);
 
