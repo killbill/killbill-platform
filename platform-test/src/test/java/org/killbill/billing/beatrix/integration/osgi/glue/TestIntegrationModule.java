@@ -20,6 +20,7 @@
 package org.killbill.billing.beatrix.integration.osgi.glue;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,7 +61,9 @@ import org.killbill.billing.util.api.RecordIdApi;
 import org.killbill.billing.util.api.TagUserApi;
 import org.killbill.clock.Clock;
 import org.killbill.clock.ClockMock;
+import org.killbill.commons.health.api.HealthCheck;
 import org.killbill.commons.health.api.HealthCheckRegistry;
+import org.killbill.commons.health.api.Result;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.impl.NoOpMetricRegistry;
 
@@ -78,7 +81,7 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
         install(new TestPlatformModuleWithEmbeddedDB(configSource, true, (TestKillbillConfigSource) configSource));
 
         bind(MetricRegistry.class).to(NoOpMetricRegistry.class);
-        bind(HealthCheckRegistry.class).toProvider(Providers.of(null));
+        bind(HealthCheckRegistry.class).to(TestHealthCheckRegistry.class);
         bind(Clock.class).to(ClockMock.class);
         // Make sure we have a unique clock if one requests ClockMock explicitly
         bind(ClockMock.class).asEagerSingleton();
@@ -193,6 +196,24 @@ public class TestIntegrationModule extends KillBillPlatformModuleBase {
         @Override
         public T getService() {
             return this.pluginsByName.values().stream().findFirst().orElse(null);
+        }
+    }
+
+    static final class TestHealthCheckRegistry implements HealthCheckRegistry {
+
+        @Override
+        public Set<String> getNames() {
+            return null;
+        }
+
+        @Override
+        public Result runHealthCheck(final String name) throws NoSuchElementException {
+            return null;
+        }
+
+        @Override
+        public void register(final String name, final HealthCheck healthCheck) {
+
         }
     }
 }
