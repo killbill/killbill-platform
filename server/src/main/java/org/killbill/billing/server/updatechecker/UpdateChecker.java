@@ -24,8 +24,8 @@ import java.io.IOException;
 import javax.servlet.ServletContext;
 
 import org.killbill.billing.server.config.UpdateCheckConfig;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class UpdateChecker {
 
     public UpdateChecker(final ConfigSource configSource) {
         this.configSource = configSource;
-        this.config = new ConfigurationObjectFactory(configSource).build(UpdateCheckConfig.class);
+        this.config = new AugmentedConfigurationObjectFactory(configSource).build(UpdateCheckConfig.class);
     }
 
     public void check(final ServletContext servletContext) {

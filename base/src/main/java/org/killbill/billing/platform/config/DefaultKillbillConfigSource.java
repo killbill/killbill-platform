@@ -38,6 +38,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.xmlloader.UriAccessor;
+import org.skife.config.RuntimeConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +124,13 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         // We have TestDefaultKillbillConfigSource#testGetProperties() that cover this, but seems like this is similar
         // to one of our chicken-egg problem? (see loadPropertiesFromFileOrSystemProperties() below)
         properties.stringPropertyNames().forEach(key -> result.setProperty(key, properties.getProperty(key)));
+
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+            if (!result.containsKey(key)) {
+                result.setProperty(key, value);
+            }
+        });
+
         return result;
     }
 

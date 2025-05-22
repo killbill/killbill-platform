@@ -30,8 +30,8 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.bus.InMemoryPersistentBus;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.bus.api.PersistentBusConfig;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
@@ -60,8 +60,8 @@ public class BusModule extends AbstractModule {
     protected void configure() {
 
         final SkifePersistentBusConfigSource skifePersistentBusConfigSource = new SkifePersistentBusConfigSource();
-        final PersistentBusConfig busConfig = new ConfigurationObjectFactory(skifePersistentBusConfigSource).buildWithReplacements(PersistentBusConfig.class,
-                                                                                                                                   Map.of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
+        final PersistentBusConfig busConfig = new AugmentedConfigurationObjectFactory(skifePersistentBusConfigSource).buildWithReplacements(PersistentBusConfig.class,
+                                                                                                                                            Map.of("instanceName", isExternal ? ExternalPersistentBusConfig.EXTERNAL_BUS_NAME : ExternalPersistentBusConfig.MAIN_BUS_NAME));
 
         if (isExternal) {
             bind(ExternalBusService.class).to(DefaultExternalBusService.class).asEagerSingleton();
