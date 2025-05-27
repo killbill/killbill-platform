@@ -27,9 +27,9 @@ import java.util.Map;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.Assert;
 
 import static org.killbill.billing.platform.config.DefaultKillbillConfigSource.ENVIRONMENT_VARIABLE_PREFIX;
 
@@ -66,6 +66,25 @@ public class TestDefaultKillbillConfigSource {
         Assert.assertNotNull(configSource.getProperties());
         Assert.assertNotEquals(configSource.getProperties().size(), 0);
         Assert.assertEquals(configSource.getProperties().getProperty("1"), "A");
+    }
+
+    @Test(groups = "fast")
+    public void testGetPropertiesBySource() throws URISyntaxException, IOException {
+        final Map<String, String> configuration = new HashMap<>();
+        configuration.put("org.killbill.dao.user", "root");
+        configuration.put("org.killbill.dao.password", "password");
+
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, configuration);
+
+        final Map<String, Map<String, String>> propsBySource = configSource.getPropertiesBySource();
+
+        Assert.assertNotNull(propsBySource);
+        Assert.assertFalse(propsBySource.isEmpty());
+
+        final Map<String, String> defaultProps = propsBySource.get("SystemProperties");
+        Assert.assertNotNull(defaultProps);
+        Assert.assertEquals(defaultProps.get("org.killbill.dao.user"), "root");
+        Assert.assertEquals(defaultProps.get("org.killbill.dao.password"), "password");
     }
 
     @Test(groups = "fast")

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -128,6 +129,31 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!result.containsKey(key)) {
                 result.setProperty(key, value);
+            }
+        });
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getPropertiesBySource() {
+        final Map<String, Map<String, String>> result = new HashMap<>();
+        final Map<String, String> systemProps = new HashMap<>();
+
+        properties.stringPropertyNames().forEach(key -> systemProps.put(key, properties.getProperty(key)));
+        result.put("SystemProperties", systemProps);
+
+        final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
+        runtimeBySource.forEach((source, props) -> {
+            final Map<String, String> filteredProps = new HashMap<>();
+            props.forEach((key, value) -> {
+                if (!systemProps.containsKey(key)) {
+                    filteredProps.put(key, value);
+                }
+            });
+
+            if (!filteredProps.isEmpty()) {
+                result.put(source, filteredProps);
             }
         });
 
