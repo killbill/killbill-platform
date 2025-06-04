@@ -21,6 +21,7 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -42,6 +43,13 @@ import org.killbill.xmlloader.UriAccessor;
 import org.skife.config.RuntimeConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
+import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
+import software.amazon.awssdk.services.ssm.model.Parameter;
+import software.amazon.awssdk.services.ssm.model.ParameterType;
 
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
@@ -69,6 +77,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static volatile int GMT_WARNING = NOT_SHOWN;
     private static volatile int ENTROPY_WARNING = NOT_SHOWN;
 
+    private final Map<String, Map<String, String>> runtimeConfigBySource = new HashMap<>();
+
+    private final String awsRegion = System.getProperty("com.killbill.aws.region");
+
+    private final String ssmStorePath = System.getProperty("com.killbill.aws.ssm.storePath");
+
     private final Properties properties;
 
     public DefaultKillbillConfigSource() throws IOException, URISyntaxException {
@@ -89,6 +103,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         } else {
             this.properties = new Properties();
             this.properties.load(UriAccessor.accessUri(Objects.requireNonNull(this.getClass().getResource(file)).toURI()));
+
+            final String category = extractFileNameFromPath(file);
+
+            runtimeConfigBySource.put(category, propertiesToMap(this.properties));
         }
 
         for (final Entry<String, String> entry : extraDefaultProperties.entrySet()) {
@@ -96,6 +114,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 properties.put(entry.getKey(), entry.getValue());
             }
         }
+
+        runtimeConfigBySource.put("ExtraDefaultProperties", extraDefaultProperties);
 
         populateDefaultProperties();
 
@@ -137,11 +157,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public Map<String, Map<String, String>> getPropertiesBySource() {
-        final Map<String, Map<String, String>> result = new HashMap<>();
         final Map<String, String> systemProps = new HashMap<>();
 
         properties.stringPropertyNames().forEach(key -> systemProps.put(key, properties.getProperty(key)));
-        result.put("SystemProperties", systemProps);
 
         final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
         runtimeBySource.forEach((source, props) -> {
@@ -153,22 +171,35 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             });
 
             if (!filteredProps.isEmpty()) {
-                result.put(source, filteredProps);
+                runtimeConfigBySource.put(source, filteredProps);
             }
         });
 
-        return result;
+        runtimeConfigBySource.putAll(runtimeBySource);
+
+        final Map<String, String> ssmProps = loadAwsSsmProperties();
+        if (!ssmProps.isEmpty()) {
+            runtimeConfigBySource.put("AwsSsmProperties", ssmProps);
+        }
+
+        return runtimeConfigBySource;
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
         // but we need to build the ConfigSource first...
         final String propertiesFileLocation = System.getProperty(PROPERTIES_FILE);
+
         if (propertiesFileLocation != null) {
             try {
                 // Ignore System Properties if we're loading from a file
                 final Properties properties = new Properties();
                 properties.load(UriAccessor.accessUri(propertiesFileLocation));
+
+                final String category = extractFileNameFromPath(propertiesFileLocation);
+
+                runtimeConfigBySource.put(category, propertiesToMap(properties));
+
                 return properties;
             } catch (final IOException e) {
                 logger.warn("Unable to access properties file, defaulting to system properties", e);
@@ -177,7 +208,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        return new Properties(System.getProperties());
+        final Properties systemProperties = new Properties(System.getProperties());
+
+        runtimeConfigBySource.put("SystemProperties", propertiesToMap(systemProperties));
+
+        return systemProperties;
     }
 
     @VisibleForTesting
@@ -235,6 +270,13 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 }
             }
         }
+
+        final Map<String, String> defaultProps = propertiesToMap(defaultProperties);
+        final Map<String, String> defaultSystemProps = propertiesToMap(defaultSystemProperties);
+
+        defaultSystemProps.putAll(defaultProps);
+
+        runtimeConfigBySource.put("DefaultSystemProperties", defaultSystemProps);
     }
 
     @VisibleForTesting
@@ -270,6 +312,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private void overrideWithEnvironmentVariables() {
         // Find all Kill Bill properties in the environment variables
         final Map<String, String> env = System.getenv();
+
+        final Map<String, String> kbEnvVariables = new HashMap<>();
+
         for (final Entry<String, String> entry : env.entrySet()) {
             if (!entry.getKey().startsWith(ENVIRONMENT_VARIABLE_PREFIX)) {
                 continue;
@@ -277,8 +322,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
             final String propertyName = fromEnvVariableName(entry.getKey());
             final String value = entry.getValue();
+
+            kbEnvVariables.put(propertyName, value);
             properties.setProperty(propertyName, value);
         }
+
+        runtimeConfigBySource.put("EnvironmentVariables", kbEnvVariables);
     }
 
     @VisibleForTesting
@@ -338,5 +387,58 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
         return Optional.empty();
+    }
+
+    private Map<String, String> loadAwsSsmProperties() {
+        final Map<String, String> ssmProps = new HashMap<>();
+
+        if (Strings.isNullOrEmpty(awsRegion) || Strings.isNullOrEmpty(ssmStorePath)) {
+            return ssmProps;
+        }
+
+        final SsmClient ssmClient = SsmClient.builder().region(Region.of(awsRegion)).build();
+        final GetParametersByPathRequest parametersRequest = GetParametersByPathRequest.builder()
+                                                                                       .path(ssmStorePath)
+                                                                                       .withDecryption(true)
+                                                                                       .build();
+        final GetParametersByPathResponse parameterResponse = ssmClient.getParametersByPath(parametersRequest);
+
+        final String prefix = ssmStorePath.endsWith("/") ? ssmStorePath : ssmStorePath + "/";
+        for (final Parameter parameter : parameterResponse.parameters()) {
+            final String key = parameter.name().replace(prefix, "");
+            final String value = parameter.value();
+
+            final String safeValue = parameter.type() == ParameterType.SECURE_STRING
+                                     ? "*".repeat(value.length())
+                                     : value;
+
+            logger.info("Assigning SSM value [{}] for [{}]", safeValue, key);
+
+            properties.put(key, safeValue);
+            ssmProps.put(key, safeValue);
+        }
+
+        return ssmProps;
+    }
+
+    private String extractFileNameFromPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "unknown.properties";
+        }
+
+        if (path.startsWith("file://")) {
+            path = path.substring("file://".length());
+        }
+
+        return Paths.get(path).getFileName().toString();
+    }
+
+    private Map<String, String> propertiesToMap(final Properties props) {
+        final Map<String, String> propertiesMap = new HashMap<>();
+        for (final Map.Entry<Object, Object> entry : props.entrySet()) {
+            propertiesMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+
+        return propertiesMap;
     }
 }
