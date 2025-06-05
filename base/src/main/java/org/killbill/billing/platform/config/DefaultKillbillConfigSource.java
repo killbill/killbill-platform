@@ -44,13 +44,6 @@ import org.skife.config.RuntimeConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
-import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
-import software.amazon.awssdk.services.ssm.model.Parameter;
-import software.amazon.awssdk.services.ssm.model.ParameterType;
-
 public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGIConfigProperties {
 
     private static final Object lock = new Object();
@@ -78,10 +71,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static volatile int ENTROPY_WARNING = NOT_SHOWN;
 
     private final Map<String, Map<String, String>> runtimeConfigBySource = new HashMap<>();
-
-    private final String awsRegion = System.getProperty("com.killbill.aws.region");
-
-    private final String ssmStorePath = System.getProperty("com.killbill.aws.ssm.storePath");
 
     private final Properties properties;
 
@@ -176,11 +165,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         });
 
         runtimeConfigBySource.putAll(runtimeBySource);
-
-        final Map<String, String> ssmProps = loadAwsSsmProperties();
-        if (!ssmProps.isEmpty()) {
-            runtimeConfigBySource.put("AwsSsmProperties", ssmProps);
-        }
 
         return runtimeConfigBySource;
     }
@@ -387,38 +371,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
         return Optional.empty();
-    }
-
-    private Map<String, String> loadAwsSsmProperties() {
-        final Map<String, String> ssmProps = new HashMap<>();
-
-        if (Strings.isNullOrEmpty(awsRegion) || Strings.isNullOrEmpty(ssmStorePath)) {
-            return ssmProps;
-        }
-
-        final SsmClient ssmClient = SsmClient.builder().region(Region.of(awsRegion)).build();
-        final GetParametersByPathRequest parametersRequest = GetParametersByPathRequest.builder()
-                                                                                       .path(ssmStorePath)
-                                                                                       .withDecryption(true)
-                                                                                       .build();
-        final GetParametersByPathResponse parameterResponse = ssmClient.getParametersByPath(parametersRequest);
-
-        final String prefix = ssmStorePath.endsWith("/") ? ssmStorePath : ssmStorePath + "/";
-        for (final Parameter parameter : parameterResponse.parameters()) {
-            final String key = parameter.name().replace(prefix, "");
-            final String value = parameter.value();
-
-            final String safeValue = parameter.type() == ParameterType.SECURE_STRING
-                                     ? "*".repeat(value.length())
-                                     : value;
-
-            logger.info("Assigning SSM value [{}] for [{}]", safeValue, key);
-
-            properties.put(key, safeValue);
-            ssmProps.put(key, safeValue);
-        }
-
-        return ssmProps;
     }
 
     private String extractFileNameFromPath(String path) {

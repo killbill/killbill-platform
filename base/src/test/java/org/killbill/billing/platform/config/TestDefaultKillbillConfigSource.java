@@ -81,7 +81,7 @@ public class TestDefaultKillbillConfigSource {
         Assert.assertNotNull(propsBySource);
         Assert.assertFalse(propsBySource.isEmpty());
 
-        final Map<String, String> defaultProps = propsBySource.get("SystemProperties");
+        final Map<String, String> defaultProps = propsBySource.get("ExtraDefaultProperties");
         Assert.assertNotNull(defaultProps);
         Assert.assertEquals(defaultProps.get("org.killbill.dao.user"), "root");
         Assert.assertEquals(defaultProps.get("org.killbill.dao.password"), "password");
