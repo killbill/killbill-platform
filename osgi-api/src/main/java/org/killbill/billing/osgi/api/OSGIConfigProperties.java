@@ -19,6 +19,7 @@
 
 package org.killbill.billing.osgi.api;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -28,13 +29,26 @@ import java.util.Properties;
 public interface OSGIConfigProperties {
 
     /**
+     * Retrieves the value of the given property.
+     *
      * @param propertyName the system property name
      * @return the value of the property
      */
     public String getString(final String propertyName);
 
     /**
-     * @return all knows system properties (for the JVM)
+     * Returns all runtime resolved properties as a flat {@link Properties} object.
+     *
+     * @return all known configuration properties
      */
     public Properties getProperties();
+
+    /**
+     * Returns all runtime resolved properties grouped by their respective source.
+     * Each key in the outer map represents the source name (e.g., "SystemProperties", "KillbillServerConfig", "CatalogConfig"),
+     * and the corresponding value is a map of property names to values loaded from that source.
+     *
+     * @return a map of configuration sources to their respective key-value property sets.
+     */
+    public Map<String, Map<String, String>> getPropertiesBySource();
 }
