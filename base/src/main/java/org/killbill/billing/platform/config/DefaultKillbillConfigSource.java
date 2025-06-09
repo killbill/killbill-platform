@@ -192,7 +192,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        final Properties systemProperties = new Properties(System.getProperties());
+        final Properties systemProperties = System.getProperties();
 
         runtimeConfigBySource.put("SystemProperties", propertiesToMap(systemProperties));
 
