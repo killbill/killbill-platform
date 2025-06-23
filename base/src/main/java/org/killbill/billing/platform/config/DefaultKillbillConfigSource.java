@@ -21,6 +21,7 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -166,7 +167,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         runtimeConfigBySource.putAll(runtimeBySource);
 
-        return runtimeConfigBySource;
+        // Returning a shallow copy to satisfy SpotBugs (EI_EXPOSE_REP).
+        return new HashMap<>(runtimeConfigBySource);
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
@@ -382,7 +384,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             path = path.substring("file://".length());
         }
 
-        return Paths.get(path).getFileName().toString();
+        final Path fileName = Paths.get(path).getFileName();
+        if (fileName == null) {
+            return "unknown.properties";
+        }
+
+        return fileName.toString();
     }
 
     private Map<String, String> propertiesToMap(final Properties props) {
