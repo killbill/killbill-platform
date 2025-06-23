@@ -19,6 +19,7 @@
 
 package org.killbill.billing.osgi.libs.killbill;
 
+import java.util.Map;
 import java.util.Properties;
 
 import org.killbill.billing.osgi.api.OSGIConfigProperties;
@@ -56,6 +57,16 @@ public class OSGIConfigPropertiesService extends OSGIKillbillLibraryBase impleme
             @Override
             public Properties executeWithService(final OSGIConfigProperties service) {
                 return service.getProperties();
+            }
+        });
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getPropertiesBySource() {
+        return withServiceTracker(killbillTracker, new APICallback<>(OSGIConfigProperties.class.getName()) {
+            @Override
+            public Map<String, Map<String, String>> executeWithService(final OSGIConfigProperties service) {
+                return service.getPropertiesBySource();
             }
         });
     }
