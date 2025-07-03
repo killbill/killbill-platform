@@ -110,7 +110,8 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.osgi.service.deploymentadmin)(version>=1.1.0)(!(version>=2.0.0)))
              "org.osgi.service.deploymentadmin;version=1.1.0," +
              // Let the world know the System bundle exposes the requirement (&(osgi.wiring.package=org.osgi.service.event)(version>=1.2.0)(!(version>=2.0.0)))
-             "org.osgi.service.event;version=1.2.0")
+             "org.osgi.service.event;version=1.2.0,"+
+            "org.killbill.billing.invoice.template.formatters")
     @Description("Kill Bill API packages to export from the system bundle")
     public String getSystemBundleExportPackagesApi();
 
