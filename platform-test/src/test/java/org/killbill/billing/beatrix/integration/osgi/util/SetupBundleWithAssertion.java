@@ -141,7 +141,9 @@ public class SetupBundleWithAssertion {
                     if (f.isDirectory()) {
                         deleteDirectory(f, true);
                     }
-                    Assert.assertTrue(f.delete(), "Unable to delete file " + f.getAbsolutePath());
+
+                    final boolean deleted = f.delete();
+                    Assert.assertTrue(deleted || !f.exists(), "Unable to delete file " + f.getAbsolutePath());
                 }
             }
             if (deleteParent) {
@@ -177,6 +179,7 @@ public class SetupBundleWithAssertion {
                 return createPluginJavaConfig(resourceUrl.getPath());
             }
         }
+
         return null;
     }
 

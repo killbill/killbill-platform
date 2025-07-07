@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
+import org.killbill.commons.health.api.HealthCheckRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -55,6 +56,8 @@ public abstract class KillbillActivatorBase implements BundleActivator {
     protected OSGIConfigPropertiesService configProperties;
     protected OSGIMetricRegistry metricRegistry;
 
+    protected HealthCheckRegistry healthCheckRegistry;
+
     protected File tmpDir = null;
 
     private ScheduledFuture<?> restartFuture = null;
@@ -73,6 +76,7 @@ public abstract class KillbillActivatorBase implements BundleActivator {
         configProperties = new OSGIConfigPropertiesService(context);
         clock = new OSGIKillbillClock(context);
         metricRegistry = new OSGIMetricRegistry(context);
+        healthCheckRegistry = context.getServiceReference(HealthCheckRegistry.class) != null ? context.getService(context.getServiceReference(HealthCheckRegistry.class)) : null;
 
         // Registrar for bundle
         registrar = new OSGIKillbillRegistrar();
