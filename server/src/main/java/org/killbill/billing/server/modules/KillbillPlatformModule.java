@@ -55,8 +55,8 @@ import org.killbill.commons.jdbi.transaction.RestartTransactionRunner;
 import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.guice.MetricsInstrumentationModule;
 import org.killbill.queue.DefaultQueueLifecycle;
-import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.TimingCollector;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
@@ -67,6 +67,7 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
+
 import com.google.inject.name.Names;
 
 public class KillbillPlatformModule extends KillBillPlatformModuleBase {

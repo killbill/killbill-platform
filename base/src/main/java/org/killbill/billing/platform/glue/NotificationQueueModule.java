@@ -45,7 +45,7 @@ public class NotificationQueueModule extends KillBillPlatformModuleBase {
 
     protected void configureNotificationQueueConfig() {
         final NotificationQueueConfig config = new AugmentedConfigurationObjectFactory(skifeConfigSource).buildWithReplacements(NotificationQueueConfig.class,
-                                                                                                                                Map.of("instanceName", "main"));
+                                                                                                                       Map.of("instanceName", "main"));
         bind(NotificationQueueConfig.class).toInstance(config);
     }
 }
