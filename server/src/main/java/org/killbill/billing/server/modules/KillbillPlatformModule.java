@@ -56,7 +56,7 @@ import org.killbill.commons.metrics.api.MetricRegistry;
 import org.killbill.commons.metrics.guice.MetricsInstrumentationModule;
 import org.killbill.queue.DefaultQueueLifecycle;
 import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.TimingCollector;
 import org.skife.jdbi.v2.tweak.TransactionHandler;
@@ -123,10 +123,10 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureDao() {
-        daoConfig = new ConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
+        daoConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(DaoConfig.class);
         bind(DaoConfig.class).toInstance(daoConfig);
 
-        mainRoDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(MainRoDaoConfig.class);
+        mainRoDataSourceConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(MainRoDaoConfig.class);
         bind(MainRoDaoConfig.class).toInstance(mainRoDataSourceConfig);
 
         final DatabaseTransactionNotificationApi databaseTransactionNotificationApi = new DatabaseTransactionNotificationApi();
@@ -217,7 +217,7 @@ public class KillbillPlatformModule extends KillBillPlatformModuleBase {
     }
 
     protected void configureOSGI() {
-        final OSGIDataSourceConfig osgiDataSourceConfig = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
+        final OSGIDataSourceConfig osgiDataSourceConfig = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(OSGIDataSourceConfig.class);
         final EmbeddedDB osgiEmbeddedDB = new EmbeddedDBProvider(osgiDataSourceConfig).get();
         bind(EmbeddedDB.class).annotatedWith(Names.named(OSGI_DATA_SOURCE_ID)).toInstance(osgiEmbeddedDB);
         install(new DefaultOSGIModule(configSource, (DefaultKillbillConfigSource) configSource, osgiDataSourceConfig, osgiEmbeddedDB));

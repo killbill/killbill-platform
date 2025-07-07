@@ -53,7 +53,7 @@ import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DaoConfig;
 import org.osgi.service.http.HttpService;
-import org.skife.config.ConfigurationObjectFactory;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
@@ -78,7 +78,7 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
     }
 
     protected void installConfig() {
-        final OSGIConfig config = new ConfigurationObjectFactory(skifeConfigSource).build(OSGIConfig.class);
+        final OSGIConfig config = new AugmentedConfigurationObjectFactory(skifeConfigSource).build(OSGIConfig.class);
         bind(OSGIConfig.class).toInstance(config);
         bind(OSGIConfigProperties.class).toInstance(osgiConfigProperties);
     }

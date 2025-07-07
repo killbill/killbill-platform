@@ -50,8 +50,8 @@ import org.killbill.commons.skeleton.modules.BaseServerModuleBuilder;
 import org.killbill.commons.skeleton.modules.JMXModule;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.notificationq.api.NotificationQueueService;
+import org.skife.config.AugmentedConfigurationObjectFactory;
 import org.skife.config.ConfigSource;
-import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
@@ -131,7 +130,7 @@ public class KillbillPlatformGuiceListener extends GuiceServletContextListener {
     protected void initializeConfig() throws IOException, URISyntaxException {
         configSource = getConfigSource();
 
-        final ConfigurationObjectFactory configFactory = new ConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
+        final AugmentedConfigurationObjectFactory configFactory = new AugmentedConfigurationObjectFactory(new KillbillPlatformConfigSource(configSource));
         config = configFactory.build(KillbillServerConfig.class);
     }
 
