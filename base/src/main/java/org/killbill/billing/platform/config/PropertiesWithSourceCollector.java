@@ -33,7 +33,7 @@ public class PropertiesWithSourceCollector {
         synchronized (lock) {
             List<PropertyWithSource> newList = new ArrayList<>(properties);
             props.forEach((key, value) ->
-                                  newList.add(new PropertyWithSource(key, value, source)));
+                                  newList.add(new PropertyWithSource(source, key, value)));
             this.properties = Collections.unmodifiableList(newList);
         }
     }

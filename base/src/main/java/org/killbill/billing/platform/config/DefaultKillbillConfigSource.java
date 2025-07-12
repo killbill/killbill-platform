@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -109,9 +110,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        //runtimeConfigBySource.put("ExtraDefaultProperties", extraDefaultProperties);
-        //final String category = extractFileNameFromPath(file);
-        //Map<String, String> propsMap = propertiesToMap(properties);
         propertiesCollector.addProperties("ExtraDefaultProperties", extraDefaultProperties);
 
         populateDefaultProperties();
@@ -147,17 +145,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             if (!result.containsKey(key)) {
                 result.setProperty(key, value);
             }
-        });
-
-        System.out.println("Printing values of propertiesCollector.getAllProperties...");
-
-        propertiesCollector.getAllProperties().forEach(propertyWithSource -> System.out.println(propertyWithSource.getSource() + " -- " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
-
-        System.out.println("Printing values of propertiesCollector.getPropertiesBySource...");
-
-        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach(propertyWithSource -> System.out.println(propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
         });
 
         return result;
@@ -246,17 +233,43 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        //final Map<String, String> defaultProps = propertiesToMap(defaultProperties);
-        //final Map<String, String> defaultSystemProps = propertiesToMap(defaultSystemProperties);
-
-        //defaultSystemProps.putAll(defaultProps);
-
-       // runtimeConfigBySource.put("DefaultSystemProperties", defaultSystemProps);
-
         defaultSystemProperties.putAll(defaultProperties);
 
         final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
         propertiesCollector.addProperties("DefaultSystemProperties", propsMap);
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getPropertiesBySource() {
+        final Map<String, String> currentProps = new HashMap<>();
+        properties.stringPropertyNames().forEach(key -> currentProps.put(key, properties.getProperty(key)));
+
+        final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
+        runtimeBySource.forEach((source, props) -> {
+            final Map<String, String> filteredProps = new HashMap<>();
+            props.forEach((key, value) -> {
+                if (!currentProps.containsKey(key)) {
+                    filteredProps.put(key, value);
+                }
+            });
+            if (!filteredProps.isEmpty()) {
+                propertiesCollector.addProperties(source, filteredProps);
+            }
+        });
+
+        final Map<String, List<PropertyWithSource>> propertiesBySource = propertiesCollector.getPropertiesBySource();
+
+        final Map<String, Map<String, String>> result = new LinkedHashMap<>();
+
+        propertiesBySource.forEach((source, properties) -> {
+            final Map<String, String> sourceProperties = new LinkedHashMap<>();
+            properties.forEach(prop -> {
+                sourceProperties.put(prop.getKey(), prop.getValue());
+            });
+            result.put(source, Collections.unmodifiableMap(sourceProperties));
+        });
+
+        return Collections.unmodifiableMap(result);
     }
 
     @VisibleForTesting
@@ -307,15 +320,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             properties.setProperty(propertyName, value);
         }
 
-        //runtimeConfigBySource.put("EnvironmentVariables", kbEnvVariables);
         propertiesCollector.addProperties("EnvironmentVariables", kbEnvVariables);
     }
-
-
-
-/*    public Map<String, List<PropertyWithSource>> getPropertiesBySource() {
-        return propertiesCollector.getPropertiesBySource();
-    }*/
 
     public List<PropertyWithSource> getAllPropertiesWithSource() {
         return propertiesCollector.getAllProperties();

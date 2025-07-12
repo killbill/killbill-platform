@@ -19,6 +19,7 @@
 
 package org.killbill.billing.osgi.api;
 
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -49,5 +50,5 @@ public interface OSGIConfigProperties {
      *
      * @return a map of configuration sources to their respective key-value property sets.
      */
-   // Map<String, Map<String, String>> getPropertiesBySource();
+   Map<String, Map<String, String>> getPropertiesBySource();
 }
