@@ -41,7 +41,7 @@ public interface OSGIConfigProperties {
      *
      * @return all known configuration properties
      */
-    public Properties getProperties();
+    Properties getProperties();
 
     /**
      * Returns all runtime resolved properties grouped by their respective source.
@@ -50,5 +50,5 @@ public interface OSGIConfigProperties {
      *
      * @return a map of configuration sources to their respective key-value property sets.
      */
-    public Map<String, Map<String, String>> getPropertiesBySource();
+   Map<String, Map<String, String>> getPropertiesBySource();
 }
