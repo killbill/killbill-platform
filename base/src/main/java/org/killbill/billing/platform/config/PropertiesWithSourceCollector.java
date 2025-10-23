@@ -29,12 +29,12 @@ public class PropertiesWithSourceCollector {
     private volatile List<PropertyWithSource> properties = new ArrayList<>();
     private final Object lock = new Object();
 
-    public void addProperties(String source, Map<String, String> props) {
+    public void addProperties(final String source, final Map<String, String> props) {
         synchronized (lock) {
-            List<PropertyWithSource> newList = new ArrayList<>(properties);
+            final List<PropertyWithSource> updatedProperties = new ArrayList<>(properties);
             props.forEach((key, value) ->
-                                  newList.add(new PropertyWithSource(source, key, value)));
-            this.properties = Collections.unmodifiableList(newList);
+                                  updatedProperties.add(new PropertyWithSource(source, key, value)));
+            this.properties = Collections.unmodifiableList(updatedProperties);
         }
     }
 
