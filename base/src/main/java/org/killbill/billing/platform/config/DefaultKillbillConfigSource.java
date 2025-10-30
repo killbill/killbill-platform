@@ -182,6 +182,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
+        final Map<String, String> immutableProps = new HashMap<>();
+
         final Properties defaultSystemProperties = getDefaultSystemProperties();
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
 
@@ -207,12 +209,20 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 //
                 System.setProperty(propertyName, GMT_ID);
                 TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
+
+                immutableProps.put(PROP_USER_TIME_ZONE, GMT_ID);
+                properties.put(propertyName, GMT_ID);
+
                 continue;
             }
 
             // Let the user override these properties
             if (System.getProperty(propertyName) == null) {
                 System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
+            }
+
+            if (properties.get(propertyName) == null) {
+                properties.put(propertyName, defaultSystemProperties.get(propertyName));
             }
         }
 
@@ -226,6 +236,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                     }
                 }
             }
+        }
+
+        if (!immutableProps.isEmpty()) {
+            propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
 
         defaultSystemProperties.putAll(defaultProperties);
@@ -252,7 +266,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-
         final Map<String, List<PropertyWithSource>> propertiesBySource = propertiesCollector.getPropertiesBySource();
         final Map<String, String> effectiveProperties = getCurrentEffectiveProperties();
 
@@ -262,7 +275,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                                                                              propName -> new LinkedHashSet<>()).add(source));
         });
 
-        final List<String> sourceOrder = Arrays.asList("EnvironmentVariables",
+        final List<String> sourceOrder = Arrays.asList("ImmutableSystemProperties",
+                                                       "EnvironmentVariables",
                                                        "RuntimeConfiguration",
                                                        "KillBillDefaults");
 
@@ -298,30 +312,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
                 final boolean isEffectiveSource = isEffectiveSourceForProperty(propertyKey, source, sourceOrder, propertyToSources);
 
-                final String displayValue;
-                if (isEffectiveSource) {
-                    if (hasConflict) {
-                        if (!warnedConflicts.contains(propertyKey)) {
-                            warnedConflicts.add(propertyKey);
-                            logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
-                                        propertyKey, new ArrayList<>(sources), source, effectiveValue);
-                        }
-
-                        final List<String> overridden = getOverriddenSources(source, sources, sourceOrder);
-                        if (!overridden.isEmpty()) {
-                            displayValue = effectiveValue + " [ACTIVE -- overrides: " + String.join(", ", overridden) + "]";
-                        } else {
-                            displayValue = effectiveValue + " [ACTIVE]";
-                        }
-                    } else {
-                        displayValue = effectiveValue;
+                if (isEffectiveSource && hasConflict) {
+                    if (!warnedConflicts.contains(propertyKey)) {
+                        warnedConflicts.add(propertyKey);
+                        logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
+                                    propertyKey, new ArrayList<>(sources), source, effectiveValue);
                     }
-                } else {
-                    final String effectiveSourceName = getEffectiveSourceName(propertyKey, sourceOrder, propertyToSources);
-                    displayValue = effectiveValue + " [OVERRIDDEN by " + effectiveSourceName + "]";
                 }
 
-                sourceProperties.put(propertyKey, displayValue);
+                sourceProperties.put(propertyKey, effectiveValue);
             }
 
             if (!sourceProperties.isEmpty()) {
@@ -386,24 +385,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                   .forEach(key -> effectiveProps.put(key, properties.getProperty(key)));
 
         return effectiveProps;
-    }
-
-    private List<String> getOverriddenSources(final String currentSource,
-                                              final Set<String> allSources,
-                                              final List<String> sourceOrder) {
-        final List<String> overridden = new ArrayList<>();
-        final int currentIndex = sourceOrder.indexOf(currentSource);
-
-        for (final String source : allSources) {
-            if (!source.equals(currentSource)) {
-                final int sourceIndex = sourceOrder.indexOf(source);
-                if (sourceIndex > currentIndex && sourceIndex != -1) {
-                    overridden.add(source);
-                }
-            }
-        }
-
-        return overridden;
     }
 
     @VisibleForTesting

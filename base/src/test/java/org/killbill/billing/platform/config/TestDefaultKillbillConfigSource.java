@@ -21,7 +21,10 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
@@ -70,9 +73,12 @@ public class TestDefaultKillbillConfigSource {
 
     @Test(groups = "fast")
     public void testGetPropertiesBySource() throws URISyntaxException, IOException {
+        System.setProperty("org.killbill.dao.user", "root");
+        System.setProperty("org.killbill.dao.password", "password");
+
         final Map<String, String> configuration = new HashMap<>();
-        configuration.put("org.killbill.dao.user", "root");
-        configuration.put("org.killbill.dao.password", "password");
+        configuration.put("org.killbill.server.shutdownDelay", "1s");
+        configuration.put("org.killbill.billing.osgi.dao.logLevel", "ERROR");
 
         final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, configuration);
 
@@ -81,10 +87,31 @@ public class TestDefaultKillbillConfigSource {
         Assert.assertNotNull(propsBySource);
         Assert.assertFalse(propsBySource.isEmpty());
 
-        final Map<String, String> defaultProps = propsBySource.get("ExtraDefaultProperties");
-        Assert.assertNotNull(defaultProps);
-        Assert.assertEquals(defaultProps.get("org.killbill.dao.user"), "root");
-        Assert.assertEquals(defaultProps.get("org.killbill.dao.password"), "password");
+        Assert.assertTrue(propsBySource.containsKey("ImmutableSystemProperties"));
+
+        final Map<String, String> immutableProps = propsBySource.get("ImmutableSystemProperties");
+        Assert.assertEquals(immutableProps.get("user.timezone"), "GMT");
+
+        Assert.assertTrue(propsBySource.containsKey("RuntimeConfiguration"));
+
+        final Map<String, String> runtimeConfig = propsBySource.get("RuntimeConfiguration");
+        Assert.assertEquals(runtimeConfig.get("org.killbill.dao.user"), "root");
+        Assert.assertEquals(runtimeConfig.get("org.killbill.dao.password"), "password");
+
+        Assert.assertTrue(propsBySource.containsKey("KillBillDefaults"));
+
+        final Map<String, String> killBillDefaults = propsBySource.get("KillBillDefaults");
+        Assert.assertEquals(killBillDefaults.get("org.killbill.server.enableJasypt"), "false");
+        Assert.assertEquals(killBillDefaults.get("org.killbill.persistent.bus.external.tableName"), "bus_ext_events");
+        Assert.assertEquals(killBillDefaults.get("org.slf4j.simpleLogger.log.jdbc"), "ERROR");
+
+        final List<String> actualSourceOrder = new ArrayList<>(propsBySource.keySet());
+
+        final List<String> expectedPrecedenceOrder = Arrays.asList("ImmutableSystemProperties",
+                                                                   "RuntimeConfiguration",
+                                                                   "KillBillDefaults");
+
+        Assert.assertEquals(actualSourceOrder, expectedPrecedenceOrder);
     }
 
     @Test(groups = "fast")
