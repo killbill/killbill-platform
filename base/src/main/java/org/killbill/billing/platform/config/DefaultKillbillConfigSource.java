@@ -173,7 +173,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     protected void populateDefaultProperties(final Map<String, String> extraDefaultProperties) {
         final Properties defaultProperties = getDefaultProperties();
 
-        extraDefaultProperties.forEach(defaultProperties::putIfAbsent);
+        defaultProperties.putAll(extraDefaultProperties);
 
         for (final String propertyName : defaultProperties.stringPropertyNames()) {
             // Let the user override these properties
@@ -359,23 +359,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         return false;
-    }
-
-    private String getEffectiveSourceName(final String propertyKey,
-                                          final List<String> sourceOrder,
-                                          final Map<String, Set<String>> propertyToSources) {
-        final Set<String> sources = propertyToSources.get(propertyKey);
-        if (sources == null) {
-            return "unknown";
-        }
-
-        for (final String source : sourceOrder) {
-            if (sources.contains(source)) {
-                return source;
-            }
-        }
-
-        return "unknown";
     }
 
     private Map<String, String> getCurrentEffectiveProperties() {
