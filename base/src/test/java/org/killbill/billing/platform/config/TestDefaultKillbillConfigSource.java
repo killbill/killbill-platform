@@ -64,7 +64,7 @@ public class TestDefaultKillbillConfigSource {
         final Map<String, String> runtimeConfig = new HashMap<>();
         runtimeConfig.put("org.killbill.dao.user", "root");
 
-        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, runtimeConfig){
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, runtimeConfig) {
             @Override
             protected Map<String, String> getEnvironmentVariables() {
                 final Map<String, String> mockEnv = new HashMap<>();
@@ -97,8 +97,8 @@ public class TestDefaultKillbillConfigSource {
 
         // EnvironmentVariables
         final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, killbillDefaultConfig) {
-                @Override
-                protected Map<String, String> getEnvironmentVariables() {
+            @Override
+            protected Map<String, String> getEnvironmentVariables() {
                 final Map<String, String> mockEnv = new HashMap<>();
                 mockEnv.put(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_dao_healthCheckConnectionTimeout", "11s");
                 return mockEnv;
@@ -202,7 +202,6 @@ public class TestDefaultKillbillConfigSource {
 
         final Map<String, String> immutableProps = propsBySource.get("ImmutableSystemProperties");
         Assert.assertEquals(immutableProps.get("user.timezone"), "GMT");
-
 
         Assert.assertTrue(propsBySource.containsKey("EnvironmentVariables"));
 
