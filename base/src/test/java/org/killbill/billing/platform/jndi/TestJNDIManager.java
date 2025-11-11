@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.Reference;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
@@ -114,7 +115,7 @@ public class TestJNDIManager {
         final String name = "a/b/c";
         jndiManager.export(name, dataSource);
 
-        final Object retrievedDataSourceObject = jndiManager.lookup(name);
+       /* final Object retrievedDataSourceObject = jndiManager.lookup(name);
         //Assert.assertTrue(klass.isInstance(retrievedDataSourceObject), klass + " is not an instance of " + retrievedDataSourceObject);
 
         Assert.assertNotNull(retrievedDataSourceObject, "Retrieved DataSource should not be null");
@@ -123,6 +124,19 @@ public class TestJNDIManager {
                           (retrievedDataSourceObject != null ? retrievedDataSourceObject.getClass().getName() : "null"));
 
 
-        return (T) retrievedDataSourceObject;
+        return (T) retrievedDataSourceObject;*/
+
+        final Object lookedUp = jndiManager.lookup(name);
+
+        Assert.assertNotNull(lookedUp, "Lookup should not return null");
+        Assert.assertTrue(lookedUp instanceof Reference, "Expected a JNDI Reference");
+
+        Reference ref = (Reference) lookedUp;
+
+        Assert.assertEquals(ref.getClassName(), klass.getName(),
+                            "Reference class name mismatch");
+
+
+        return (T) lookedUp;
     }
 }
