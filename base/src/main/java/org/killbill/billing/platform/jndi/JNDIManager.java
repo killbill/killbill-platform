@@ -65,7 +65,12 @@ public class JNDIManager {
     public void export(final String name, final Object object) {
         Preconditions.checkArgument(object instanceof Remote || object instanceof Reference || object instanceof Referenceable,
                                     "object to bind must be Remote, Reference, or Referenceable, not " + object.getClass());
-        doExport(name, object);
+        try {
+            doExport(name, object);
+        } catch (final Exception e) {
+        logger.warn("Failed to bind '{}' to JNDI", name, e);
+        throw e;
+    }
     }
 
     public void unExport(final String name) {
