@@ -21,23 +21,19 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -77,16 +73,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private static volatile int GMT_WARNING = NOT_SHOWN;
     private static volatile int ENTROPY_WARNING = NOT_SHOWN;
 
-    private static final List<String> HIGH_TO_LOW_PRIORITY_ORDER =
-            Collections.unmodifiableList(Arrays.asList("ImmutableSystemProperties",
-                                                       "EnvironmentVariables",
-                                                       "RuntimeConfiguration",
-                                                       "KillBillDefaults"));
-
     private final PropertiesWithSourceCollector propertiesCollector;
-    private final Properties properties;
 
-    private volatile Map<String, Map<String, String>> cachedPropertiesBySource = Collections.emptyMap();
+    private final Properties properties;
 
     public DefaultKillbillConfigSource() throws IOException, URISyntaxException {
         this((String) null);
@@ -109,11 +98,21 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             this.properties = new Properties();
             this.properties.load(UriAccessor.accessUri(Objects.requireNonNull(this.getClass().getResource(file)).toURI()));
 
-            final Map<String, String> propsMap = propertiesToMap(properties);
-            propertiesCollector.addProperties("RuntimeConfiguration", propsMap);
+            final String category = extractFileNameFromPath(file);
+            Map<String, String> propsMap = propertiesToMap(properties);
+            propertiesCollector.addProperties(category, propsMap);
+
         }
 
-        populateDefaultProperties(extraDefaultProperties);
+        for (final Entry<String, String> entry : extraDefaultProperties.entrySet()) {
+            if (entry.getValue() != null) {
+                properties.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        propertiesCollector.addProperties("ExtraDefaultProperties", extraDefaultProperties);
+
+        populateDefaultProperties();
 
         if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
             overrideWithEnvironmentVariables();
@@ -132,9 +131,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     @Override
     public Properties getProperties() {
         final Properties result = new Properties();
-
-       // getPropertiesBySource().forEach((source, props) -> props.forEach(result::setProperty));
-
+        // using properties.stringPropertyNames() because `result.putAll(properties)` not working when running inside
+        // tomcat, if we put configuration in tomcat's catalina.properties
+        // See:
+        // - https://github.com/killbill/technical-support/issues/61
+        // - https://github.com/killbill/technical-support/issues/67
+        //
+        // We have TestDefaultKillbillConfigSource#testGetProperties() that cover this, but seems like this is similar
+        // to one of our chicken-egg problem? (see loadPropertiesFromFileOrSystemProperties() below)
         properties.stringPropertyNames().forEach(key -> result.setProperty(key, properties.getProperty(key)));
 
         RuntimeConfigRegistry.getAll().forEach((key, value) -> {
@@ -144,138 +148,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         });
 
         return result;
-    }
-
-    @Override
-    public Map<String, Map<String, String>> getPropertiesBySource() {
-        if (cachedPropertiesBySource.isEmpty()) {
-            synchronized (lock) {
-                if (cachedPropertiesBySource.isEmpty()) {
-                    logger.info("Computing properties by source (first time)");
-                    cachedPropertiesBySource = computePropertiesBySource();
-                }
-            }
-        }
-
-        return Collections.unmodifiableMap(cachedPropertiesBySource);
-    }
-
-    private Map<String, Map<String, String>> computePropertiesBySource() {
-        final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
-
-        final PropertiesWithSourceCollector tempCollector = new PropertiesWithSourceCollector();
-
-        propertiesCollector.getPropertiesBySource().forEach((source, props) -> {
-            final Map<String, String> propsMap = props.stream()
-                                                      .collect(Collectors.toMap(PropertyWithSource::getKey, PropertyWithSource::getValue));
-            tempCollector.addProperties(source, propsMap);
-        });
-
-        runtimeBySource.forEach((source, props) -> {
-            if (!props.isEmpty()) {
-                tempCollector.addProperties(source, props);
-            }
-        });
-
-        final Map<String, String> effectiveMap = new LinkedHashMap<>();
-        properties.stringPropertyNames().forEach(key -> effectiveMap.put(key, properties.getProperty(key)));
-        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
-            if (!effectiveMap.containsKey(key)) {
-                effectiveMap.put(key, value);
-            }
-        });
-
-        final Map<String, List<PropertyWithSource>> collectorBySource = tempCollector.getPropertiesBySource();
-
-        final Map<String, Set<String>> propertyToSources = new HashMap<>();
-        collectorBySource.forEach((source, properties) -> {
-            properties.forEach(property -> {
-                propertyToSources.computeIfAbsent(property.getKey(), k -> new LinkedHashSet<>()).add(source);
-            });
-        });
-
-        final Set<String> warnedConflicts = new HashSet<>();
-        final Map<String, Map<String, String>> result = new LinkedHashMap<>();
-
-        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
-            final List<PropertyWithSource> properties = collectorBySource.get(source);
-            if (properties == null || properties.isEmpty()) {
-                continue;
-            }
-
-            final Map<String, String> sourceMap = new LinkedHashMap<>();
-            final Set<String> processedKeys = new HashSet<>();
-
-            for (final PropertyWithSource prop : properties) {
-                final String propertyKey = prop.getKey();
-
-                if (processedKeys.contains(propertyKey)) {
-                    continue;
-                }
-                processedKeys.add(propertyKey);
-
-                final String effectiveValue = prop.getValue();
-
-                if (effectiveValue == null) {
-                    continue;
-                }
-
-                if (!isEffectiveSourceForProperty(propertyKey, source, collectorBySource) && HIGH_TO_LOW_PRIORITY_ORDER.contains(source)) {
-                    continue;
-                }
-
-                final Set<String> sources = propertyToSources.get(propertyKey);
-                if (sources != null && sources.size() > 1 && !warnedConflicts.contains(propertyKey)) {
-                    warnedConflicts.add(propertyKey);
-                    logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
-                                propertyKey, new ArrayList<>(sources), source, effectiveValue);
-                }
-
-                sourceMap.put(propertyKey, effectiveValue);
-            }
-
-            if (!sourceMap.isEmpty()) {
-                result.put(source, Collections.unmodifiableMap(sourceMap));
-            }
-        }
-
-        collectorBySource.forEach((source, properties) -> {
-            if (HIGH_TO_LOW_PRIORITY_ORDER.contains(source)) {
-                return;
-            }
-
-            final Map<String, String> sourceMap = new LinkedHashMap<>();
-            for (final PropertyWithSource prop : properties) {
-                final String effectiveValue = effectiveMap.get(prop.getKey());
-                if (effectiveValue != null && isEffectiveSourceForProperty(prop.getKey(), source, collectorBySource)) {
-                    sourceMap.put(prop.getKey(), effectiveValue);
-                }
-            }
-
-            if (!sourceMap.isEmpty()) {
-                result.put(source, Collections.unmodifiableMap(sourceMap));
-            }
-        });
-
-        return Collections.unmodifiableMap(result);
-    }
-
-    private boolean isEffectiveSourceForProperty(final String key, final String sourceToCheck,
-                                                 final Map<String, List<PropertyWithSource>> propertiesBySource) {
-        final List<String> sourcesForKey = new ArrayList<>();
-        propertiesBySource.forEach((source, props) -> {
-            if (props.stream().anyMatch(p -> p.getKey().equals(key))) {
-                sourcesForKey.add(source);
-            }
-        });
-
-        for (final String prioritySource : HIGH_TO_LOW_PRIORITY_ORDER) {
-            if (sourcesForKey.contains(prioritySource)) {
-                return prioritySource.equals(sourceToCheck);
-            }
-        }
-
-        return !sourcesForKey.isEmpty() && sourcesForKey.get(0).equals(sourceToCheck);
     }
 
     private Properties loadPropertiesFromFileOrSystemProperties() {
@@ -288,8 +160,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 final Properties properties = new Properties();
                 properties.load(UriAccessor.accessUri(propertiesFileLocation));
 
+                final String category = extractFileNameFromPath(propertiesFileLocation);
                 final Map<String, String> propsMap = propertiesToMap(properties);
-                propertiesCollector.addProperties("RuntimeConfiguration", propsMap);
+                propertiesCollector.addProperties(category, propsMap);
 
                 return properties;
             } catch (final IOException e) {
@@ -299,23 +172,20 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        propertiesCollector.addProperties("RuntimeConfiguration", propertiesToMap(System.getProperties()));
+        propertiesCollector.addProperties("SystemProperties", propertiesToMap(System.getProperties()));
+
         return new Properties(System.getProperties());
     }
 
     @VisibleForTesting
-    protected void populateDefaultProperties(final Map<String, String> extraDefaultProperties) {
+    protected void populateDefaultProperties() {
         final Properties defaultProperties = getDefaultProperties();
-        defaultProperties.putAll(extraDefaultProperties);
-
         for (final String propertyName : defaultProperties.stringPropertyNames()) {
             // Let the user override these properties
             if (properties.get(propertyName) == null) {
                 properties.put(propertyName, defaultProperties.get(propertyName));
             }
         }
-
-        final Map<String, String> immutableProps = new HashMap<>();
 
         final Properties defaultSystemProperties = getDefaultSystemProperties();
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
@@ -342,19 +212,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 //
                 System.setProperty(propertyName, GMT_ID);
                 TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
-
-                immutableProps.put(PROP_USER_TIME_ZONE, GMT_ID);
-                properties.put(propertyName, GMT_ID);
                 continue;
             }
 
             // Let the user override these properties
             if (System.getProperty(propertyName) == null) {
                 System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
-            }
-
-            if (properties.get(propertyName) == null) {
-                properties.put(propertyName, defaultSystemProperties.get(propertyName));
             }
         }
 
@@ -370,27 +233,48 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        if (!immutableProps.isEmpty()) {
-            propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
-        }
-
         defaultSystemProperties.putAll(defaultProperties);
 
         final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-        propertiesCollector.addProperties("KillBillDefaults", propsMap);
+        propertiesCollector.addProperties("DefaultSystemProperties", propsMap);
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getPropertiesBySource() {
+        final Map<String, String> currentProps = new HashMap<>();
+        properties.stringPropertyNames().forEach(key -> currentProps.put(key, properties.getProperty(key)));
+
+        final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
+        runtimeBySource.forEach((source, props) -> {
+            final Map<String, String> filteredProps = new HashMap<>();
+            props.forEach((key, value) -> {
+                if (!currentProps.containsKey(key)) {
+                    filteredProps.put(key, value);
+                }
+            });
+            if (!filteredProps.isEmpty()) {
+                propertiesCollector.addProperties(source, filteredProps);
+            }
+        });
+
+        final Map<String, List<PropertyWithSource>> propertiesBySource = propertiesCollector.getPropertiesBySource();
+
+        final Map<String, Map<String, String>> result = new LinkedHashMap<>();
+
+        propertiesBySource.forEach((source, properties) -> {
+            final Map<String, String> sourceProperties = new LinkedHashMap<>();
+            properties.forEach(prop -> {
+                sourceProperties.put(prop.getKey(), prop.getValue());
+            });
+            result.put(source, Collections.unmodifiableMap(sourceProperties));
+        });
+
+        return Collections.unmodifiableMap(result);
     }
 
     @VisibleForTesting
     public void setProperty(final String propertyName, final Object propertyValue) {
         properties.put(propertyName, propertyValue);
-
-        final Map<String, String> override = new HashMap<>();
-        override.put(propertyName, String.valueOf(propertyValue));
-        propertiesCollector.addProperties("RuntimeConfiguration", override);
-
-        synchronized (lock) {
-            this.cachedPropertiesBySource = Collections.emptyMap();
-        }
     }
 
     @VisibleForTesting
@@ -400,7 +284,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         properties.put("org.killbill.persistent.bus.external.historyTableName", "bus_ext_events_history");
         properties.put(ENABLE_JASYPT_DECRYPTION, "false");
         properties.put(LOOKUP_ENVIRONMENT_VARIABLES, "true");
-
         return properties;
     }
 
@@ -421,7 +304,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private void overrideWithEnvironmentVariables() {
         // Find all Kill Bill properties in the environment variables
-        final Map<String, String> env = getEnvironmentVariables();
+        final Map<String, String> env = System.getenv();
+
         final Map<String, String> kbEnvVariables = new HashMap<>();
 
         for (final Entry<String, String> entry : env.entrySet()) {
@@ -439,11 +323,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         propertiesCollector.addProperties("EnvironmentVariables", kbEnvVariables);
     }
 
-    @VisibleForTesting
-    protected Map<String, String> getEnvironmentVariables() {
-        return System.getenv();
-    }
-
     public List<PropertyWithSource> getAllPropertiesWithSource() {
         return propertiesCollector.getAllProperties();
     }
@@ -457,8 +336,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         final String password = getEnvironmentVariable(JASYPT_ENCRYPTOR_PASSWORD_KEY, System.getProperty(JASYPT_ENCRYPTOR_PASSWORD_KEY));
         final String algorithm = getEnvironmentVariable(JASYPT_ENCRYPTOR_ALGORITHM_KEY, System.getProperty(JASYPT_ENCRYPTOR_ALGORITHM_KEY));
 
-        final Map<String, Map<String, String>> decryptedBySource = new HashMap<>();
-
         final Enumeration<Object> keys = properties.keys();
         final StandardPBEStringEncryptor encryptor = initializeEncryptor(password, algorithm);
         // Iterate over all properties and decrypt ones that match
@@ -466,39 +343,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             final String key = (String) keys.nextElement();
             final String value = (String) properties.get(key);
             final Optional<String> decryptableValue = decryptableValue(value);
-            if (decryptableValue.isPresent()) {
-                final String decryptedValue = encryptor.decrypt(decryptableValue.get());
-                properties.setProperty(key, decryptedValue);
-
-                final String source = findSourceForProperty(key);
-                if (source != null) {
-                    decryptedBySource.computeIfAbsent(source, k -> new HashMap<>())
-                                     .put(key, decryptedValue);
-                }
-            }
+            decryptableValue.ifPresent(s -> properties.setProperty(key, encryptor.decrypt(s)));
         }
-
-        decryptedBySource.forEach(propertiesCollector::addProperties);
-    }
-
-    private String findSourceForProperty(final String key) {
-        final Map<String, List<PropertyWithSource>> propertiesBySource = propertiesCollector.getPropertiesBySource();
-
-        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
-            final List<PropertyWithSource> props = propertiesBySource.get(source);
-            if (props != null && props.stream().anyMatch(p -> p.getKey().equals(key))) {
-                return source;
-            }
-        }
-
-        for (final Map.Entry<String, List<PropertyWithSource>> entry : propertiesBySource.entrySet()) {
-            if (!HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey()) &&
-                entry.getValue().stream().anyMatch(p -> p.getKey().equals(key))) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
     }
 
     private StandardPBEStringEncryptor initializeEncryptor(final String password, final String algorithm) {
@@ -540,11 +386,29 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Optional.empty();
     }
 
+    private String extractFileNameFromPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "unknown.properties";
+        }
+
+        if (path.startsWith("file://")) {
+            path = path.substring("file://".length());
+        }
+
+        final Path fileName = Paths.get(path).getFileName();
+        if (fileName == null) {
+            return "unknown.properties";
+        }
+
+        return fileName.toString();
+    }
+
     private Map<String, String> propertiesToMap(final Properties props) {
         final Map<String, String> propertiesMap = new HashMap<>();
         for (final Map.Entry<Object, Object> entry : props.entrySet()) {
             propertiesMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
+
         return propertiesMap;
     }
 }
