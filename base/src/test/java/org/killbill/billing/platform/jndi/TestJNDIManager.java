@@ -43,6 +43,7 @@ public class TestJNDIManager {
 
     @BeforeMethod(groups = "slow")
     public void setUp() throws Exception {
+        System.out.println("TestJNDIManager initialized...");
         SpyLogFactory.loadSpyLogDelegator("net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
 
         final String databaseName = "killbillosgitests";
