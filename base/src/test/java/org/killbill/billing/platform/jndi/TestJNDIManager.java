@@ -28,7 +28,6 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
-import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.slf4j.Logger;
