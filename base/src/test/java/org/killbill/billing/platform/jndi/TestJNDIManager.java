@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -57,7 +58,17 @@ public class TestJNDIManager {
 
     @Test(groups = "slow")
     public void testExportAndLookup() throws NamingException, IOException, SQLException {
+        System.out.println("BEFORE JNDIManager:");
+        System.out.println("  Context.PROVIDER_URL = " + System.getProperty(Context.PROVIDER_URL));
+        System.out.println("  Context.INITIAL_CONTEXT_FACTORY = " + System.getProperty(Context.INITIAL_CONTEXT_FACTORY));
+
         final JNDIManager jndiManager = new JNDIManager();
+
+        System.out.println("AFTER JNDIManager:");
+        System.out.println("  Context.PROVIDER_URL = " + System.getProperty(Context.PROVIDER_URL));
+        System.out.println("  Context.INITIAL_CONTEXT_FACTORY = " + System.getProperty(Context.INITIAL_CONTEXT_FACTORY));
+
+//        final JNDIManager jndiManager = new JNDIManager();
 
         // JdbcConnectionPool is not serializable unfortunately. Tests using JNDI won't work on H2 (we don't have any yet)
         //final JdbcConnectionPool jdbcConnectionPool = (JdbcConnectionPool) embeddedDB.getDataSource();
