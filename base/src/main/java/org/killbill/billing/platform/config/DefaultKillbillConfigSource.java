@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -85,7 +86,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private final PropertiesWithSourceCollector propertiesCollector;
     private final Properties properties;
 
-    private volatile Map<String, Map<String, String>> cachedPropertiesBySource;
+    private volatile Map<String, Map<String, String>> cachedPropertiesBySource = Collections.emptyMap();
 
     public DefaultKillbillConfigSource() throws IOException, URISyntaxException {
         this((String) null);
@@ -139,9 +140,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public Map<String, Map<String, String>> getPropertiesBySource() {
-        if (cachedPropertiesBySource == null) {
+        if (cachedPropertiesBySource.isEmpty()) {
             synchronized (lock) {
-                if (cachedPropertiesBySource == null) {
+                if (cachedPropertiesBySource.isEmpty()) {
+                    logger.info("Computing properties by source (first time)");
                     cachedPropertiesBySource = computePropertiesBySource();
                 }
             }
@@ -152,9 +154,18 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private Map<String, Map<String, String>> computePropertiesBySource() {
         final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
+
+        final PropertiesWithSourceCollector tempCollector = new PropertiesWithSourceCollector();
+
+        propertiesCollector.getPropertiesBySource().forEach((source, props) -> {
+            final Map<String, String> propsMap = props.stream()
+                                                      .collect(Collectors.toMap(PropertyWithSource::getKey, PropertyWithSource::getValue));
+            tempCollector.addProperties(source, propsMap);
+        });
+
         runtimeBySource.forEach((source, props) -> {
             if (!props.isEmpty()) {
-                propertiesCollector.addProperties(source, props);
+                tempCollector.addProperties(source, props);
             }
         });
 
@@ -166,7 +177,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-        final Map<String, List<PropertyWithSource>> collectorBySource = propertiesCollector.getPropertiesBySource();
+        final Map<String, List<PropertyWithSource>> collectorBySource = tempCollector.getPropertiesBySource();
 
         final Map<String, Set<String>> propertyToSources = new HashMap<>();
         collectorBySource.forEach((source, properties) -> {
@@ -370,7 +381,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         propertiesCollector.addProperties("RuntimeConfiguration", override);
 
         synchronized (lock) {
-            this.cachedPropertiesBySource = null;
+            this.cachedPropertiesBySource = Collections.emptyMap();
         }
     }
 
