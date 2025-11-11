@@ -21,7 +21,6 @@ package org.killbill.billing.platform.jndi;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.UUID;
 
 import javax.naming.Context;
@@ -81,7 +80,7 @@ public class TestJNDIManager {
         System.out.println("  Context.PROVIDER_URL = " + System.getProperty(Context.PROVIDER_URL));
         System.out.println("  Context.INITIAL_CONTEXT_FACTORY = " + System.getProperty(Context.INITIAL_CONTEXT_FACTORY));
 
-//        final JNDIManager jndiManager = new JNDIManager();
+        //        final JNDIManager jndiManager = new JNDIManager();
 
         // JdbcConnectionPool is not serializable unfortunately. Tests using JNDI won't work on H2 (we don't have any yet)
         //final JdbcConnectionPool jdbcConnectionPool = (JdbcConnectionPool) embeddedDB.getDataSource();
@@ -112,31 +111,14 @@ public class TestJNDIManager {
 
     @SuppressWarnings("unchecked")
     private <T> T testForDataSource(final JNDIManager jndiManager, final DataSource dataSource, final Class<T> klass) {
-        final String name = "a/b/c";
+        final String name = "jdbc/killbill";
         jndiManager.export(name, dataSource);
 
-       /* final Object retrievedDataSourceObject = jndiManager.lookup(name);
-        //Assert.assertTrue(klass.isInstance(retrievedDataSourceObject), klass + " is not an instance of " + retrievedDataSourceObject);
-
-        Assert.assertNotNull(retrievedDataSourceObject, "Retrieved DataSource should not be null");
-        Assert.assertTrue(klass.isInstance(retrievedDataSourceObject),
-                          "Expected instance of " + klass.getName() + " but got " +
-                          (retrievedDataSourceObject != null ? retrievedDataSourceObject.getClass().getName() : "null"));
-
-
-        return (T) retrievedDataSourceObject;*/
-
         final Object lookedUp = jndiManager.lookup(name);
-
         Assert.assertNotNull(lookedUp, "Lookup should not return null");
-        Assert.assertTrue(lookedUp instanceof Reference, "Expected a JNDI Reference");
-
-        Reference ref = (Reference) lookedUp;
-
-        Assert.assertEquals(ref.getClassName(), klass.getName(),
-                            "Reference class name mismatch");
-
-
+        Assert.assertTrue(lookedUp instanceof Reference, "Expected JNDI Reference");
+        final Reference ref = (Reference) lookedUp;
+        Assert.assertEquals(ref.getClassName(), JdbcDataSource.class.getName());
         return (T) lookedUp;
     }
 }
