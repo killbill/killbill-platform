@@ -133,7 +133,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     public Properties getProperties() {
         final Properties result = new Properties();
 
-        getPropertiesBySource().forEach((source, props) -> props.forEach(result::setProperty));
+       // getPropertiesBySource().forEach((source, props) -> props.forEach(result::setProperty));
+
+        properties.stringPropertyNames().forEach(key -> result.setProperty(key, properties.getProperty(key)));
+
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+            if (!result.containsKey(key)) {
+                result.setProperty(key, value);
+            }
+        });
 
         return result;
     }
