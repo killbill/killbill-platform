@@ -28,8 +28,11 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
+import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -39,11 +42,13 @@ import net.sf.log4jdbc.log.SpyLogFactory;
 
 public class TestJNDIManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(TestJNDIManager.class);
+
     EmbeddedDB embeddedDB;
 
     @BeforeMethod(groups = "slow")
     public void setUp() throws Exception {
-        System.out.println("TestJNDIManager initialized...");
+        logger.info("TestJNDIManager initialized...");
         SpyLogFactory.loadSpyLogDelegator("net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
 
         final String databaseName = "killbillosgitests";
