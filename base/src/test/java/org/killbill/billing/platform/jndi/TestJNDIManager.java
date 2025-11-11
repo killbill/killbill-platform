@@ -109,7 +109,13 @@ public class TestJNDIManager {
         jndiManager.export(name, dataSource);
 
         final Object retrievedDataSourceObject = jndiManager.lookup(name);
-        Assert.assertTrue(klass.isInstance(retrievedDataSourceObject), klass + " is not an instance of " + retrievedDataSourceObject);
+        //Assert.assertTrue(klass.isInstance(retrievedDataSourceObject), klass + " is not an instance of " + retrievedDataSourceObject);
+
+        Assert.assertNotNull(retrievedDataSourceObject, "Retrieved DataSource should not be null");
+        Assert.assertTrue(klass.isInstance(retrievedDataSourceObject),
+                          "Expected instance of " + klass.getName() + " but got " +
+                          (retrievedDataSourceObject != null ? retrievedDataSourceObject.getClass().getName() : "null"));
+
 
         return (T) retrievedDataSourceObject;
     }
