@@ -21,6 +21,7 @@ package org.killbill.billing.platform.jndi;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.UUID;
 
 import javax.naming.Context;
@@ -28,6 +29,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
+import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
 import org.slf4j.Logger;
@@ -47,6 +49,11 @@ public class TestJNDIManager {
 
     @BeforeMethod(groups = "slow")
     public void setUp() throws Exception {
+        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource((String) null);
+
+        configSource.getAllPropertiesWithSource();
+        configSource.getProperties();
+
         logger.info("TestJNDIManager initialized...");
         SpyLogFactory.loadSpyLogDelegator("net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
 
