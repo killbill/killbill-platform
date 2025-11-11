@@ -374,6 +374,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
     }
 
+
     @VisibleForTesting
     protected Properties getDefaultProperties() {
         final Properties properties = new Properties();
