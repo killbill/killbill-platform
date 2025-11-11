@@ -132,11 +132,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     public Properties getProperties() {
         final Properties result = new Properties();
 
-        properties.stringPropertyNames()
-                  .forEach(k -> result.setProperty(k, properties.getProperty(k)));
+        getPropertiesBySource().forEach((source, props) -> props.forEach(result::setProperty));
 
-        RuntimeConfigRegistry.getAll()
-                             .forEach((k, v) -> result.putIfAbsent(k, v));
         return result;
     }
 
@@ -370,7 +367,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         final Map<String, String> override = new HashMap<>();
         override.put(propertyName, String.valueOf(propertyValue));
-        propertiesCollector.addProperties("RuntimeConfiguration", override);
+        propertiesCollector.addProperties("ImmutableSystemProperties", override);
 
         synchronized (lock) {
             this.cachedPropertiesBySource = null;
