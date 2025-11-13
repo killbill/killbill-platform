@@ -25,15 +25,11 @@ import java.util.UUID;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.Reference;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
-import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -43,18 +39,10 @@ import net.sf.log4jdbc.log.SpyLogFactory;
 
 public class TestJNDIManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestJNDIManager.class);
-
     EmbeddedDB embeddedDB;
 
     @BeforeMethod(groups = "slow")
     public void setUp() throws Exception {
-        DefaultKillbillConfigSource configSource = new DefaultKillbillConfigSource((String) null);
-
-        configSource.getAllPropertiesWithSource();
-        configSource.getProperties();
-
-        logger.info("TestJNDIManager initialized...");
         SpyLogFactory.loadSpyLogDelegator("net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
 
         final String databaseName = "killbillosgitests";
@@ -111,14 +99,12 @@ public class TestJNDIManager {
 
     @SuppressWarnings("unchecked")
     private <T> T testForDataSource(final JNDIManager jndiManager, final DataSource dataSource, final Class<T> klass) {
-        final String name = "jdbc/killbill";
+        final String name = "a/b/c";
         jndiManager.export(name, dataSource);
 
-        final Object lookedUp = jndiManager.lookup(name);
-        Assert.assertNotNull(lookedUp, "Lookup should not return null");
-        Assert.assertTrue(lookedUp instanceof Reference, "Expected JNDI Reference");
-        final Reference ref = (Reference) lookedUp;
-        Assert.assertEquals(ref.getClassName(), JdbcDataSource.class.getName());
-        return (T) lookedUp;
+        final Object retrievedDataSourceObject = jndiManager.lookup(name);
+        Assert.assertTrue(klass.isInstance(retrievedDataSourceObject), klass + " is not an instance of " + retrievedDataSourceObject);
+
+        return (T) retrievedDataSourceObject;
     }
 }
