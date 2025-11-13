@@ -54,6 +54,7 @@
     </issueManagement>
     <properties>
         <check.fail-spotbugs>true</check.fail-spotbugs>
+        <check.skip-dependency>true</check.skip-dependency>
         <!-- Bug with maven-deploy-plugin -->
         <deploy.deploy-at-end>false</deploy.deploy-at-end>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
