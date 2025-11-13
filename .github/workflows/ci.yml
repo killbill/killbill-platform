@@ -7,4 +7,4 @@ on:
 
 jobs:
   ci:
-    uses: killbill/gh-actions-shared/.github/workflows/ci.yml@main
+    uses: vnandwana/gh-actions-shared/.github/workflows/ci.yml@test
