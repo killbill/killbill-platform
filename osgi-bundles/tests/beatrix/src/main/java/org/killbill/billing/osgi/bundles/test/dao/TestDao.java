@@ -41,7 +41,7 @@ public class TestDao {
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
                 conn.execute("DROP TABLE IF EXISTS test_bundle;");
                 conn.execute("CREATE TABLE test_bundle (" +
-                             "record_id IDENTITY unique, " +
+                             "record_id BIGINT IDENTITY, " +
                              "is_started bool DEFAULT false, " +
                              "is_logged bool DEFAULT false, " +
                              "external_key varchar(128) NULL, " +
