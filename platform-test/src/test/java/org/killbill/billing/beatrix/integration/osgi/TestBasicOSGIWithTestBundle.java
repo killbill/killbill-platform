@@ -69,6 +69,10 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
+        System.out.println("Killbill.version is " + killbillVersion);
+        System.out.println("osgi prop name " + osgiConfig.getOSGIKillbillPropertyName());
+
+
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJavaBundle();
     }

@@ -26,8 +26,12 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.TransactionCallback;
 import org.skife.jdbi.v2.TransactionStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestDao {
+
+    private static final Logger logger = LoggerFactory.getLogger(TestDao.class);
 
     private final IDBI dbi;
 
@@ -36,9 +40,17 @@ public class TestDao {
     }
 
     public void createTable() {
+        logger.info("=== TestDao.createTable() ===");
+        logger.info("About to execute SQL with SERIAL data type");
+        logger.info("System property org.killbill.billing.osgi.dao.url = {}", System.getProperty("org.killbill.billing.osgi.dao.url"));
+
         dbi.inTransaction(new TransactionCallback<Object>() {
             @Override
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
+                logger.info("Connection class: {}", conn.getConnection().getClass().getName());
+                logger.info("Connection URL: {}", conn.getConnection().getMetaData().getURL());
+
+
                 conn.execute("DROP TABLE IF EXISTS test_bundle;");
                 conn.execute("CREATE TABLE test_bundle (" +
                              "record_id serial unique, " +
