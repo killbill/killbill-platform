@@ -48,7 +48,7 @@ public class TestDao {
                                  "external_key varchar(128) NULL, " +
                                  "payment_id varchar(36) NULL," +
                                  "payment_method_id varchar(36) NULL," +
-                                 "payment_amount decimal(10,4) NULL," +
+                                 "payment_amount decimal(10,4) NULL" +
                                  ");");
                 } catch (final Exception e) {
                     System.out.println("create table failed... " + e.getMessage() + e);
