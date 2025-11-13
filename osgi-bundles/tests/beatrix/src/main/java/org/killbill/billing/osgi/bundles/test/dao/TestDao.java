@@ -39,21 +39,17 @@ public class TestDao {
         dbi.inTransaction(new TransactionCallback<Object>() {
             @Override
             public Object inTransaction(final Handle conn, final TransactionStatus status) throws Exception {
-                try {
-                    conn.execute("DROP TABLE IF EXISTS test_bundle;");
-                    conn.execute("CREATE TABLE test_bundle (" +
-                                 "record_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                                 "is_started BOOLEAN DEFAULT false, " +
-                                 "is_logged BOOLEAN DEFAULT false, " +
-                                 "external_key varchar(128) NULL, " +
-                                 "payment_id varchar(36) NULL," +
-                                 "payment_method_id varchar(36) NULL," +
-                                 "payment_amount decimal(10,4) NULL" +
-                                 ");");
-                } catch (final Exception e) {
-                    System.out.println("create table failed... " + e.getMessage() + e);
-                    throw e;
-                }
+                conn.execute("DROP TABLE IF EXISTS test_bundle;");
+                conn.execute("CREATE TABLE test_bundle (" +
+                             "record_id serial unique, " +
+                             "is_started bool DEFAULT false, " +
+                             "is_logged bool DEFAULT false, " +
+                             "external_key varchar(128) NULL, " +
+                             "payment_id varchar(36) NULL," +
+                             "payment_method_id varchar(36) NULL," +
+                             "payment_amount decimal(10,4) NULL," +
+                             "PRIMARY KEY(record_id)" +
+                             ");");
                 return null;
             }
         });
