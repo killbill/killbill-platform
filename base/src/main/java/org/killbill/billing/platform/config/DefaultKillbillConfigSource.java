@@ -21,16 +21,12 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +35,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -129,7 +124,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
     }
 
-/*
     @Override
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
@@ -143,7 +137,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         return null;
     }
-*/
 
     @Override
     public Properties getProperties() {
@@ -221,9 +214,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
                     final List<String> sources = propertyToSources.get(propertyKey);
                     if (sources != null && sources.size() > 1 && !warnedConflicts.contains(propertyKey)) {
-                        warnedConflicts.add(propertyKey);
-                        logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
-                                    propertyKey, sources, source, propertyValue);
+                        if (shouldWarnAboutConflict(sources)) {
+                            warnedConflicts.add(propertyKey);
+                            logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
+                                        propertyKey, sources, source, propertyValue);
+                        }
                     }
                 }
             }
@@ -268,6 +263,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Collections.unmodifiableMap(result);
     }
 
+/*
     @Override
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
@@ -312,6 +308,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         return !sourcesForKey.isEmpty() && sourcesForKey.get(0).equals(sourceToCheck);
     }
+*/
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
@@ -380,7 +377,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
 
                 immutableProps.put(PROP_USER_TIME_ZONE, GMT_ID);
-               // defaultsToAdd.put(propertyName, GMT_ID);
+                // defaultsToAdd.put(propertyName, GMT_ID);
 
                 continue;
             }
@@ -411,10 +408,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
 
-       // defaultSystemProperties.putAll(defaultProperties);
+        // defaultSystemProperties.putAll(defaultProperties);
 
-      //  final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-      //  propertiesCollector.addProperties("KillBillDefaults", propsMap);
+        //  final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
+        //  propertiesCollector.addProperties("KillBillDefaults", propsMap);
 
         if (!defaultsToAdd.isEmpty()) {
             propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
@@ -567,5 +564,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
         return propertiesMap;
+    }
+
+    private boolean shouldWarnAboutConflict(final List<String> sources) {
+        return sources != null &&
+               sources.contains("EnvironmentVariables") &&
+               sources.contains("RuntimeConfiguration");
     }
 }
