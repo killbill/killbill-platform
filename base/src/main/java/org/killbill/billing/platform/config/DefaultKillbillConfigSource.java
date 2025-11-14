@@ -124,7 +124,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
     }
 
-/*    @Override
+/*
+    @Override
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
@@ -136,34 +137,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         return null;
-    }*/
-
-    @Override
-    public String getString(final String propertyName) {
-        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
-
-        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
-            final Map<String, String> sourceProps = bySource.get(source);
-            if (sourceProps != null) {
-                final String value = sourceProps.get(propertyName);
-                if (value != null) {
-                    return value;
-                }
-            }
-        }
-
-        for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
-            if (HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey())) {
-                continue;
-            }
-            final String value = entry.getValue().get(propertyName);
-            if (value != null) {
-                return value;
-            }
-        }
-
-        return null;
     }
+*/
 
     @Override
     public Properties getProperties() {
@@ -241,11 +216,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
                     final List<String> sources = propertyToSources.get(propertyKey);
                     if (sources != null && sources.size() > 1 && !warnedConflicts.contains(propertyKey)) {
-                        if (shouldWarnAboutConflict(sources)) {
-                            warnedConflicts.add(propertyKey);
-                            logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
-                                        propertyKey, sources, source, propertyValue);
-                        }
+                        warnedConflicts.add(propertyKey);
+                        logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
+                                    propertyKey, sources, source, propertyValue);
                     }
                 }
             }
@@ -288,6 +261,51 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         });
 
         return Collections.unmodifiableMap(result);
+    }
+
+    @Override
+    public String getString(final String propertyName) {
+        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
+
+        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
+            final Map<String, String> sourceProps = bySource.get(source);
+            if (sourceProps != null) {
+                final String value = sourceProps.get(propertyName);
+                if (value != null) {
+                    return value;
+                }
+            }
+        }
+
+        for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
+            if (HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey())) {
+                continue;
+            }
+            final String value = entry.getValue().get(propertyName);
+            if (value != null) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    private boolean isEffectiveSourceForProperty(final String key, final String sourceToCheck,
+                                                 final Map<String, List<PropertyWithSource>> propertiesBySource) {
+        final List<String> sourcesForKey = new ArrayList<>();
+        propertiesBySource.forEach((source, props) -> {
+            if (props.stream().anyMatch(p -> p.getKey().equals(key))) {
+                sourcesForKey.add(source);
+            }
+        });
+
+        for (final String prioritySource : HIGH_TO_LOW_PRIORITY_ORDER) {
+            if (sourcesForKey.contains(prioritySource)) {
+                return prioritySource.equals(sourceToCheck);
+            }
+        }
+
+        return !sourcesForKey.isEmpty() && sourcesForKey.get(0).equals(sourceToCheck);
     }
 
     private void loadPropertiesFromFileOrSystemProperties() {
@@ -520,11 +538,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         value = getString(name);
-        /*value = propertiesCollector.getAllProperties().stream()
-                                   .filter(p -> p.getKey().equals(name))
-                                   .map(PropertyWithSource::getValue)
-                                   .findFirst()
-                                   .orElse(null);*/
         return Strings.isNullOrEmpty(value) ? defaultValue : value;
     }
 
@@ -549,11 +562,5 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
         return propertiesMap;
-    }
-
-    private boolean shouldWarnAboutConflict(final List<String> sources) {
-        return sources != null &&
-               sources.contains("EnvironmentVariables") &&
-               sources.contains("RuntimeConfiguration");
     }
 }
