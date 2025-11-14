@@ -39,6 +39,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -85,7 +86,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                                                        "KillBillDefaults"));
 
     private final PropertiesWithSourceCollector propertiesCollector;
-
     private volatile Map<String, Map<String, String>> cachedPropertiesBySource;
 
     public DefaultKillbillConfigSource() throws IOException, URISyntaxException {
@@ -145,9 +145,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     @Override
     public Properties getProperties() {
         final Properties result = new Properties();
-
         getPropertiesBySource().forEach((source, props) -> props.forEach(result::setProperty));
-
         return result;
     }
 
@@ -308,89 +306,42 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         propertiesCollector.addProperties("RuntimeConfiguration", propertiesToMap(System.getProperties()));
     }
 
- /*   @VisibleForTesting
-    protected void populateDefaultProperties() {
-        final Properties defaultProperties = getDefaultProperties();
-        for (final String propertyName : defaultProperties.stringPropertyNames()) {
-            // Let the user override these properties
-            if (properties.get(propertyName) == null) {
-                properties.put(propertyName, defaultProperties.get(propertyName));
-            }
-        }
-
-        final Properties defaultSystemProperties = getDefaultSystemProperties();
-        for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
-
-            // Special case to overwrite user.timezone
-            if (propertyName.equals(PROP_USER_TIME_ZONE)) {
-                if (!"GMT".equals(System.getProperty(propertyName))) {
-                    if (GMT_WARNING == NOT_SHOWN) {
-                        synchronized (lock) {
-                            if (GMT_WARNING == NOT_SHOWN) {
-                                GMT_WARNING = SHOWN;
-                                logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
-                                            System.getProperty(propertyName));
-                            }
-                        }
-                    }
-                }
-
-                //
-                // We now set the java system property -- regardless of whether this has been set previously or not.
-                // Also, setting java System property is not enough because default timezone may have been SET earlier,
-                // when first call to TimeZone.getDefaultRef was invoked-- which has a side effect to set it by either looking at
-                // existing "user.timezone" or being super smart by inferring from "user.country", "java.home", so we need to reset it.
-                //
-                System.setProperty(propertyName, GMT_ID);
-                TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
-                continue;
-            }
-
-            // Let the user override these properties
-            if (System.getProperty(propertyName) == null) {
-                System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
-            }
-        }
-
-        // WARN for missing PROP_SECURITY_EGD
-        if (System.getProperty(PROP_SECURITY_EGD) == null) {
-            if (ENTROPY_WARNING == NOT_SHOWN) {
-                synchronized (lock) {
-                    if (ENTROPY_WARNING == NOT_SHOWN) {
-                        ENTROPY_WARNING = SHOWN;
-                        logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
-                    }
-                }
-            }
-        }
-
-        defaultSystemProperties.putAll(defaultProperties);
-
-        final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-        propertiesCollector.addProperties("DefaultSystemProperties", propsMap);
-    }
-*/
     @VisibleForTesting
     protected void populateDefaultProperties(final Map<String, String> extraDefaultProperties) {
         final Properties defaultProperties = getDefaultProperties();
         defaultProperties.putAll(extraDefaultProperties);
 
+        final Set<String> existingKeys = propertiesCollector.getAllProperties().stream()
+                                                            .map(PropertyWithSource::getKey)
+                                                            .collect(Collectors.toSet());
+
+
         final Map<String, String> defaultsToAdd = new HashMap<>();
-
         for (final String propertyName : defaultProperties.stringPropertyNames()) {
-            // Let the user override these properties
-           /* if (!hasProperty(propertyName)) {
-                defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
-            }*/
+            // Always allow getDefaultProperties() override to update values
+            // This handles TestKillbillConfigSource updating database URLs
+            final String newValue = defaultProperties.getProperty(propertyName);
+            if (!existingKeys.contains(propertyName)) {
+                defaultsToAdd.put(propertyName, newValue);
+            } else {
+                // Property exists - check if this is an update from child class override
+                // If the value has changed, we should update it
+                final String existingValue = propertiesCollector.getAllProperties().stream()
+                                                                .filter(p -> p.getKey().equals(propertyName) && "KillBillDefaults".equals(p.getSource()))
+                                                                .map(PropertyWithSource::getValue)
+                                                                .findFirst()
+                                                                .orElse(null);
 
-            if (getString(propertyName) == null) {
-                defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
+                if (existingValue != null && !existingValue.equals(newValue)) {
+                    // Value changed - update it
+                    defaultsToAdd.put(propertyName, newValue);
+                }
             }
         }
 
         final Map<String, String> immutableProps = new HashMap<>();
-
         final Properties defaultSystemProperties = getDefaultSystemProperties();
+
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
 
             // Special case to overwrite user.timezone
@@ -415,23 +366,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 //
                 System.setProperty(propertyName, GMT_ID);
                 TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
-
                 immutableProps.put(PROP_USER_TIME_ZONE, GMT_ID);
-                defaultsToAdd.put(propertyName, GMT_ID);
-
                 continue;
             }
 
-            // Let the user override these properties
             if (System.getProperty(propertyName) == null) {
                 System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
             }
 
-            /*if (!hasProperty(propertyName)) {
-                defaultsToAdd.put(propertyName, defaultSystemProperties.getProperty(propertyName));
-            }*/
-
-            if (getString(propertyName) == null) {
+            if (!existingKeys.contains(propertyName)) {
                 defaultsToAdd.put(propertyName, defaultSystemProperties.getProperty(propertyName));
             }
         }
@@ -456,16 +399,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
         }
 
-        //defaultSystemProperties.putAll(defaultProperties);
-
-        //final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-       // propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
         invalidateCache();
-    }
-
-    private boolean hasProperty(final String propertyName) {
-        return propertiesCollector.getAllProperties().stream()
-                                  .anyMatch(p -> p.getKey().equals(propertyName));
     }
 
     @VisibleForTesting
@@ -544,7 +478,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         final Map<String, Map<String, String>> decryptedBySource = new HashMap<>();
 
         final StandardPBEStringEncryptor encryptor = initializeEncryptor(password, algorithm);
-        // Iterate over all properties and decrypt ones that match
+
         final List<PropertyWithSource> allProperties = propertiesCollector.getAllProperties();
         for (final PropertyWithSource prop : allProperties) {
             final String key = prop.getKey();
