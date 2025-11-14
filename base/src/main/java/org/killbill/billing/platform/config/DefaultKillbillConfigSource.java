@@ -167,7 +167,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Collections.unmodifiableMap(cachedPropertiesBySource);
     }
 
-    private void rebuildCache() {
+    protected void rebuildCache() {
         cachedPropertiesBySource = computePropertiesBySource();
     }
 
