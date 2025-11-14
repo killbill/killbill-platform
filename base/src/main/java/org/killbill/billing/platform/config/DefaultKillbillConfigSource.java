@@ -379,7 +379,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         for (final String propertyName : defaultProperties.stringPropertyNames()) {
             // Let the user override these properties
-            if (!hasProperty(propertyName)) {
+           /* if (!hasProperty(propertyName)) {
+                defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
+            }*/
+
+            if (getString(propertyName) == null) {
                 defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
             }
         }
@@ -423,7 +427,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
             }
 
-            if (!hasProperty(propertyName)) {
+            /*if (!hasProperty(propertyName)) {
+                defaultsToAdd.put(propertyName, defaultSystemProperties.getProperty(propertyName));
+            }*/
+
+            if (getString(propertyName) == null) {
                 defaultsToAdd.put(propertyName, defaultSystemProperties.getProperty(propertyName));
             }
         }
@@ -444,10 +452,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
 
+        if (!defaultsToAdd.isEmpty()) {
+            propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
+        }
+
         //defaultSystemProperties.putAll(defaultProperties);
 
         //final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-        propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
+       // propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
+        invalidateCache();
     }
 
     private boolean hasProperty(final String propertyName) {
