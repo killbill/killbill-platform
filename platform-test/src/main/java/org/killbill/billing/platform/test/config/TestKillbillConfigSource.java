@@ -71,7 +71,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcPassword = null;
         }
 
-        populateDefaultProperties(Collections.emptyMap());
+        //populateDefaultProperties(Collections.emptyMap());
         rebuildCache();
     }
 
