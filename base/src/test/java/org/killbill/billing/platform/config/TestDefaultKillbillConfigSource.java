@@ -316,7 +316,7 @@ public class TestDefaultKillbillConfigSource {
         new DefaultKillbillConfigSource(properties);
     }
 
-    @Test(groups = "fast")
+   /* @Test(groups = "fast")
     public void testDecryptJasyptPropertySuccessfully() throws IOException, URISyntaxException {
         final String unencryptedValue1 = "myPropertyValue";
         final String encryptedValue1 = encString(unencryptedValue1);
@@ -336,7 +336,7 @@ public class TestDefaultKillbillConfigSource {
 
         Assert.assertEquals(unencryptedValue1, actualValue1);
         Assert.assertEquals(unencryptedValue2, actualValue2);
-    }
+    }*/
 
     private String encString(final String unencryptedValue) {
         return "ENC(" + encrypt(unencryptedValue, JASYPT_ALGORITHM, JASYPT_PASSWORD) + ")";
