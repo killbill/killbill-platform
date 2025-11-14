@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PropertiesWithSourceCollector {
@@ -32,8 +33,13 @@ public class PropertiesWithSourceCollector {
     public void addProperties(final String source, final Map<String, String> props) {
         synchronized (lock) {
             final List<PropertyWithSource> updatedProperties = new ArrayList<>(properties);
+
+            final Set<String> keysToAdd = props.keySet();
+            updatedProperties.removeIf(p -> p.getSource().equals(source) && keysToAdd.contains(p.getKey()));
+
             props.forEach((key, value) ->
                                   updatedProperties.add(new PropertyWithSource(source, key, value)));
+
             this.properties = Collections.unmodifiableList(updatedProperties);
         }
     }

@@ -263,52 +263,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Collections.unmodifiableMap(result);
     }
 
-/*
-    @Override
-    public String getString(final String propertyName) {
-        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
-
-        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
-            final Map<String, String> sourceProps = bySource.get(source);
-            if (sourceProps != null) {
-                final String value = sourceProps.get(propertyName);
-                if (value != null) {
-                    return value;
-                }
-            }
-        }
-
-        for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
-            if (HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey())) {
-                continue;
-            }
-            final String value = entry.getValue().get(propertyName);
-            if (value != null) {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private boolean isEffectiveSourceForProperty(final String key, final String sourceToCheck,
-                                                 final Map<String, List<PropertyWithSource>> propertiesBySource) {
-        final List<String> sourcesForKey = new ArrayList<>();
-        propertiesBySource.forEach((source, props) -> {
-            if (props.stream().anyMatch(p -> p.getKey().equals(key))) {
-                sourcesForKey.add(source);
-            }
-        });
-
-        for (final String prioritySource : HIGH_TO_LOW_PRIORITY_ORDER) {
-            if (sourcesForKey.contains(prioritySource)) {
-                return prioritySource.equals(sourceToCheck);
-            }
-        }
-
-        return !sourcesForKey.isEmpty() && sourcesForKey.get(0).equals(sourceToCheck);
-    }
-*/
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
