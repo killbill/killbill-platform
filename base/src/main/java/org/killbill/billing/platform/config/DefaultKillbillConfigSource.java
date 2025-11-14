@@ -124,7 +124,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
     }
 
-/*
     @Override
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
@@ -138,7 +137,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         return null;
     }
-*/
 
     @Override
     public Properties getProperties() {
@@ -216,9 +214,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
                     final List<String> sources = propertyToSources.get(propertyKey);
                     if (sources != null && sources.size() > 1 && !warnedConflicts.contains(propertyKey)) {
-                        warnedConflicts.add(propertyKey);
-                        logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
-                                    propertyKey, sources, source, propertyValue);
+                        if (shouldWarnAboutConflict(sources)) {
+                            warnedConflicts.add(propertyKey);
+                            logger.warn("Property conflict detected for '{}': defined in sources {} - using value from '{}': '{}'",
+                                        propertyKey, sources, source, propertyValue);
+                        }
                     }
                 }
             }
@@ -263,6 +263,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Collections.unmodifiableMap(result);
     }
 
+/*
     @Override
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
@@ -307,6 +308,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         return !sourcesForKey.isEmpty() && sourcesForKey.get(0).equals(sourceToCheck);
     }
+*/
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
@@ -562,5 +564,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
         return propertiesMap;
+    }
+
+    private boolean shouldWarnAboutConflict(final List<String> sources) {
+        return sources != null &&
+               sources.contains("EnvironmentVariables") &&
+               sources.contains("RuntimeConfiguration");
     }
 }
