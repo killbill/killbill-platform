@@ -124,12 +124,39 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
     }
 
-    @Override
+/*    @Override
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         for (final Map<String, String> sourceProps : bySource.values()) {
             final String value = sourceProps.get(propertyName);
+            if (value != null) {
+                return value;
+            }
+        }
+
+        return null;
+    }*/
+
+    @Override
+    public String getString(final String propertyName) {
+        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
+
+        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
+            final Map<String, String> sourceProps = bySource.get(source);
+            if (sourceProps != null) {
+                final String value = sourceProps.get(propertyName);
+                if (value != null) {
+                    return value;
+                }
+            }
+        }
+
+        for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
+            if (HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey())) {
+                continue;
+            }
+            final String value = entry.getValue().get(propertyName);
             if (value != null) {
                 return value;
             }
