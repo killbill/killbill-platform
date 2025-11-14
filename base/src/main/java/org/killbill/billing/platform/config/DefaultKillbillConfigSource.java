@@ -308,6 +308,68 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         propertiesCollector.addProperties("RuntimeConfiguration", propertiesToMap(System.getProperties()));
     }
 
+ /*   @VisibleForTesting
+    protected void populateDefaultProperties() {
+        final Properties defaultProperties = getDefaultProperties();
+        for (final String propertyName : defaultProperties.stringPropertyNames()) {
+            // Let the user override these properties
+            if (properties.get(propertyName) == null) {
+                properties.put(propertyName, defaultProperties.get(propertyName));
+            }
+        }
+
+        final Properties defaultSystemProperties = getDefaultSystemProperties();
+        for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
+
+            // Special case to overwrite user.timezone
+            if (propertyName.equals(PROP_USER_TIME_ZONE)) {
+                if (!"GMT".equals(System.getProperty(propertyName))) {
+                    if (GMT_WARNING == NOT_SHOWN) {
+                        synchronized (lock) {
+                            if (GMT_WARNING == NOT_SHOWN) {
+                                GMT_WARNING = SHOWN;
+                                logger.info("Overwrite of user.timezone system property with {} may break database serialization of date. Kill Bill will overwrite to GMT",
+                                            System.getProperty(propertyName));
+                            }
+                        }
+                    }
+                }
+
+                //
+                // We now set the java system property -- regardless of whether this has been set previously or not.
+                // Also, setting java System property is not enough because default timezone may have been SET earlier,
+                // when first call to TimeZone.getDefaultRef was invoked-- which has a side effect to set it by either looking at
+                // existing "user.timezone" or being super smart by inferring from "user.country", "java.home", so we need to reset it.
+                //
+                System.setProperty(propertyName, GMT_ID);
+                TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
+                continue;
+            }
+
+            // Let the user override these properties
+            if (System.getProperty(propertyName) == null) {
+                System.setProperty(propertyName, defaultSystemProperties.get(propertyName).toString());
+            }
+        }
+
+        // WARN for missing PROP_SECURITY_EGD
+        if (System.getProperty(PROP_SECURITY_EGD) == null) {
+            if (ENTROPY_WARNING == NOT_SHOWN) {
+                synchronized (lock) {
+                    if (ENTROPY_WARNING == NOT_SHOWN) {
+                        ENTROPY_WARNING = SHOWN;
+                        logger.warn("System property {} has not been set, this may cause some requests to hang because of a lack of entropy. You should probably set it to 'file:/dev/./urandom'", PROP_SECURITY_EGD);
+                    }
+                }
+            }
+        }
+
+        defaultSystemProperties.putAll(defaultProperties);
+
+        final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
+        propertiesCollector.addProperties("DefaultSystemProperties", propsMap);
+    }
+*/
     @VisibleForTesting
     protected void populateDefaultProperties(final Map<String, String> extraDefaultProperties) {
         final Properties defaultProperties = getDefaultProperties();
@@ -382,10 +444,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
 
-        defaultSystemProperties.putAll(defaultProperties);
+        //defaultSystemProperties.putAll(defaultProperties);
 
-        final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-        propertiesCollector.addProperties("KillBillDefaults", propsMap);
+        //final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
+        propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
     }
 
     private boolean hasProperty(final String propertyName) {
