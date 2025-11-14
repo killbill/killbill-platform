@@ -380,7 +380,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
 
                 immutableProps.put(PROP_USER_TIME_ZONE, GMT_ID);
-                defaultsToAdd.put(propertyName, GMT_ID);
+               // defaultsToAdd.put(propertyName, GMT_ID);
 
                 continue;
             }
@@ -411,10 +411,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
 
-        defaultSystemProperties.putAll(defaultProperties);
+       // defaultSystemProperties.putAll(defaultProperties);
 
-        final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-        propertiesCollector.addProperties("KillBillDefaults", propsMap);
+      //  final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
+      //  propertiesCollector.addProperties("KillBillDefaults", propsMap);
+
+        if (!defaultsToAdd.isEmpty()) {
+            propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
+        }
     }
 
     private boolean hasProperty(final String propertyName) {
