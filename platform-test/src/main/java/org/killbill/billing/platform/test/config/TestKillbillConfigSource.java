@@ -111,12 +111,12 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
     private static Map<String, String> buildExtraDefaults(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         // Set early system properties
-        if (System.getProperty("net.sf.ehcache.skipUpdateCheck") == null) {
+      /*  if (System.getProperty("net.sf.ehcache.skipUpdateCheck") == null) {
             System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
         }
         if (System.getProperty("org.slf4j.simpleLogger.showDateTime") == null) {
             System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
-        }
+        }*/
 
         final Map<String, String> allDefaults = new HashMap<>(extraDefaults);
 
