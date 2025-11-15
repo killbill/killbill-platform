@@ -80,7 +80,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                                                        "RuntimeConfiguration",
                                                        "KillBillDefaults"));
 
-    protected final PropertiesWithSourceCollector propertiesCollector;
+    private final PropertiesWithSourceCollector propertiesCollector;
 
     private volatile Map<String, Map<String, String>> cachedPropertiesBySource;
 
