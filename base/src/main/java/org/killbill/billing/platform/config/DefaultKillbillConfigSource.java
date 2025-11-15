@@ -525,4 +525,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                sources.contains("EnvironmentVariables") &&
                sources.contains("RuntimeConfiguration");
     }
+
+    @VisibleForTesting
+    public static void resetForTesting() {
+        synchronized (lock) {
+            GMT_WARNING = NOT_SHOWN;
+            ENTROPY_WARNING = NOT_SHOWN;
+        }
+    }
 }

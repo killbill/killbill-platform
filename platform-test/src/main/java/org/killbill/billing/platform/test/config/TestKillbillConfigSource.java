@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
@@ -41,6 +42,9 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     private final String jdbcPassword;
     private final Map<String, String> extraDefaults;
 
+    // Flag to control whether we should skip timezone setting during initialization
+    private static final ThreadLocal<Boolean> SKIP_TIMEZONE_INIT = ThreadLocal.withInitial(() -> false);
+
     public TestKillbillConfigSource(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         this(null, dbTestingHelperKlass);
     }
@@ -50,7 +54,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file, buildExtraDefaults(file, dbTestingHelperKlass, extraDefaults));
+        super(file, initializeAndBuildDefaults(dbTestingHelperKlass, extraDefaults));
 
         // Store references for potential later use
         if (dbTestingHelperKlass != null) {
@@ -66,58 +70,23 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         this.extraDefaults = extraDefaults;
+
+        // Clean up the flag
+        SKIP_TIMEZONE_INIT.remove();
+
+        // NOW apply timezone setting after DB is fully initialized
+        System.setProperty("user.timezone", "GMT");
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
     }
 
-    /*@Override
-    protected Properties getDefaultProperties() {
-        final Properties properties = super.getDefaultProperties();
+    private static Map<String, String> initializeAndBuildDefaults(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // Mark that we want to skip timezone init temporarily
+        SKIP_TIMEZONE_INIT.set(true);
 
-        if (jdbcConnectionString != null) {
-            properties.put("org.killbill.dao.url", jdbcConnectionString);
-            properties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
-        }
-        if (jdbcUsername != null) {
-            properties.put("org.killbill.dao.user", jdbcUsername);
-            properties.put("org.killbill.billing.osgi.dao.user", jdbcUsername);
-        }
-        if (jdbcPassword != null) {
-            properties.put("org.killbill.dao.password", jdbcPassword);
-            properties.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
-        }
+        return buildExtraDefaults(dbTestingHelperKlass, extraDefaults);
+    }
 
-        properties.put("org.killbill.notificationq.main.sleep", "100");
-        properties.put("org.killbill.notificationq.main.nbThreads", "1");
-        properties.put("org.killbill.notificationq.main.claimed", "1");
-        properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
-        properties.put("org.killbill.persistent.bus.main.sleep", "100");
-        properties.put("org.killbill.persistent.bus.main.nbThreads", "1");
-        properties.put("org.killbill.persistent.bus.main.claimed", "1");
-        properties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
-        properties.put("org.killbill.persistent.bus.external.sleep", "100");
-        properties.put("org.killbill.persistent.bus.external.nbThreads", "1");
-        properties.put("org.killbill.persistent.bus.external.claimed", "1");
-        properties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
-        properties.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
-        properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
-
-        if (extraDefaults != null) {
-            for (final Entry<String, String> entry : extraDefaults.entrySet()) {
-                properties.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return properties;
-    }*/
-
-    private static Map<String, String> buildExtraDefaults(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // Set early system properties
-      /*  if (System.getProperty("net.sf.ehcache.skipUpdateCheck") == null) {
-            System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
-        }
-        if (System.getProperty("org.slf4j.simpleLogger.showDateTime") == null) {
-            System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
-        }*/
-
+    private static Map<String, String> buildExtraDefaults(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Map<String, String> allDefaults = new HashMap<>(extraDefaults);
 
         // Initialize DB and add JDBC properties
@@ -146,6 +115,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         allDefaults.put("org.killbill.persistent.bus.external.nbThreads", "1");
         allDefaults.put("org.killbill.persistent.bus.external.claimed", "1");
         allDefaults.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
+
         allDefaults.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
         allDefaults.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
 
@@ -155,6 +125,12 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     @Override
     protected Properties getDefaultSystemProperties() {
         final Properties properties = super.getDefaultSystemProperties();
+
+        // Skip timezone if we're in the initialization phase
+        if (SKIP_TIMEZONE_INIT.get()) {
+            properties.remove("user.timezone");
+        }
+
         properties.put("net.sf.ehcache.skipUpdateCheck", "true");
         properties.put("org.slf4j.simpleLogger.showDateTime", "true");
         return properties;
