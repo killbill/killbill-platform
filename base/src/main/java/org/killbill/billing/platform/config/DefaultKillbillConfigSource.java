@@ -291,7 +291,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     @VisibleForTesting
     protected void populateDefaultProperties(final Map<String, String> extraDefaultProperties) {
         final Properties defaultProperties = getDefaultProperties();
-        defaultProperties.putAll(extraDefaultProperties);
+        //defaultProperties.putAll(extraDefaultProperties);
 
         final Map<String, String> defaultsToAdd = new HashMap<>();
 
@@ -299,6 +299,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             // Let the user override these properties
             if (!hasProperty(propertyName)) {
                 defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
+            }
+        }
+
+        if (extraDefaultProperties != null) {
+            for (final Entry<String, String> entry : extraDefaultProperties.entrySet()) {
+                if (entry.getValue() != null && !hasProperty(entry.getKey())) {
+                    defaultsToAdd.put(entry.getKey(), entry.getValue());
+                }
             }
         }
 

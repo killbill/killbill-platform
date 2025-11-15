@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -37,10 +36,10 @@ import org.killbill.commons.utils.io.Files;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
-    private String jdbcConnectionString;
-    private String jdbcUsername;
-    private String jdbcPassword;
-    private Map<String, String> extraDefaults;
+    private final String jdbcConnectionString;
+    private final String jdbcUsername;
+    private final String jdbcPassword;
+    private final Map<String, String> extraDefaults;
 
     public TestKillbillConfigSource(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         this(null, dbTestingHelperKlass);
@@ -53,7 +52,10 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file, Collections.emptyMap());
 
-        this.extraDefaults = Collections.emptyMap();
+        // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
+        // driver at startup, h2 loads it statically and we need System Properties set at that point
+        //populateDefaultProperties();
+        this.extraDefaults = extraDefaults;
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -62,20 +64,15 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
         } else {
+            // NoDB tests
             this.jdbcConnectionString = null;
             this.jdbcUsername = null;
             this.jdbcPassword = null;
         }
 
-        this.extraDefaults = extraDefaults;
-
-        final Properties testDefaults = getDefaultProperties();
-        final Map<String, String> testDefaultsMap = new HashMap<>();
-        for (final String key : testDefaults.stringPropertyNames()) {
-            testDefaultsMap.put(key, testDefaults.getProperty(key));
-        }
-
-        propertiesCollector.addProperties("KillBillDefaults", testDefaultsMap);
+        // this.extraDefaults = extraDefaults;
+        // extraDefaults changed, need to reload defaults
+        populateDefaultProperties(extraDefaults);
         rebuildCache();
     }
 
@@ -112,7 +109,9 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
 
         if (extraDefaults != null) {
-            properties.putAll(extraDefaults);
+            for (final Entry<String, String> entry : extraDefaults.entrySet()) {
+                properties.put(entry.getKey(), entry.getValue());
+            }
         }
 
         return properties;
