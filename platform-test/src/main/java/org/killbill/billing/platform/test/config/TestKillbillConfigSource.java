@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -50,12 +50,9 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file);
+        super(file, buildExtraDefaults(file, dbTestingHelperKlass, extraDefaults));
 
-        // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
-        // driver at startup, h2 loads it statically and we need System Properties set at that point
-        populateDefaultProperties(Collections.emptyMap());
-
+        // Store references for potential later use
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
             final EmbeddedDB instance = dbTestingHelper.getInstance();
@@ -63,19 +60,15 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
         } else {
-            // NoDB tests
             this.jdbcConnectionString = null;
             this.jdbcUsername = null;
             this.jdbcPassword = null;
         }
 
         this.extraDefaults = extraDefaults;
-        // extraDefaults changed, need to reload defaults
-       // populateDefaultProperties(extraDefaults);
-        rebuildCache();
     }
 
-    @Override
+    /*@Override
     protected Properties getDefaultProperties() {
         final Properties properties = super.getDefaultProperties();
 
@@ -114,6 +107,49 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         return properties;
+    }*/
+
+    private static Map<String, String> buildExtraDefaults(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // Set early system properties
+        if (System.getProperty("net.sf.ehcache.skipUpdateCheck") == null) {
+            System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
+        }
+        if (System.getProperty("org.slf4j.simpleLogger.showDateTime") == null) {
+            System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
+        }
+
+        final Map<String, String> allDefaults = new HashMap<>(extraDefaults);
+
+        // Initialize DB and add JDBC properties
+        if (dbTestingHelperKlass != null) {
+            final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
+            final EmbeddedDB instance = dbTestingHelper.getInstance();
+
+            allDefaults.put("org.killbill.dao.url", instance.getJdbcConnectionString());
+            allDefaults.put("org.killbill.billing.osgi.dao.url", instance.getJdbcConnectionString());
+            allDefaults.put("org.killbill.dao.user", instance.getUsername());
+            allDefaults.put("org.killbill.billing.osgi.dao.user", instance.getUsername());
+            allDefaults.put("org.killbill.dao.password", instance.getPassword());
+            allDefaults.put("org.killbill.billing.osgi.dao.password", instance.getPassword());
+        }
+
+        // Add test-specific properties
+        allDefaults.put("org.killbill.notificationq.main.sleep", "100");
+        allDefaults.put("org.killbill.notificationq.main.nbThreads", "1");
+        allDefaults.put("org.killbill.notificationq.main.claimed", "1");
+        allDefaults.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
+        allDefaults.put("org.killbill.persistent.bus.main.sleep", "100");
+        allDefaults.put("org.killbill.persistent.bus.main.nbThreads", "1");
+        allDefaults.put("org.killbill.persistent.bus.main.claimed", "1");
+        allDefaults.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
+        allDefaults.put("org.killbill.persistent.bus.external.sleep", "100");
+        allDefaults.put("org.killbill.persistent.bus.external.nbThreads", "1");
+        allDefaults.put("org.killbill.persistent.bus.external.claimed", "1");
+        allDefaults.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
+        allDefaults.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
+        allDefaults.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
+
+        return allDefaults;
     }
 
     @Override
