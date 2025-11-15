@@ -50,9 +50,11 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file);
+        super(file, Collections.emptyMap());
 
-        this.extraDefaults = extraDefaults;
+        //this.extraDefaults = Collections.emptyMap();
+        populateDefaultProperties(Collections.emptyMap());
+        // this.extraDefaults = extraDefaults;
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
@@ -70,6 +72,11 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcUsername = null;
             this.jdbcPassword = null;
         }
+
+        this.extraDefaults = extraDefaults;
+
+        populateDefaultProperties(extraDefaults);
+        rebuildCache();
 
        // populateDefaultProperties(Collections.emptyMap());
         //rebuildCache();
