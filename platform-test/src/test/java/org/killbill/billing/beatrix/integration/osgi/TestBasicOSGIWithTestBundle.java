@@ -32,7 +32,6 @@ import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.notification.plugin.api.ExtBusEventType;
-import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
 import org.skife.jdbi.v2.Handle;
@@ -69,10 +68,6 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
-        System.out.println("Killbill.version is " + killbillVersion);
-        System.out.println("osgi prop name " + osgiConfig.getOSGIKillbillPropertyName());
-
-
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJavaBundle();
     }
