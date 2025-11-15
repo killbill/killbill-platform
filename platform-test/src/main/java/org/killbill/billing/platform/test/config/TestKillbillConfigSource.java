@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -50,13 +51,13 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file);
+        super(file, extraDefaults);
 
         this.extraDefaults = extraDefaults;
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
-        populateDefaultProperties(Collections.emptyMap());
+       // populateDefaultProperties(Collections.emptyMap());
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -64,6 +65,17 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcConnectionString = instance.getJdbcConnectionString();
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
+
+            final Map<String, String> dbProperties = new HashMap<>();
+            dbProperties.put("org.killbill.dao.url", jdbcConnectionString);
+            dbProperties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+            dbProperties.put("org.killbill.dao.user", jdbcUsername);
+            dbProperties.put("org.killbill.billing.osgi.dao.user", jdbcUsername);
+            dbProperties.put("org.killbill.dao.password", jdbcPassword);
+            dbProperties.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
+
+            propertiesCollector.addProperties("KillBillDefaults", dbProperties);
+            rebuildCache();
         } else {
             // NoDB tests
             this.jdbcConnectionString = null;
@@ -71,7 +83,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcPassword = null;
         }
 
-        populateDefaultProperties(Collections.emptyMap());
+       // populateDefaultProperties(Collections.emptyMap());
         //rebuildCache();
     }
 
