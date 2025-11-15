@@ -89,18 +89,10 @@ public class TestOSGIBase {
     @Inject
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
-    protected final TestKillbillConfigSource configSource;
+    protected TestKillbillConfigSource configSource;
     protected CallContext callContext;
 
     public TestOSGIBase() {
-        try {
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-        } catch (final Exception e) {
-            final AssertionError assertionError = new AssertionError("Initialization error");
-            assertionError.initCause(e);
-            throw assertionError;
-        }
-
         callContext = Mockito.mock(CallContext.class);
     }
 
@@ -111,6 +103,14 @@ public class TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
+        try {
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        } catch (final Exception e) {
+            final AssertionError assertionError = new AssertionError("Initialization error");
+            assertionError.initCause(e);
+            throw assertionError;
+        }
+
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
@@ -124,7 +124,6 @@ public class TestOSGIBase {
 
         clock.resetDeltaFromReality();
 
-        // Start services
         lifecycle.fireStartupSequencePriorEventRegistration();
         lifecycle.fireStartupSequencePostEventRegistration();
     }
@@ -157,7 +156,7 @@ public class TestOSGIBase {
         Awaitility.await().until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
+
                 return serviceRegistration.getServiceForName(serviceName) != null;
             }
         });
