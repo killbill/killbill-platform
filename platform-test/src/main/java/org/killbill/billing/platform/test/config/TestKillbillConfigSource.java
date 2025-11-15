@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -50,10 +51,10 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file, Collections.emptyMap());
-
+        super(file, extraDefaults);
+        this.extraDefaults = extraDefaults;
         //this.extraDefaults = Collections.emptyMap();
-        populateDefaultProperties(Collections.emptyMap());
+       // populateDefaultProperties(Collections.emptyMap());
         // this.extraDefaults = extraDefaults;
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
@@ -66,6 +67,33 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcConnectionString = instance.getJdbcConnectionString();
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
+
+            final Map<String, String> testProperties = new HashMap<>();
+
+            testProperties.put("org.killbill.dao.url", jdbcConnectionString);
+            testProperties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+            testProperties.put("org.killbill.dao.user", jdbcUsername);
+            testProperties.put("org.killbill.billing.osgi.dao.user", jdbcUsername);
+            testProperties.put("org.killbill.dao.password", jdbcPassword);
+            testProperties.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
+
+            testProperties.put("org.killbill.notificationq.main.sleep", "100");
+            testProperties.put("org.killbill.notificationq.main.nbThreads", "1");
+            testProperties.put("org.killbill.notificationq.main.claimed", "1");
+            testProperties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
+            testProperties.put("org.killbill.persistent.bus.main.sleep", "100");
+            testProperties.put("org.killbill.persistent.bus.main.nbThreads", "1");
+            testProperties.put("org.killbill.persistent.bus.main.claimed", "1");
+            testProperties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
+            testProperties.put("org.killbill.persistent.bus.external.sleep", "100");
+            testProperties.put("org.killbill.persistent.bus.external.nbThreads", "1");
+            testProperties.put("org.killbill.persistent.bus.external.claimed", "1");
+            testProperties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
+            testProperties.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
+            testProperties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
+
+            propertiesCollector.addProperties("KillBillDefaults", testProperties);
+            rebuildCache();
         } else {
             // NoDB tests
             this.jdbcConnectionString = null;
@@ -73,16 +101,16 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcPassword = null;
         }
 
-        this.extraDefaults = extraDefaults;
+        //this.extraDefaults = extraDefaults;
 
-        populateDefaultProperties(extraDefaults);
-        rebuildCache();
+        //populateDefaultProperties(extraDefaults);
+      //  rebuildCache();
 
        // populateDefaultProperties(Collections.emptyMap());
         //rebuildCache();
     }
 
-    @Override
+  /*  @Override
     protected Properties getDefaultProperties() {
         final Properties properties = super.getDefaultProperties();
 
@@ -128,7 +156,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         return properties;
-    }
+    }*/
 
     @Override
     protected Properties getDefaultSystemProperties() {
