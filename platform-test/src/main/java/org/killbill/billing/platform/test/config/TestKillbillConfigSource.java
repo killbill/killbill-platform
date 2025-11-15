@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -50,12 +50,11 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file, Collections.emptyMap());
+        super(file);
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
         //populateDefaultProperties();
-        this.extraDefaults = extraDefaults;
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -63,11 +62,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcConnectionString = instance.getJdbcConnectionString();
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
-
-            final Map<String, String> testProperties = buildTestProperties();
-            propertiesCollector.addProperties("RuntimeConfiguration", testProperties);
-            rebuildCache();
-
         } else {
             // NoDB tests
             this.jdbcConnectionString = null;
@@ -75,47 +69,13 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcPassword = null;
         }
 
-        // this.extraDefaults = extraDefaults;
+        this.extraDefaults = extraDefaults;
         // extraDefaults changed, need to reload defaults
-        //populateDefaultProperties(extraDefaults);
+        populateDefaultProperties(extraDefaults);
         rebuildCache();
     }
 
-    private Map<String, String> buildTestProperties() {
-        final Map<String, String> props = new HashMap<>();
-        if (jdbcConnectionString != null) {
-            props.put("org.killbill.dao.url", jdbcConnectionString);
-            props.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
-        }
-        if (jdbcUsername != null) {
-            props.put("org.killbill.dao.user", jdbcUsername);
-            props.put("org.killbill.billing.osgi.dao.user", jdbcUsername);
-        }
-        if (jdbcPassword != null) {
-            props.put("org.killbill.dao.password", jdbcPassword);
-            props.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
-        }
-
-        props.put("org.killbill.notificationq.main.sleep", "100");
-        props.put("org.killbill.notificationq.main.nbThreads", "1");
-        props.put("org.killbill.notificationq.main.claimed", "1");
-        props.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
-        props.put("org.killbill.persistent.bus.main.sleep", "100");
-        props.put("org.killbill.persistent.bus.main.nbThreads", "1");
-        props.put("org.killbill.persistent.bus.main.claimed", "1");
-        props.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
-        props.put("org.killbill.persistent.bus.external.sleep", "100");
-        props.put("org.killbill.persistent.bus.external.nbThreads", "1");
-        props.put("org.killbill.persistent.bus.external.claimed", "1");
-        props.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
-
-        props.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
-        props.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
-
-        return props;
-    }
-
-        /*@Override
+    @Override
     protected Properties getDefaultProperties() {
         final Properties properties = super.getDefaultProperties();
 
@@ -154,7 +114,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         return properties;
-    }*/
+    }
 
     @Override
     protected Properties getDefaultSystemProperties() {
