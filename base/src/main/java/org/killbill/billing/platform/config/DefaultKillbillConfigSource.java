@@ -253,12 +253,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-        /*RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
                 result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
                       .put(key, value);
             }
-        });*/
+        });
 
         return Collections.unmodifiableMap(result);
     }
