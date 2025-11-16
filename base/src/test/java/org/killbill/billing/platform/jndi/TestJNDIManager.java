@@ -27,13 +27,10 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
-import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.embeddeddb.h2.H2EmbeddedDB;
-import org.skife.config.RuntimeConfigRegistry;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -42,13 +39,6 @@ import net.sf.log4jdbc.log.SpyLogFactory;
 public class TestJNDIManager {
 
     EmbeddedDB embeddedDB;
-
-    @BeforeClass(groups = "slow")
-    public static void setUpClass() {
-        RuntimeConfigRegistry.clear();
-
-        DefaultKillbillConfigSource.resetForTesting();
-    }
 
     @BeforeMethod(groups = "slow")
     public void setUp() throws Exception {
@@ -63,7 +53,6 @@ public class TestJNDIManager {
     @AfterMethod(groups = "slow")
     public void tearDown() throws Exception {
         embeddedDB.stop();
-        DefaultKillbillConfigSource.resetForTesting();
     }
 
     @Test(groups = "slow")
