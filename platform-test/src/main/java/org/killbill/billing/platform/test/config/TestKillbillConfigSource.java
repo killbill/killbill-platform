@@ -73,9 +73,48 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         this.extraDefaults = extraDefaults;
-        // extraDefaults changed, need to reload defaults
+
+        // Add JDBC and test-specific properties directly to the collector with HIGH priority
+        // by adding them to RuntimeConfiguration source
+        final Map<String, String> testProperties = new HashMap<>();
+
+        if (jdbcConnectionString != null) {
+            testProperties.put("org.killbill.dao.url", jdbcConnectionString);
+            testProperties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+        }
+        if (jdbcUsername != null) {
+            testProperties.put("org.killbill.dao.user", jdbcUsername);
+            testProperties.put("org.killbill.billing.osgi.dao.user", jdbcUsername);
+        }
+        if (jdbcPassword != null) {
+            testProperties.put("org.killbill.dao.password", jdbcPassword);
+            testProperties.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
+        }
+
+        testProperties.put("org.killbill.notificationq.main.sleep", "100");
+        testProperties.put("org.killbill.notificationq.main.nbThreads", "1");
+        testProperties.put("org.killbill.notificationq.main.claimed", "1");
+        testProperties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
+        testProperties.put("org.killbill.persistent.bus.main.sleep", "100");
+        testProperties.put("org.killbill.persistent.bus.main.nbThreads", "1");
+        testProperties.put("org.killbill.persistent.bus.main.claimed", "1");
+        testProperties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
+        testProperties.put("org.killbill.persistent.bus.external.sleep", "100");
+        testProperties.put("org.killbill.persistent.bus.external.nbThreads", "1");
+        testProperties.put("org.killbill.persistent.bus.external.claimed", "1");
+        testProperties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
+
+        testProperties.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
+        testProperties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
+
+        if (extraDefaults != null) {
+            testProperties.putAll(extraDefaults);
+        }
+
+        // Add all test properties as RuntimeConfiguration (highest priority)
+        propertiesCollector.addProperties("RuntimeConfiguration", testProperties);
+
         invalidateCache();
-        populateDefaultProperties(extraDefaults);
         rebuildCache();
     }
 
