@@ -19,6 +19,7 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -41,6 +42,7 @@ import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
 import org.mockito.Mockito;
+import org.skife.config.RuntimeConfigRegistry;
 import org.skife.jdbi.v2.IDBI;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -89,11 +91,27 @@ public class TestOSGIBase {
     @Inject
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
-    protected final TestKillbillConfigSource configSource;
+    protected TestKillbillConfigSource configSource;
     protected CallContext callContext;
 
     public TestOSGIBase() {
+        callContext = Mockito.mock(CallContext.class);
+    }
+
+    @BeforeSuite(groups = "slow")
+    public void beforeSuite() throws Exception {
+        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
+            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
+            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
+        }
+
+        PlatformDBTestingHelper.get().start();
+    }
+
+    @BeforeClass(groups = "slow")
+    public void beforeClass() throws Exception {
         try {
+            RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
@@ -101,16 +119,17 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
-        callContext = Mockito.mock(CallContext.class);
-    }
+        // DEBUG: Check what properties are returned by getProperties()
+        System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
+        Properties allProps = configSource.getProperties();
+        System.out.println("Total properties: " + allProps.size());
+        for (String key : allProps.stringPropertyNames()) {
+            if (key.contains("osgi.dao")) {
+                System.out.println("  " + key + " = " + allProps.getProperty(key));
+            }
+        }
+        System.out.println("=== END DEBUG ===");
 
-    @BeforeSuite(groups = "slow")
-    public void beforeSuite() throws Exception {
-        PlatformDBTestingHelper.get().start();
-    }
-
-    @BeforeClass(groups = "slow")
-    public void beforeClass() throws Exception {
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
@@ -124,7 +143,6 @@ public class TestOSGIBase {
 
         clock.resetDeltaFromReality();
 
-        // Start services
         lifecycle.fireStartupSequencePriorEventRegistration();
         lifecycle.fireStartupSequencePostEventRegistration();
     }
@@ -157,7 +175,7 @@ public class TestOSGIBase {
         Awaitility.await().until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
+
                 return serviceRegistration.getServiceForName(serviceName) != null;
             }
         });
