@@ -164,7 +164,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         cachedPropertiesBySource = computePropertiesBySource();
     }
 
-    private void invalidateCache() {
+    protected void invalidateCache() {
         synchronized (lock) {
             cachedPropertiesBySource = null;
         }
