@@ -160,8 +160,6 @@ public class TestOSGIBase {
         if (osgiDataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource() instanceof HikariDataSource) {
             ((HikariDataSource) ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource()).close();
         }
-
-        RuntimeConfigRegistry.clear();
     }
 
     @AfterSuite(groups = "slow")
