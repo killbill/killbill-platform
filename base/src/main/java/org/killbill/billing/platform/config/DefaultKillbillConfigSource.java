@@ -80,7 +80,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                                                        "RuntimeConfiguration",
                                                        "KillBillDefaults"));
 
-    protected final PropertiesWithSourceCollector propertiesCollector;
+    private final PropertiesWithSourceCollector propertiesCollector;
 
     private volatile Map<String, Map<String, String>> cachedPropertiesBySource;
 
@@ -164,7 +164,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         cachedPropertiesBySource = computePropertiesBySource();
     }
 
-    protected void invalidateCache() {
+    private void invalidateCache() {
         synchronized (lock) {
             cachedPropertiesBySource = null;
         }
@@ -298,11 +298,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         for (final String propertyName : defaultProperties.stringPropertyNames()) {
             // Let the user override these properties
             if (!hasProperty(propertyName)) {
-               // defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
-                final String value = defaultProperties.getProperty(propertyName);
-                if (value != null && !value.isEmpty()) {
-                    defaultsToAdd.put(propertyName, value);
-                }
+                defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
             }
         }
 
@@ -528,13 +524,5 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return sources != null &&
                sources.contains("EnvironmentVariables") &&
                sources.contains("RuntimeConfiguration");
-    }
-
-    @VisibleForTesting
-    public static void resetForTesting() {
-        synchronized (lock) {
-            GMT_WARNING = NOT_SHOWN;
-            ENTROPY_WARNING = NOT_SHOWN;
-        }
     }
 }
