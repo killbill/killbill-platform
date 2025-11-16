@@ -101,6 +101,7 @@ public class TestOSGIBase {
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
         try {
+            RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
