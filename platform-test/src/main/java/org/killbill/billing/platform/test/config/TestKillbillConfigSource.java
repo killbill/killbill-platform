@@ -23,11 +23,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.TimeZone;
 
 import javax.annotation.Nullable;
 
@@ -56,7 +53,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
-        // populateDefaultProperties(Collections.emptyMap());
+        populateDefaultProperties(Collections.emptyMap());
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -112,7 +109,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             }
         }
         // Add all test properties as RuntimeConfiguration (highest priority)
-       // propertiesCollector.addProperties("RuntimeConfiguration", testProperties);
+        // propertiesCollector.addProperties("RuntimeConfiguration", testProperties);
 
         // invalidateCache();
         // rebuildCache();
