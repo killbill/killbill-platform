@@ -61,10 +61,6 @@ public class TestActivator extends KillbillActivatorBase implements OSGIKillbill
     public void start(final BundleContext context) throws Exception {
         super.start(context);
 
-        logger.info("OSGI bundle sees org.killbill.billing.osgi.dao.url = {}",
-                    System.getProperty("org.killbill.billing.osgi.dao.url"));
-
-
         final String bundleName = context.getBundle().getSymbolicName();
         logger.info("TestActivator: starting bundle = {}", bundleName);
 

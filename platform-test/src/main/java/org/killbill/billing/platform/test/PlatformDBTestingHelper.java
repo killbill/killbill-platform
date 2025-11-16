@@ -42,8 +42,6 @@ import org.skife.jdbi.v2.IDBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.sf.log4jdbc.log.SpyLogFactory;
-
 public class PlatformDBTestingHelper {
 
     private static final Logger log = LoggerFactory.getLogger(PlatformDBTestingHelper.class);
@@ -108,12 +106,6 @@ public class PlatformDBTestingHelper {
     }
 
     public synchronized void start() throws IOException, SQLException {
-        try {
-            SpyLogFactory.loadSpyLogDelegator("net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
-        } catch (final Exception e) {
-            log.debug("SpyLogFactory already initialized or not needed", e);
-        }
-
         instance.initialize();
         instance.start();
 
