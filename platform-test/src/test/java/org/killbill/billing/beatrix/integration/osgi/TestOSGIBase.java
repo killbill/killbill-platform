@@ -93,6 +93,14 @@ public class TestOSGIBase {
     protected CallContext callContext;
 
     public TestOSGIBase() {
+        try {
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        } catch (final Exception e) {
+            final AssertionError assertionError = new AssertionError("Initialization error");
+            assertionError.initCause(e);
+            throw assertionError;
+        }
+
         callContext = Mockito.mock(CallContext.class);
     }
 
@@ -103,14 +111,6 @@ public class TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        try {
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-        } catch (final Exception e) {
-            final AssertionError assertionError = new AssertionError("Initialization error");
-            assertionError.initCause(e);
-            throw assertionError;
-        }
-
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
