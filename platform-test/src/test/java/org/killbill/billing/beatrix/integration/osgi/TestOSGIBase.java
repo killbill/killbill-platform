@@ -42,6 +42,7 @@ import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
 import org.mockito.Mockito;
+import org.skife.config.RuntimeConfigRegistry;
 import org.skife.jdbi.v2.IDBI;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -159,6 +160,8 @@ public class TestOSGIBase {
         if (osgiDataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource() instanceof HikariDataSource) {
             ((HikariDataSource) ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource()).close();
         }
+
+        RuntimeConfigRegistry.clear();
     }
 
     @AfterSuite(groups = "slow")
