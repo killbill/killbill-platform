@@ -117,7 +117,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         // propertiesCollector.addProperties("RuntimeConfiguration", testProperties);
 
         // invalidateCache();
-        // rebuildCache();
+        rebuildCache();
     }
 
     private String getDriverClassName(String jdbcUrl) {
