@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -53,7 +54,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
-        populateDefaultProperties(Collections.emptyMap());
+        populateDefaultProperties(extraDefaults);
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -69,73 +70,15 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         this.extraDefaults = extraDefaults;
-
-        // Add JDBC and test-specific properties directly to the collector with HIGH priority
-        // by adding them to RuntimeConfiguration source
-        if (jdbcConnectionString != null) {
-            setProperty("org.killbill.dao.url", jdbcConnectionString);
-            setProperty("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
-
-            final String driverClassName = getDriverClassName(jdbcConnectionString);
-            setProperty("org.killbill.dao.driverClassName", driverClassName);
-            setProperty("org.killbill.billing.osgi.dao.driverClassName", driverClassName);
-
-        }
-        if (jdbcUsername != null) {
-            setProperty("org.killbill.dao.user", jdbcUsername);
-            setProperty("org.killbill.billing.osgi.dao.user", jdbcUsername);
-        }
-        if (jdbcPassword != null) {
-            setProperty("org.killbill.dao.password", jdbcPassword);
-            setProperty("org.killbill.billing.osgi.dao.password", jdbcPassword);
-        }
-
-        // Set other test-specific properties
-        setProperty("org.killbill.notificationq.main.sleep", "100");
-        setProperty("org.killbill.notificationq.main.nbThreads", "1");
-        setProperty("org.killbill.notificationq.main.claimed", "1");
-        setProperty("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
-        setProperty("org.killbill.persistent.bus.main.sleep", "100");
-        setProperty("org.killbill.persistent.bus.main.nbThreads", "1");
-        setProperty("org.killbill.persistent.bus.main.claimed", "1");
-        setProperty("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
-        setProperty("org.killbill.persistent.bus.external.sleep", "100");
-        setProperty("org.killbill.persistent.bus.external.nbThreads", "1");
-        setProperty("org.killbill.persistent.bus.external.claimed", "1");
-        setProperty("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
-
-        setProperty("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
-        setProperty("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
-
-        // Set extra defaults
-        if (extraDefaults != null) {
-            for (Map.Entry<String, String> entry : extraDefaults.entrySet()) {
-                setProperty(entry.getKey(), entry.getValue());
-            }
-        }
-        // Add all test properties as RuntimeConfiguration (highest priority)
-        // propertiesCollector.addProperties("RuntimeConfiguration", testProperties);
-
-        // invalidateCache();
-        rebuildCache();
+        // extraDefaults changed, need to reload defaults
+        populateDefaultProperties(extraDefaults);
     }
 
-    private String getDriverClassName(String jdbcUrl) {
-        if (jdbcUrl.startsWith("jdbc:h2:")) {
-            return "org.h2.Driver";
-        } else if (jdbcUrl.startsWith("jdbc:mysql:")) {
-            return "com.mysql.jdbc.Driver";
-        } else if (jdbcUrl.startsWith("jdbc:postgresql:")) {
-            return "org.postgresql.Driver";
-        }
-        return null;
-    }
-
-/*
     @Override
     protected Properties getDefaultProperties() {
         final Properties properties = super.getDefaultProperties();
 
+        // Setup up DAO properties (this will be a no-op for fast tests)
         if (jdbcConnectionString != null) {
             properties.put("org.killbill.dao.url", jdbcConnectionString);
             properties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
@@ -149,19 +92,24 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             properties.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
         }
 
+        // Speed up the notification queue
         properties.put("org.killbill.notificationq.main.sleep", "100");
         properties.put("org.killbill.notificationq.main.nbThreads", "1");
         properties.put("org.killbill.notificationq.main.claimed", "1");
         properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
+
+        // Speed up the buses
         properties.put("org.killbill.persistent.bus.main.sleep", "100");
         properties.put("org.killbill.persistent.bus.main.nbThreads", "1");
         properties.put("org.killbill.persistent.bus.main.claimed", "1");
         properties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
+
         properties.put("org.killbill.persistent.bus.external.sleep", "100");
         properties.put("org.killbill.persistent.bus.external.nbThreads", "1");
         properties.put("org.killbill.persistent.bus.external.claimed", "1");
         properties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
 
+        // Temporary directory for OSGI bundles
         properties.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
         properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
 
@@ -173,7 +121,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         return properties;
     }
-*/
 
     @Override
     protected Properties getDefaultSystemProperties() {
