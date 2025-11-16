@@ -128,10 +128,16 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
+        if (bySource == null) {
+            return null;
+        }
+
         for (final Map<String, String> sourceProps : bySource.values()) {
-            final String value = sourceProps.get(propertyName);
-            if (value != null) {
-                return value;
+            if (sourceProps != null) {
+                final String value = sourceProps.get(propertyName);
+                if (value != null) {
+                    return value;
+                }
             }
         }
 
@@ -161,7 +167,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     protected void rebuildCache() {
-        cachedPropertiesBySource = computePropertiesBySource();
+        //cachedPropertiesBySource = computePropertiesBySource();
+        try {
+            cachedPropertiesBySource = computePropertiesBySource();
+        } catch (final Exception e) {
+            logger.error("Error building properties cache", e);
+
+            cachedPropertiesBySource = Collections.emptyMap();
+        }
     }
 
     private void invalidateCache() {
@@ -171,6 +184,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     private Map<String, Map<String, String>> computePropertiesBySource() {
+        logger.info("=== computePropertiesBySource called ===");
         final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
         runtimeBySource.forEach((source, props) -> {
             if (!props.isEmpty()) {
@@ -260,6 +274,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
+        logger.info("=== computePropertiesBySource returning {} sources ===", result.size());
         return Collections.unmodifiableMap(result);
     }
 
