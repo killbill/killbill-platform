@@ -116,6 +116,11 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
+        System.out.println("org.killbill.dao.url = " + configSource.getString("org.killbill.dao.url"));
+        System.out.println("org.killbill.billing.osgi.dao.url = " + configSource.getString("org.killbill.billing.osgi.dao.url"));
+        System.out.println("org.killbill.dao.user = " + configSource.getString("org.killbill.dao.user"));
+        System.out.println("org.killbill.dao.password = " + configSource.getString("org.killbill.dao.password"));
+
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }

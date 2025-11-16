@@ -118,6 +118,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         // rebuildCache();
     }
 
+/*
     @Override
     protected Properties getDefaultProperties() {
         final Properties properties = super.getDefaultProperties();
@@ -159,6 +160,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         return properties;
     }
+*/
 
     @Override
     protected Properties getDefaultSystemProperties() {
