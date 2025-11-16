@@ -100,18 +100,7 @@ public class TestOSGIBase {
 
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
-        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
-            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
-            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
-        }
-
-        PlatformDBTestingHelper.get().start();
-    }
-
-    @BeforeClass(groups = "slow")
-    public void beforeClass() throws Exception {
         try {
-            RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
@@ -130,6 +119,11 @@ public class TestOSGIBase {
         }
         System.out.println("=== END DEBUG ===");
 
+        PlatformDBTestingHelper.get().start();
+    }
+
+    @BeforeClass(groups = "slow")
+    public void beforeClass() throws Exception {
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
