@@ -298,7 +298,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         for (final String propertyName : defaultProperties.stringPropertyNames()) {
             // Let the user override these properties
             if (!hasProperty(propertyName)) {
-                defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
+               // defaultsToAdd.put(propertyName, defaultProperties.getProperty(propertyName));
+                final String value = defaultProperties.getProperty(propertyName);
+                if (value != null && !value.isEmpty()) {
+                    defaultsToAdd.put(propertyName, value);
+                }
             }
         }
 
