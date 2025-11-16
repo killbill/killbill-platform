@@ -75,6 +75,11 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         if (jdbcConnectionString != null) {
             setProperty("org.killbill.dao.url", jdbcConnectionString);
             setProperty("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+
+            final String driverClassName = getDriverClassName(jdbcConnectionString);
+            setProperty("org.killbill.dao.driverClassName", driverClassName);
+            setProperty("org.killbill.billing.osgi.dao.driverClassName", driverClassName);
+
         }
         if (jdbcUsername != null) {
             setProperty("org.killbill.dao.user", jdbcUsername);
@@ -113,6 +118,17 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         // invalidateCache();
         // rebuildCache();
+    }
+
+    private String getDriverClassName(String jdbcUrl) {
+        if (jdbcUrl.startsWith("jdbc:h2:")) {
+            return "org.h2.Driver";
+        } else if (jdbcUrl.startsWith("jdbc:mysql:")) {
+            return "com.mysql.jdbc.Driver";
+        } else if (jdbcUrl.startsWith("jdbc:postgresql:")) {
+            return "org.postgresql.Driver";
+        }
+        return null;
     }
 
 /*
