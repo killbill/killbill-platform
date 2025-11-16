@@ -93,6 +93,21 @@ public class TestOSGIBase {
     protected CallContext callContext;
 
     public TestOSGIBase() {
+        callContext = Mockito.mock(CallContext.class);
+    }
+
+    @BeforeSuite(groups = "slow")
+    public void beforeSuite() throws Exception {
+        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
+            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
+            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
+        }
+
+        PlatformDBTestingHelper.get().start();
+    }
+
+    @BeforeClass(groups = "slow")
+    public void beforeClass() throws Exception {
         try {
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
@@ -101,16 +116,6 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
-        callContext = Mockito.mock(CallContext.class);
-    }
-
-    @BeforeSuite(groups = "slow")
-    public void beforeSuite() throws Exception {
-        PlatformDBTestingHelper.get().start();
-    }
-
-    @BeforeClass(groups = "slow")
-    public void beforeClass() throws Exception {
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }

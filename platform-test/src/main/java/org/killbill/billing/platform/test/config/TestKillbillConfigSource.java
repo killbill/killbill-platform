@@ -52,7 +52,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        // Call parent constructor WITHOUT extraDefaults - this will call populateDefaultProperties() once
         super(file);
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
