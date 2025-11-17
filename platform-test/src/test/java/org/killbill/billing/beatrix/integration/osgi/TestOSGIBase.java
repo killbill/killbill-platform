@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 
+import org.awaitility.Awaitility;
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.lifecycle.api.BusService;
@@ -54,7 +55,6 @@ import org.testng.annotations.BeforeSuite;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
-import org.awaitility.Awaitility;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class TestOSGIBase {
@@ -95,28 +95,9 @@ public class TestOSGIBase {
     protected CallContext callContext;
 
     public TestOSGIBase() {
-        callContext = Mockito.mock(CallContext.class);
-    }
+        RuntimeConfigRegistry.clear();
 
-    @BeforeSuite(groups = "slow")
-    public void beforeSuite() throws Exception {
-        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
-            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
-            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
-        }
-
-        System.setProperty("user.timezone", "GMT");
-        System.setProperty("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
-        System.setProperty("log4jdbc.dump.sql.maxlinelength", "0");
-        System.setProperty("org.slf4j.simpleLogger.log.jdbc", "ERROR");
-
-        PlatformDBTestingHelper.get().start();
-    }
-
-    @BeforeClass(groups = "slow")
-    public void beforeClass() throws Exception {
         try {
-            RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
@@ -124,6 +105,21 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
+        callContext = Mockito.mock(CallContext.class);
+    }
+
+    @BeforeSuite(groups = "slow")
+    public void beforeSuite() throws Exception {
+
+        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null && System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
+            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
+        }
+
+        PlatformDBTestingHelper.get().start();
+    }
+
+    @BeforeClass(groups = "slow")
+    public void beforeClass() throws Exception {
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
         System.out.println("Total properties: " + allProps.size());
@@ -133,6 +129,7 @@ public class TestOSGIBase {
             }
         }
         System.out.println("=== END DEBUG ===");
+
 
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
