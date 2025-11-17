@@ -19,7 +19,6 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -113,23 +112,12 @@ public class TestOSGIBase {
 
         try {
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-
-            configSource.getProperties();
-
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
             assertionError.initCause(e);
             throw assertionError;
         }
 
-
-        System.out.println("=== DEBUG: CONFIG SOURCE INITIALIZED ===");
-        System.out.println("Config source class: " + configSource.getClass().getName());
-        System.out.println("Config source is null? " + (configSource == null));
-
-        // Verify cache is actually initialized
-        Map<String, Map<String, String>> bySource = configSource.getPropertiesBySource();
-        System.out.println("Properties by source: " + (bySource != null ? bySource.size() + " sources" : "NULL"));
 
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
@@ -140,6 +128,7 @@ public class TestOSGIBase {
             }
         }
         System.out.println("=== END DEBUG ===");
+
 
         PlatformDBTestingHelper.get().start();
     }
@@ -155,16 +144,7 @@ public class TestOSGIBase {
             throw assertionError;
         }*/
 
-        if (configSource == null) {
-            throw new AssertionError("configSource is null in beforeClass!");
-        }
 
-        // Double-check cache is initialized
-        try {
-            configSource.getPropertiesBySource();
-        } catch (Exception e) {
-            throw new AssertionError("Failed to initialize config source cache", e);
-        }
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
