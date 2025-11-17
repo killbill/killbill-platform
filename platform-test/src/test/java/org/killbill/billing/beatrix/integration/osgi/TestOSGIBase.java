@@ -107,20 +107,16 @@ public class TestOSGIBase {
             System.setProperty("org.killbill.billing.dbi.test.h2", "true");
         }*/
 
-        if(configSource == null) {
-            RuntimeConfigRegistry.clear();
+        RuntimeConfigRegistry.clear();
 
 
-            try {
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-            } catch (final Exception e) {
-                final AssertionError assertionError = new AssertionError("Initialization error");
-                assertionError.initCause(e);
-                throw assertionError;
-            }
-
+        try {
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        } catch (final Exception e) {
+            final AssertionError assertionError = new AssertionError("Initialization error");
+            assertionError.initCause(e);
+            throw assertionError;
         }
-
 
 
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
