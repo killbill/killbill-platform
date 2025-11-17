@@ -150,7 +150,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         logger.debug("getString({}): NOT FOUND in any source", propertyName);
-        return "";
+        return null;
     }
 
     @Override

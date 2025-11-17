@@ -50,7 +50,7 @@ public abstract class KillBillPlatformModuleBase extends AbstractModule {
         @Override
         public String getString(final String propertyName) {
             if(propertyName == null) {
-                return "";
+                return null;
             }
 
             final String test = configSource.getString(propertyName);
