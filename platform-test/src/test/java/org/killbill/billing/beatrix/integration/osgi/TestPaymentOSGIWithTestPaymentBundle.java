@@ -56,7 +56,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
             }
         }
 
-        super.beforeClass();
+       // super.beforeClass();
 
         if (osgiConfig == null) {
             throw new AssertionError("osgiConfig was not injected by Guice!");
