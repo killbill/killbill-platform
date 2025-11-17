@@ -125,7 +125,7 @@ public class TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        try {
+       /* try {
             RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
@@ -144,7 +144,7 @@ public class TestOSGIBase {
             }
         }
         System.out.println("=== END DEBUG ===");
-
+*/
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
