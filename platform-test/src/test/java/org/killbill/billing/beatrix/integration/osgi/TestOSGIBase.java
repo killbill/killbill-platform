@@ -91,7 +91,7 @@ public class TestOSGIBase {
     @Inject
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
-    protected static TestKillbillConfigSource configSource;
+    protected TestKillbillConfigSource configSource;
     protected CallContext callContext;
 
     public TestOSGIBase() {
