@@ -20,7 +20,6 @@
 package org.killbill.billing.beatrix.integration.osgi;
 
 import java.util.Properties;
-import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -101,17 +100,25 @@ public class TestOSGIBase {
 
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
-        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
-            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
-            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
+        try {
+            RuntimeConfigRegistry.clear();
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        } catch (final Exception e) {
+            final AssertionError assertionError = new AssertionError("Initialization error");
+            assertionError.initCause(e);
+            throw assertionError;
         }
 
-        // Set System properties WITHOUT triggering any static initialization
-        System.setProperty("user.timezone", "GMT");
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
-        System.setProperty("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
-        System.setProperty("log4jdbc.dump.sql.maxlinelength", "0");
-        System.setProperty("org.slf4j.simpleLogger.log.jdbc", "ERROR");
+        // DEBUG: Check what properties are returned by getProperties()
+        System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
+        Properties allProps = configSource.getProperties();
+        System.out.println("Total properties: " + allProps.size());
+        for (String key : allProps.stringPropertyNames()) {
+            if (key.contains("osgi.dao")) {
+                System.out.println("  " + key + " = " + allProps.getProperty(key));
+            }
+        }
+        System.out.println("=== END DEBUG ===");
 
         PlatformDBTestingHelper.get().start();
     }
@@ -127,7 +134,7 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
-
+        // DEBUG: Check what properties are returned by getProperties()
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
         System.out.println("Total properties: " + allProps.size());
