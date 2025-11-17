@@ -95,15 +95,7 @@ public class TestOSGIBase {
     protected CallContext callContext;
 
     public TestOSGIBase() {
-        RuntimeConfigRegistry.clear();
 
-        try {
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-        } catch (final Exception e) {
-            final AssertionError assertionError = new AssertionError("Initialization error");
-            assertionError.initCause(e);
-            throw assertionError;
-        }
 
         callContext = Mockito.mock(CallContext.class);
     }
@@ -115,6 +107,15 @@ public class TestOSGIBase {
             System.setProperty("org.killbill.billing.dbi.test.h2", "true");
         }*/
 
+        RuntimeConfigRegistry.clear();
+
+        try {
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        } catch (final Exception e) {
+            final AssertionError assertionError = new AssertionError("Initialization error");
+            assertionError.initCause(e);
+            throw assertionError;
+        }
         PlatformDBTestingHelper.get().start();
     }
 
