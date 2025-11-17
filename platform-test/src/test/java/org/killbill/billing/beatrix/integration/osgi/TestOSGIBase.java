@@ -91,7 +91,7 @@ public class TestOSGIBase {
     @Inject
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
-    protected TestKillbillConfigSource configSource;
+    protected static TestKillbillConfigSource configSource;
     protected CallContext callContext;
 
     public TestOSGIBase() {
@@ -116,6 +116,19 @@ public class TestOSGIBase {
             assertionError.initCause(e);
             throw assertionError;
         }
+
+
+        System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
+        Properties allProps = configSource.getProperties();
+        System.out.println("Total properties: " + allProps.size());
+        for (String key : allProps.stringPropertyNames()) {
+            if (key.contains("osgi.dao")) {
+                System.out.println("  " + key + " = " + allProps.getProperty(key));
+            }
+        }
+        System.out.println("=== END DEBUG ===");
+
+
         PlatformDBTestingHelper.get().start();
     }
 
@@ -129,16 +142,6 @@ public class TestOSGIBase {
             assertionError.initCause(e);
             throw assertionError;
         }*/
-
-        System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
-        Properties allProps = configSource.getProperties();
-        System.out.println("Total properties: " + allProps.size());
-        for (String key : allProps.stringPropertyNames()) {
-            if (key.contains("osgi.dao")) {
-                System.out.println("  " + key + " = " + allProps.getProperty(key));
-            }
-        }
-        System.out.println("=== END DEBUG ===");
 
 
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
