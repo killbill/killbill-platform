@@ -126,26 +126,14 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public String getString(final String propertyName) {
-        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
+        Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
-            logger.warn("getString({}): bySource is NULL! 222F", propertyName);
-
+            logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
             return null;
         }
 
-        logger.info("bySource keys={}, map={}",
-                    bySource.keySet(),
-                    bySource);
-
-       /* for (final Map<String, String> sourceProps : bySource.values()) {
-            if (sourceProps != null) {
-                final String value = sourceProps.get(propertyName);
-                if (value != null) {
-                    return value;
-                }
-            }
-        }*/
+        logger.debug("getString({}): searching in {} sources", propertyName, bySource.size());
 
         for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
             final Map<String, String> sourceProps = entry.getValue();
@@ -156,12 +144,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
             final String value = sourceProps.get(propertyName);
             if (value != null) {
+                logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
                 return value;
             }
         }
 
-        logger.warn("getString({}): NOT FOUND in any source", propertyName);
-
+        logger.debug("getString({}): NOT FOUND in any source", propertyName);
         return null;
     }
 
@@ -176,24 +164,43 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public Map<String, Map<String, String>> getPropertiesBySource() {
-        if (cachedPropertiesBySource == null) {
+        Map<String, Map<String, String>> result = cachedPropertiesBySource;
+
+        if (result == null) {
             synchronized (lock) {
-                if (cachedPropertiesBySource == null) {
+                result = cachedPropertiesBySource;
+                if (result == null) {
+                    logger.info("Initializing properties cache in getPropertiesBySource()");
                     rebuildCache();
+                    result = cachedPropertiesBySource;
+
+                    // If still null after rebuild, return empty map to prevent NPE
+                    if (result == null) {
+                        logger.error("Cache is still null after rebuildCache()!");
+                        return Collections.emptyMap();
+                    }
                 }
             }
         }
 
-        return Collections.unmodifiableMap(cachedPropertiesBySource);
+        return Collections.unmodifiableMap(result);
     }
 
     protected void rebuildCache() {
         //cachedPropertiesBySource = computePropertiesBySource();
         try {
-            cachedPropertiesBySource = computePropertiesBySource();
+            logger.info("rebuildCache() called");
+            Map<String, Map<String, String>> newCache = computePropertiesBySource();
+
+            if (newCache == null) {
+                logger.error("computePropertiesBySource() returned null!");
+                cachedPropertiesBySource = Collections.emptyMap();
+            } else {
+                cachedPropertiesBySource = newCache;
+                logger.info("rebuildCache() completed with {} sources", newCache.size());
+            }
         } catch (final Exception e) {
             logger.error("Error building properties cache", e);
-
             cachedPropertiesBySource = Collections.emptyMap();
         }
     }
