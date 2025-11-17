@@ -98,7 +98,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.notificationq.main.claimed", "1");
         properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
 
-        System.setProperty("org.killbill.billing.osgi.bundles.restart.delay.secs", "11s");
+        //System.setProperty("org.killbill.billing.osgi.bundles.restart.delay.secs", "11s");
 
 
         // Speed up the buses
