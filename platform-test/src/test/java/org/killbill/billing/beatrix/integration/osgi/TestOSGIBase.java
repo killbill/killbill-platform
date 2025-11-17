@@ -100,6 +100,24 @@ public class TestOSGIBase {
 
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
+        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
+            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
+            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
+        }
+
+        if (System.getProperty("log4jdbc.spylogdelegator.name") == null) {
+            System.setProperty("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
+        }
+        if (System.getProperty("log4jdbc.dump.sql.maxlinelength") == null) {
+            System.setProperty("log4jdbc.dump.sql.maxlinelength", "0");
+        }
+        if (System.getProperty("org.slf4j.simpleLogger.log.jdbc") == null) {
+            System.setProperty("org.slf4j.simpleLogger.log.jdbc", "ERROR");
+        }
+        if (System.getProperty("user.timezone") == null) {
+            System.setProperty("user.timezone", "GMT");
+        }
+
         PlatformDBTestingHelper.get().start();
     }
 
@@ -114,7 +132,7 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
-        
+
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
         System.out.println("Total properties: " + allProps.size());
