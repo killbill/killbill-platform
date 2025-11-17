@@ -111,9 +111,9 @@ public class TestOSGIBase {
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
 
-        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null && System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
+       /* if (System.getProperty("org.killbill.billing.dbi.test.h2") == null && System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
             System.setProperty("org.killbill.billing.dbi.test.h2", "true");
-        }
+        }*/
 
         PlatformDBTestingHelper.get().start();
     }
