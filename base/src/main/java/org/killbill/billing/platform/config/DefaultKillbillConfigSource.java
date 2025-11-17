@@ -129,17 +129,34 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
-            logger.warn("getString({}): bySource is NULL!", propertyName);
+            logger.warn("getString({}): bySource is NULL! 222F", propertyName);
 
             return null;
         }
 
-        for (final Map<String, String> sourceProps : bySource.values()) {
+        logger.info("bySource keys={}, map={}",
+                    bySource.keySet(),
+                    bySource);
+
+       /* for (final Map<String, String> sourceProps : bySource.values()) {
             if (sourceProps != null) {
                 final String value = sourceProps.get(propertyName);
                 if (value != null) {
                     return value;
                 }
+            }
+        }*/
+
+        for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
+            final Map<String, String> sourceProps = entry.getValue();
+            if (sourceProps == null) {
+                logger.warn("Source {} returned NULL map in getPropertiesBySource()", entry.getKey());
+                continue;
+            }
+
+            final String value = sourceProps.get(propertyName);
+            if (value != null) {
+                return value;
             }
         }
 

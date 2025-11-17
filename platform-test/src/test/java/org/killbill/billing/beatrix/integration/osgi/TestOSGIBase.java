@@ -100,6 +100,11 @@ public class TestOSGIBase {
 
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
+        PlatformDBTestingHelper.get().start();
+    }
+
+    @BeforeClass(groups = "slow")
+    public void beforeClass() throws Exception {
         try {
             RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
@@ -109,7 +114,7 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
-        // DEBUG: Check what properties are returned by getProperties()
+        
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
         System.out.println("Total properties: " + allProps.size());
@@ -120,11 +125,6 @@ public class TestOSGIBase {
         }
         System.out.println("=== END DEBUG ===");
 
-        PlatformDBTestingHelper.get().start();
-    }
-
-    @BeforeClass(groups = "slow")
-    public void beforeClass() throws Exception {
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
