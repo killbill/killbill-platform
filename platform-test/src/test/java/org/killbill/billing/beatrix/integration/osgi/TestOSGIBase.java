@@ -121,16 +121,15 @@ public class TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        try {
+        /*try {
             RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error in beforeClass");
             assertionError.initCause(e);
             throw assertionError;
-        }
+        }*/
 
-        // DEBUG: Check what properties are returned by getProperties()
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
         System.out.println("Total properties: " + allProps.size());
