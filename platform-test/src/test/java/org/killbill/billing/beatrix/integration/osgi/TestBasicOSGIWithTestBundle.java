@@ -68,14 +68,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        if (configSource == null) {
-            try {
-                RuntimeConfigRegistry.clear();
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-            } catch (final Exception e) {
-                throw new AssertionError("Failed to create configSource", e);
-            }
-        }
+
 
         super.beforeClass();
 
