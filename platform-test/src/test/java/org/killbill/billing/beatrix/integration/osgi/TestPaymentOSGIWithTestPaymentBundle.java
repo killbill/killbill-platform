@@ -47,13 +47,6 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
     public void beforeClass() throws Exception {
         //super.beforeClass();
 
-        final String killbillVersion = System.getProperty("killbill.version");
-        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
-        setupTest.setupJavaBundle();
-    }
-
-    @BeforeMethod(groups = "slow")
-    public void beforeMethod() throws Exception {
         if (configSource == null) {
             try {
                 RuntimeConfigRegistry.clear();
@@ -63,6 +56,20 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
             }
         }
 
+        super.beforeClass();
+
+        if (osgiConfig == null) {
+            throw new AssertionError("osgiConfig was not injected by Guice!");
+        }
+
+
+        final String killbillVersion = System.getProperty("killbill.version");
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        setupTest.setupJavaBundle();
+    }
+
+    @BeforeMethod(groups = "slow")
+    public void beforeMethod() throws Exception {
         super.beforeMethod();
         ((PaymentPluginApiWithTestControl) getTestApi(paymentPluginApiOSGIServiceRegistration, TEST_PLUGIN_NAME)).resetToNormalBehavior();
     }
