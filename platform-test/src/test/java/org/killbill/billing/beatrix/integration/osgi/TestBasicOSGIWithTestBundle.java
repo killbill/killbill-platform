@@ -34,6 +34,9 @@ import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.notification.plugin.api.ExtBusEventType;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
+import org.killbill.billing.platform.test.PlatformDBTestingHelper;
+import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
+import org.skife.config.RuntimeConfigRegistry;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.Query;
@@ -65,6 +68,15 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
+        if (configSource == null) {
+            try {
+                RuntimeConfigRegistry.clear();
+                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+            } catch (final Exception e) {
+                throw new AssertionError("Failed to create configSource", e);
+            }
+        }
+
         super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");

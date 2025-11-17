@@ -144,14 +144,6 @@ public class TestOSGIBase {
             throw assertionError;
         }*/
 
-        if (configSource == null) {
-            try {
-                RuntimeConfigRegistry.clear();
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-            } catch (final Exception e) {
-                throw new AssertionError("Failed to create configSource", e);
-            }
-        }
 
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
