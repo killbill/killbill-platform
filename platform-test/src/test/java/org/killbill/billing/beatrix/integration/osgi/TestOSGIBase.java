@@ -20,6 +20,7 @@
 package org.killbill.billing.beatrix.integration.osgi;
 
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
@@ -105,18 +106,12 @@ public class TestOSGIBase {
             System.setProperty("org.killbill.billing.dbi.test.h2", "true");
         }
 
-        if (System.getProperty("log4jdbc.spylogdelegator.name") == null) {
-            System.setProperty("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
-        }
-        if (System.getProperty("log4jdbc.dump.sql.maxlinelength") == null) {
-            System.setProperty("log4jdbc.dump.sql.maxlinelength", "0");
-        }
-        if (System.getProperty("org.slf4j.simpleLogger.log.jdbc") == null) {
-            System.setProperty("org.slf4j.simpleLogger.log.jdbc", "ERROR");
-        }
-        if (System.getProperty("user.timezone") == null) {
-            System.setProperty("user.timezone", "GMT");
-        }
+        // Set System properties WITHOUT triggering any static initialization
+        System.setProperty("user.timezone", "GMT");
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
+        System.setProperty("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
+        System.setProperty("log4jdbc.dump.sql.maxlinelength", "0");
+        System.setProperty("org.slf4j.simpleLogger.log.jdbc", "ERROR");
 
         PlatformDBTestingHelper.get().start();
     }
