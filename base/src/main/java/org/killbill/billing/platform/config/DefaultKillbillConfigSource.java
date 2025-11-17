@@ -129,6 +129,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
+            logger.warn("getString({}): bySource is NULL!", propertyName);
+
             return null;
         }
 
@@ -140,6 +142,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 }
             }
         }
+
+        logger.warn("getString({}): NOT FOUND in any source", propertyName);
 
         return null;
     }
