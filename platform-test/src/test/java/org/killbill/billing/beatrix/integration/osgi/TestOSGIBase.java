@@ -100,6 +100,21 @@ public class TestOSGIBase {
 
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
+        if (System.getProperty("org.killbill.billing.dbi.test.h2") == null &&
+            System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
+            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
+        }
+
+        System.setProperty("user.timezone", "GMT");
+        System.setProperty("log4jdbc.spylogdelegator.name", "net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
+        System.setProperty("log4jdbc.dump.sql.maxlinelength", "0");
+        System.setProperty("org.slf4j.simpleLogger.log.jdbc", "ERROR");
+
+        PlatformDBTestingHelper.get().start();
+    }
+
+    @BeforeClass(groups = "slow")
+    public void beforeClass() throws Exception {
         try {
             RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
@@ -109,7 +124,6 @@ public class TestOSGIBase {
             throw assertionError;
         }
 
-        // DEBUG: Check what properties are returned by getProperties()
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
         System.out.println("Total properties: " + allProps.size());
@@ -120,31 +134,6 @@ public class TestOSGIBase {
         }
         System.out.println("=== END DEBUG ===");
 
-        PlatformDBTestingHelper.get().start();
-    }
-
-    @BeforeClass(groups = "slow")
-    public void beforeClass() throws Exception {
-       /* try {
-            RuntimeConfigRegistry.clear();
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-        } catch (final Exception e) {
-            final AssertionError assertionError = new AssertionError("Initialization error");
-            assertionError.initCause(e);
-            throw assertionError;
-        }
-
-        // DEBUG: Check what properties are returned by getProperties()
-        System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
-        Properties allProps = configSource.getProperties();
-        System.out.println("Total properties: " + allProps.size());
-        for (String key : allProps.stringPropertyNames()) {
-            if (key.contains("osgi.dao")) {
-                System.out.println("  " + key + " = " + allProps.getProperty(key));
-            }
-        }
-        System.out.println("=== END DEBUG ===");
-*/
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
