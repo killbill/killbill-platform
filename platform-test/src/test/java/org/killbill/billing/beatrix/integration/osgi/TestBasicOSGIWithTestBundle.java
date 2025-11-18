@@ -78,17 +78,6 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         setupTest.setupJavaBundle();
     }
 
-    public TestBasicOSGIWithTestBundle() {
-      if(configSource == null){
-          try {
-              System.out.println("ConfigSource is null...");
-              RuntimeConfigRegistry.clear();
-              configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-          } catch (final Exception e) {
-              throw new AssertionError("Failed to create configSource", e);
-          }
-      }
-    }
 
 /*
     @BeforeMethod(groups = "slow")

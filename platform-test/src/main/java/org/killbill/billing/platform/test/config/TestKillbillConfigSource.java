@@ -54,7 +54,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
-        populateDefaultProperties(extraDefaults);
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -70,6 +69,12 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         this.extraDefaults = extraDefaults;
+    }
+
+    public void test() {
+        //populateDefaultProperties(extraDefaults);
+
+
         populateDefaultProperties(extraDefaults);
         rebuildCache();
     }
