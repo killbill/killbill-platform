@@ -112,6 +112,9 @@ public class TestOSGIBase {
 
         try {
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+
+            System.setProperty("_test_config_source_created", "true");
+
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
             assertionError.initCause(e);
@@ -144,6 +147,9 @@ public class TestOSGIBase {
             throw assertionError;
         }*/
 
+        if (configSource == null && System.getProperty("_test_config_source_created") != null) {
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        }
 
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
