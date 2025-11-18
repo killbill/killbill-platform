@@ -167,8 +167,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         });
     }
 
-
-
     @Override
     protected Properties getDefaultProperties() {
         final Properties properties = super.getDefaultProperties();
@@ -177,6 +175,20 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         if (jdbcConnectionString != null) {
             properties.put("org.killbill.dao.url", jdbcConnectionString);
             properties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+
+            if (jdbcConnectionString.contains(":h2:")) {
+                properties.put("org.killbill.dao.driverClassName", "org.h2.Driver");
+                properties.put("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
+            } else if (jdbcConnectionString.contains(":postgresql:")) {
+                properties.put("org.killbill.dao.driverClassName", "org.postgresql.Driver");
+                properties.put("org.killbill.billing.osgi.dao.driverClassName", "org.postgresql.Driver");
+            } else if (jdbcConnectionString.contains(":mysql:")) {
+                properties.put("org.killbill.dao.driverClassName", "com.mysql.cj.jdbc.Driver");
+                properties.put("org.killbill.billing.osgi.dao.driverClassName", "com.mysql.cj.jdbc.Driver");
+            } else if (jdbcConnectionString.contains(":mariadb:")) {
+                properties.put("org.killbill.dao.driverClassName", "org.mariadb.jdbc.Driver");
+                properties.put("org.killbill.billing.osgi.dao.driverClassName", "org.mariadb.jdbc.Driver");
+            }
         }
         if (jdbcUsername != null) {
             properties.put("org.killbill.dao.user", jdbcUsername);
@@ -194,7 +206,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
 
         //System.setProperty("org.killbill.billing.osgi.bundles.restart.delay.secs", "11s");
-
 
         // Speed up the buses
         properties.put("org.killbill.persistent.bus.main.sleep", "100");
