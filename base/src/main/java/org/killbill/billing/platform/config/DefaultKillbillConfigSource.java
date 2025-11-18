@@ -267,7 +267,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     public String getString(final String propertyName) {
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
-        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
+        if (bySource == null) {
+            logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
+            return null;
+        }
+
+       /* for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
             final Map<String, String> sourceProps = bySource.get(source);
             if (sourceProps != null) {
                 final String value = sourceProps.get(propertyName);
@@ -275,9 +280,21 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                     return value;
                 }
             }
-        }
+        }*/
 
         for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
+            final Map<String, String> sourceProps = entry.getValue();
+            if (sourceProps == null) {
+                continue;
+            }
+
+            final String value = sourceProps.get(propertyName);
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+
+       /* for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
             if (HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey())) {
                 continue;
             }
@@ -286,7 +303,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 return value;
             }
         }
-
+*/
         return null;
     }
 

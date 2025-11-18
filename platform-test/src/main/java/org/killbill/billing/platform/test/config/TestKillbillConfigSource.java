@@ -210,9 +210,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
 
         if (extraDefaults != null) {
-            for (final Entry<String, String> entry : extraDefaults.entrySet()) {
-                properties.put(entry.getKey(), entry.getValue());
-            }
+            properties.putAll(extraDefaults);
         }
 
         return properties;
