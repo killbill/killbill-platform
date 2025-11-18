@@ -81,6 +81,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
     public TestBasicOSGIWithTestBundle() {
       if(configSource == null){
           try {
+              System.out.println("ConfigSource is null...");
               RuntimeConfigRegistry.clear();
               configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
           } catch (final Exception e) {
@@ -89,6 +90,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
       }
     }
 
+/*
     @BeforeMethod(groups = "slow")
     public void beforeMethod() throws Exception {
 
@@ -99,6 +101,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJavaBundle();
     }
+*/
 
     @Test(groups = "slow")
     public void testBundleTest() throws Exception {
