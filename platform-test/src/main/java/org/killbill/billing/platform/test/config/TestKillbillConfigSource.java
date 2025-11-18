@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -40,16 +41,17 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     private final String jdbcPassword;
     private final Map<String, String> extraDefaults;
 
-    public TestKillbillConfigSource(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
+    public TestKillbillConfigSource(@Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws Exception {
         this(null, dbTestingHelperKlass);
     }
 
-    public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass) throws Exception {
         this(file, dbTestingHelperKlass, Collections.emptyMap());
     }
 
-    public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        super(file);
+    public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws Exception {
+        //super(file);
+        super(file, mergeWithDbProperties(dbTestingHelperKlass, extraDefaults));
 
         System.out.println("TestKillbillConfigSource constructor is called....");
         System.out.println("extraDefaults values....");
@@ -196,6 +198,39 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
                 System.out.println("  " + s1 + ":  " + s2);
             });
         });
+    }
+
+    private static Map<String, String> mergeWithDbProperties(Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, Map<String, String> extraDefaults) throws Exception {
+        Map<String, String> merged = new HashMap<>(extraDefaults);
+
+        if (dbTestingHelperKlass != null) {
+            final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
+            final EmbeddedDB instance = dbTestingHelper.getInstance();
+
+            String jdbcUrl = instance.getJdbcConnectionString();
+            String user = instance.getUsername();
+            String password = instance.getPassword();
+
+            if (jdbcUrl != null) {
+                merged.put("org.killbill.dao.url", jdbcUrl);
+                merged.put("org.killbill.billing.osgi.dao.url", jdbcUrl);
+
+                if (jdbcUrl.contains(":h2:")) {
+                    merged.put("org.killbill.dao.driverClassName", "org.h2.Driver");
+                    merged.put("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
+                }
+            }
+            if (user != null) {
+                merged.put("org.killbill.dao.user", user);
+                merged.put("org.killbill.billing.osgi.dao.user", user);
+            }
+            if (password != null) {
+                merged.put("org.killbill.dao.password", password);
+                merged.put("org.killbill.billing.osgi.dao.password", password);
+            }
+        }
+
+        return merged;
     }
 
     @Override
