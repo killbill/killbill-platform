@@ -59,7 +59,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         });
 
 
-        System.out.println("before populateDefaultProperties...");
+        /*System.out.println("before populateDefaultProperties...");
         getProperties().forEach((object, object2) -> {
             System.out.println(object + ":  " + object2);
         });
@@ -70,11 +70,13 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             propertyWithSources.forEach((s1, s2) -> {
                 System.out.println("  " + s1 + ":  " + s2);
             });
-        });
+        });*/
+
+        populateDefaultProperties(extraDefaults);
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
-        populateDefaultProperties(extraDefaults);
+       /* populateDefaultProperties(extraDefaults);
 
         System.out.println("after populateDefaultProperties...");
         getProperties().forEach((object, object2) -> {
@@ -103,7 +105,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
                 System.out.println("  " + s1 + ":  " + s2);
             });
         });
-
+*/
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
             final EmbeddedDB instance = dbTestingHelper.getInstance();
@@ -119,7 +121,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         this.extraDefaults = extraDefaults;
 
-        populateDefaultProperties(Collections.emptyMap());
+        /*populateDefaultProperties(Collections.emptyMap());
 
         System.out.println("before2 populateDefaultProperties...");
         getProperties().forEach((object, object2) -> {
@@ -147,7 +149,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             propertyWithSources.forEach((s1, s2) -> {
                 System.out.println("  " + s1 + ":  " + s2);
             });
-        });
+        });*/
 
         rebuildCache();
 
