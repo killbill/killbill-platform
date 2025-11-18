@@ -69,6 +69,8 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         this.extraDefaults = extraDefaults;
+
+        test();
     }
 
     public void test() {

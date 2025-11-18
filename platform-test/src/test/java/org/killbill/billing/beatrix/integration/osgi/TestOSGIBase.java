@@ -132,7 +132,7 @@ public class TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        configSource.test();
+        // configSource.test();
         /*try {
             RuntimeConfigRegistry.clear();
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);

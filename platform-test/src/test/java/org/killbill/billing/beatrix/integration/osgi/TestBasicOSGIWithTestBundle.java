@@ -71,6 +71,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
     public void beforeClass() throws Exception {
 
        // ensureConfigSource();
+/*
         if (configSource == null) {
             try {
                 RuntimeConfigRegistry.clear();
@@ -79,6 +80,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
                 throw new AssertionError("Failed to create configSource", e);
             }
         }
+*/
 
         super.beforeClass();
 
@@ -87,6 +89,29 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
         setupTest.setupJavaBundle();
     }
 
+
+    @BeforeMethod(groups = "slow")
+    public void beforeMethod() throws Exception {
+        try {
+            if (configSource == null) {
+                try {
+                    RuntimeConfigRegistry.clear();
+                    configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+                } catch (final Exception e) {
+                    throw new AssertionError("Failed to create configSource", e);
+                }
+            }
+
+            PlatformDBTestingHelper.get().getInstance().cleanupAllTables();
+        } catch (final Exception ignored) {
+            System.out.println("confiSource.. failed " + ignored);
+        }
+
+        clock.resetDeltaFromReality();
+
+        lifecycle.fireStartupSequencePriorEventRegistration();
+        lifecycle.fireStartupSequencePostEventRegistration();
+    }
 
 /*
     @BeforeMethod(groups = "slow")
