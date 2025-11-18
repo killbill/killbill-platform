@@ -21,6 +21,7 @@ package org.killbill.billing.beatrix.integration.osgi;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -92,10 +93,11 @@ public class TestOSGIBase {
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
     protected TestKillbillConfigSource configSource;
+    private static final AtomicReference<TestKillbillConfigSource> SHARED_CONFIG = new AtomicReference<>();
+
     protected CallContext callContext;
 
     public TestOSGIBase() {
-
 
         callContext = Mockito.mock(CallContext.class);
     }
@@ -109,10 +111,11 @@ public class TestOSGIBase {
 
         RuntimeConfigRegistry.clear();
 
-
         try {
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+            TestKillbillConfigSource config = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
 
+            SHARED_CONFIG.set(config);
+            configSource = config;
             System.setProperty("_test_config_source_created", "true");
 
         } catch (final Exception e) {
@@ -120,7 +123,6 @@ public class TestOSGIBase {
             assertionError.initCause(e);
             throw assertionError;
         }
-
 
         System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
         Properties allProps = configSource.getProperties();
@@ -131,7 +133,6 @@ public class TestOSGIBase {
             }
         }
         System.out.println("=== END DEBUG ===");
-
 
         PlatformDBTestingHelper.get().start();
     }
@@ -147,8 +148,12 @@ public class TestOSGIBase {
             throw assertionError;
         }*/
 
-        if (configSource == null && System.getProperty("_test_config_source_created") != null) {
+       /* if (configSource == null && System.getProperty("_test_config_source_created") != null) {
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+        }
+*/
+        if (configSource == null) {
+            configSource = SHARED_CONFIG.get();
         }
 
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
