@@ -19,14 +19,12 @@
 
 package org.killbill.billing.beatrix.integration.osgi;
 
-import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 
-import org.awaitility.Awaitility;
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;
 import org.killbill.billing.currency.plugin.api.CurrencyPluginApi;
 import org.killbill.billing.lifecycle.api.BusService;
@@ -43,7 +41,6 @@ import org.killbill.billing.util.callcontext.CallContext;
 import org.killbill.bus.api.PersistentBus;
 import org.killbill.clock.ClockMock;
 import org.mockito.Mockito;
-import org.skife.config.RuntimeConfigRegistry;
 import org.skife.jdbi.v2.IDBI;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -55,6 +52,7 @@ import org.testng.annotations.BeforeSuite;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Stage;
+import org.awaitility.Awaitility;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class TestOSGIBase {
@@ -91,86 +89,28 @@ public class TestOSGIBase {
     @Inject
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
-    protected TestKillbillConfigSource configSource;
+    protected final TestKillbillConfigSource configSource;
     protected CallContext callContext;
 
     public TestOSGIBase() {
-
-        callContext = Mockito.mock(CallContext.class);
-    }
-
-    @BeforeSuite(groups = "slow")
-    public void beforeSuite() throws Exception {
-
-        System.out.println("TestOSGIBase beforeSuite is called....");
-
-       /* if (System.getProperty("org.killbill.billing.dbi.test.h2") == null && System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
-            System.setProperty("org.killbill.billing.dbi.test.h2", "true");
-        }*/
-
-        RuntimeConfigRegistry.clear();
-
         try {
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
             assertionError.initCause(e);
             throw assertionError;
         }
 
-        System.out.println("=== DEBUG: ALL OSGI DAO PROPERTIES ===");
-        Properties allProps = configSource.getProperties();
-        System.out.println("Total properties: " + allProps.size());
-        for (String key : allProps.stringPropertyNames()) {
-            if (key.contains("osgi.dao")) {
-                System.out.println("  " + key + " = " + allProps.getProperty(key));
-            }
-        }
-        System.out.println("=== END DEBUG ===");
+        callContext = Mockito.mock(CallContext.class);
+    }
 
+    @BeforeSuite(groups = "slow")
+    public void beforeSuite() throws Exception {
         PlatformDBTestingHelper.get().start();
-
-        System.out.println("BeforeSuite --- final resolved properties");
-        System.out.println("Current7 values in getProperties...");
-        configSource.getProperties().forEach((object, object2) -> System.out.println(object + ":  " + object2));
-
-        System.out.println("Current7 values in getPropertiesBySource...");
-        configSource.getPropertiesBySource().forEach((s, stringStringMap) -> {
-            System.out.println(s);
-            stringStringMap.forEach((s1, s2) -> System.out.println("  " + s1 + ": " + s2));
-        });
     }
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        // configSource.test();
-        /*try {
-            RuntimeConfigRegistry.clear();
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-        } catch (final Exception e) {
-            final AssertionError assertionError = new AssertionError("Initialization error in beforeClass");
-            assertionError.initCause(e);
-            throw assertionError;
-        }*/
-
-       /* if (configSource == null && System.getProperty("_test_config_source_created") != null) {
-            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-        }
-*/
-
-        System.out.println("TestOSGIBase beforeClass is called....");
-
-        if (configSource == null) {
-            try {
-                System.out.println("configSource... is null in TestOSGIBase beforeClass");
-                //RuntimeConfigRegistry.clear();
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-            } catch (final Exception e) {
-                throw new AssertionError("Failed to create configSource", e);
-            }
-        }
-
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
@@ -184,6 +124,7 @@ public class TestOSGIBase {
 
         clock.resetDeltaFromReality();
 
+        // Start services
         lifecycle.fireStartupSequencePriorEventRegistration();
         lifecycle.fireStartupSequencePostEventRegistration();
     }
@@ -204,23 +145,6 @@ public class TestOSGIBase {
         }
     }
 
-    protected void ensureConfigSource() {
-        if (configSource == null) {
-            //throw new AssertionError("configSource is null - @BeforeSuite must have failed or didn't run on this test instance");
-
-            RuntimeConfigRegistry.clear();
-
-            try {
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-
-            } catch (final Exception e) {
-                final AssertionError assertionError = new AssertionError("Initialization error");
-                assertionError.initCause(e);
-                throw assertionError;
-            }
-        }
-    }
-
     @AfterSuite(groups = "slow")
     public void afterSuite() throws Exception {
         try {
@@ -233,7 +157,7 @@ public class TestOSGIBase {
         Awaitility.await().until(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-
+                // It is expected to have a null result if the initialization of Killbill went faster than the registration of the plugin services
                 return serviceRegistration.getServiceForName(serviceName) != null;
             }
         });
