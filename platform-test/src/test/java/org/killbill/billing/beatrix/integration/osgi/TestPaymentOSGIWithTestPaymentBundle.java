@@ -63,15 +63,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
     @BeforeMethod(groups = "slow")
     public void beforeMethod() throws Exception {
-        if (configSource == null) {
-            try {
-                System.out.println("configSource... is null in TestPaymentOSGIWithTestPaymentBundle");
-                //RuntimeConfigRegistry.clear();
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-            } catch (final Exception e) {
-                throw new AssertionError("Failed to create configSource", e);
-            }
-        }
+
 
         super.beforeMethod();
         ((PaymentPluginApiWithTestControl) getTestApi(paymentPluginApiOSGIServiceRegistration, TEST_PLUGIN_NAME)).resetToNormalBehavior();

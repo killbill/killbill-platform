@@ -159,6 +159,18 @@ public class TestOSGIBase {
         }
 */
 
+        System.out.println("TestOSGIBase beforeClass is called....");
+
+        if (configSource == null) {
+            try {
+                System.out.println("configSource... is null in TestOSGIBase beforeClass");
+                //RuntimeConfigRegistry.clear();
+                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+            } catch (final Exception e) {
+                throw new AssertionError("Failed to create configSource", e);
+            }
+        }
+
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
     }
