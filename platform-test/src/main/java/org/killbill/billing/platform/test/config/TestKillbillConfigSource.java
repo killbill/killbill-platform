@@ -52,51 +52,16 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file);
 
-        System.out.println("TestKillbillConfigSource constructor is called....");
-        System.out.println("extraDefaults values....");
-        extraDefaults.forEach((s, s2) -> {
-            System.out.println(s + ":  " + s2);
-        });
-
-
-        System.out.println("before populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("before populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
-        populateDefaultProperties(extraDefaults);
+        populateDefaultProperties();
 
-        System.out.println("after populateDefaultProperties...");
+        System.out.println("after  populateDefaultProperties...");
         getProperties().forEach((object, object2) -> {
             System.out.println(object + ":  " + object2);
         });
 
-        System.out.println("after populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-
-        rebuildCache();
-
-        System.out.println("after rebuildCache populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("after rebuildCache populateDefaultProperties propertiesCollector bySource...");
+        System.out.println("after  populateDefaultProperties propertiesCollector bySource...");
         getPropertiesBySource().forEach((s, propertyWithSources) -> {
             System.out.println(s);
             propertyWithSources.forEach((s1, s2) -> {
@@ -118,38 +83,8 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         }
 
         this.extraDefaults = extraDefaults;
-
-        populateDefaultProperties(Collections.emptyMap());
-
-        System.out.println("before2 populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("before2 populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-
-        populateDefaultProperties(extraDefaults);
-
-        System.out.println("after2 populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("after2 populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-
-        rebuildCache();
+        // extraDefaults changed, need to reload defaults
+        populateDefaultProperties();
 
         System.out.println("after2 rebuildCache populateDefaultProperties...");
         getProperties().forEach((object, object2) -> {
@@ -164,8 +99,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             });
         });
     }
-
-
 
     @Override
     protected Properties getDefaultProperties() {
@@ -190,9 +123,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         properties.put("org.killbill.notificationq.main.nbThreads", "1");
         properties.put("org.killbill.notificationq.main.claimed", "1");
         properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
-
-        //System.setProperty("org.killbill.billing.osgi.bundles.restart.delay.secs", "11s");
-
 
         // Speed up the buses
         properties.put("org.killbill.persistent.bus.main.sleep", "100");
