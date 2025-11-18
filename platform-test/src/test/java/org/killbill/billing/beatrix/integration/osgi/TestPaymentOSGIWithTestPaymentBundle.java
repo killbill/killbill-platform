@@ -47,16 +47,16 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
     public void beforeClass() throws Exception {
         //super.beforeClass();
 
-        /*if (configSource == null) {
+        if (configSource == null) {
             try {
                 RuntimeConfigRegistry.clear();
                 configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
             } catch (final Exception e) {
                 throw new AssertionError("Failed to create configSource", e);
             }
-        }*/
+        }
 
-        ensureConfigSource();
+      //  ensureConfigSource();
        super.beforeClass();
 
         if (osgiConfig == null) {

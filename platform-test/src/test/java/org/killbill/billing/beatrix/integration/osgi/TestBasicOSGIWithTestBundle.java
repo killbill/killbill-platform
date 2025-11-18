@@ -46,6 +46,7 @@ import org.skife.jdbi.v2.TransactionStatus;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.awaitility.Awaitility.await;
@@ -69,8 +70,30 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
 
-        ensureConfigSource();
+       // ensureConfigSource();
         super.beforeClass();
+
+        final String killbillVersion = System.getProperty("killbill.version");
+        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
+        setupTest.setupJavaBundle();
+    }
+
+    public TestBasicOSGIWithTestBundle() {
+      if(configSource == null){
+          try {
+              RuntimeConfigRegistry.clear();
+              configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+          } catch (final Exception e) {
+              throw new AssertionError("Failed to create configSource", e);
+          }
+      }
+    }
+
+    @BeforeMethod(groups = "slow")
+    public void beforeMethod() throws Exception {
+
+        // ensureConfigSource();
+        // super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
