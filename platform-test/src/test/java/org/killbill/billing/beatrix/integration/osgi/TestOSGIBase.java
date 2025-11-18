@@ -102,6 +102,8 @@ public class TestOSGIBase {
     @BeforeSuite(groups = "slow")
     public void beforeSuite() throws Exception {
 
+        System.out.println("TestOSGIBase beforeSuite is called....");
+
        /* if (System.getProperty("org.killbill.billing.dbi.test.h2") == null && System.getProperty("org.killbill.billing.dbi.test.postgresql") == null) {
             System.setProperty("org.killbill.billing.dbi.test.h2", "true");
         }*/
@@ -128,6 +130,16 @@ public class TestOSGIBase {
         System.out.println("=== END DEBUG ===");
 
         PlatformDBTestingHelper.get().start();
+
+        System.out.println("BeforeSuite --- final resolved properties");
+        System.out.println("Current7 values in getProperties...");
+        configSource.getProperties().forEach((object, object2) -> System.out.println(object + ":  " + object2));
+
+        System.out.println("Current7 values in getPropertiesBySource...");
+        configSource.getPropertiesBySource().forEach((s, stringStringMap) -> {
+            System.out.println(s);
+            stringStringMap.forEach((s1, s2) -> System.out.println("  " + s1 + ": " + s2));
+        });
     }
 
     @BeforeClass(groups = "slow")

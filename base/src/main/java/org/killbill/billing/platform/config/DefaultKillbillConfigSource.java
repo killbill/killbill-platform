@@ -97,6 +97,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
+        System.out.println("DefaultKillbillConfigSource is called...");
         this.propertiesCollector = new PropertiesWithSourceCollector();
 
         if (file == null) {
@@ -113,6 +114,18 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         rebuildCache();
 
+
+        System.out.println("Current2 values in propertiesCollector...");
+        propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
+            System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
+        });
+
+        System.out.println("Current2 values in propertiesCollector bySource...");
+        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
+            System.out.println(s);
+            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
+        });
+
         if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
             overrideWithEnvironmentVariables();
             rebuildCache();
@@ -122,6 +135,17 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             decryptJasyptProperties();
             rebuildCache();
         }
+
+        System.out.println("Current3 values in propertiesCollector...");
+        propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
+            System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
+        });
+
+        System.out.println("Current3 values in propertiesCollector bySource...");
+        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
+            System.out.println(s);
+            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
+        });
     }
 
     @Override
@@ -408,6 +432,18 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         if (!defaultsToAdd.isEmpty()) {
             propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
         }
+
+        System.out.println("calling propertiesCollector");
+        System.out.println("Current values in propertiesCollector...");
+        propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
+            System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
+        });
+
+        System.out.println("Current values in propertiesCollector bySource...");
+        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
+            System.out.println(s);
+            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
+        });
     }
 
     private boolean hasProperty(final String propertyName) {

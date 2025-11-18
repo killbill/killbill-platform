@@ -65,7 +65,8 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
     public void beforeMethod() throws Exception {
         if (configSource == null) {
             try {
-                RuntimeConfigRegistry.clear();
+                System.out.println("configSource... is null in TestPaymentOSGIWithTestPaymentBundle");
+                //RuntimeConfigRegistry.clear();
                 configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
             } catch (final Exception e) {
                 throw new AssertionError("Failed to create configSource", e);
