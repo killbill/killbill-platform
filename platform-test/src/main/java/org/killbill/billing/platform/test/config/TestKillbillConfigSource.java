@@ -24,7 +24,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -112,6 +111,38 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             this.jdbcConnectionString = instance.getJdbcConnectionString();
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
+
+            if (jdbcConnectionString != null) {
+                System.setProperty("org.killbill.dao.url", jdbcConnectionString);
+                System.setProperty("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+
+                // Detect database type and set driver
+                String driverClass = null;
+                if (jdbcConnectionString.contains(":h2:")) {
+                    driverClass = "org.h2.Driver";
+                } else if (jdbcConnectionString.contains(":postgresql:")) {
+                    driverClass = "org.postgresql.Driver";
+                } else if (jdbcConnectionString.contains(":mysql:")) {
+                    driverClass = "com.mysql.cj.jdbc.Driver";
+                } else if (jdbcConnectionString.contains(":mariadb:")) {
+                    driverClass = "org.mariadb.jdbc.Driver";
+                }
+
+                if (driverClass != null) {
+                    System.setProperty("org.killbill.dao.driverClassName", driverClass);
+                    System.setProperty("org.killbill.billing.osgi.dao.driverClassName", driverClass);
+                }
+            }
+
+            if (jdbcUsername != null) {
+                System.setProperty("org.killbill.dao.user", jdbcUsername);
+                System.setProperty("org.killbill.billing.osgi.dao.user", jdbcUsername);
+            }
+
+            if (jdbcPassword != null) {
+                System.setProperty("org.killbill.dao.password", jdbcPassword);
+                System.setProperty("org.killbill.billing.osgi.dao.password", jdbcPassword);
+            }
         } else {
             // NoDB tests
             this.jdbcConnectionString = null;
