@@ -181,7 +181,18 @@ public class TestOSGIBase {
 
     protected void ensureConfigSource() {
         if (configSource == null) {
-            throw new AssertionError("configSource is null - @BeforeSuite must have failed or didn't run on this test instance");
+            //throw new AssertionError("configSource is null - @BeforeSuite must have failed or didn't run on this test instance");
+
+            RuntimeConfigRegistry.clear();
+
+            try {
+                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+
+            } catch (final Exception e) {
+                final AssertionError assertionError = new AssertionError("Initialization error");
+                assertionError.initCause(e);
+                throw assertionError;
+            }
         }
     }
 
