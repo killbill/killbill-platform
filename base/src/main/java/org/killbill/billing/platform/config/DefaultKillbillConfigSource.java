@@ -423,6 +423,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @VisibleForTesting
     public void setProperty(final String propertyName, final Object propertyValue) {
+        if(propertyValue == null) {
+            return;
+        }
+
         final Map<String, String> override = new HashMap<>();
         override.put(propertyName, String.valueOf(propertyValue));
         propertiesCollector.addProperties("RuntimeConfiguration", override);
