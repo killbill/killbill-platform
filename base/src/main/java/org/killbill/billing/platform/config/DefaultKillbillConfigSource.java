@@ -559,8 +559,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     private Map<String, String> propertiesToMap(final Properties props) {
         final Map<String, String> propertiesMap = new HashMap<>();
         for (final Map.Entry<Object, Object> entry : props.entrySet()) {
+            if (entry.getValue() == null) {
+                System.out.println("Skipping adding a property " + entry.getKey());
+
+                continue;
+            }
+
             propertiesMap.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
         }
+
         return propertiesMap;
     }
 }
