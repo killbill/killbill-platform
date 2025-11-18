@@ -21,7 +21,6 @@ package org.killbill.billing.beatrix.integration.osgi;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -93,8 +92,6 @@ public class TestOSGIBase {
     protected OSGIServiceRegistration<CurrencyPluginApi> currencyPluginApiOSGIServiceRegistration;
 
     protected TestKillbillConfigSource configSource;
-    private static final AtomicReference<TestKillbillConfigSource> SHARED_CONFIG = new AtomicReference<>();
-
     protected CallContext callContext;
 
     public TestOSGIBase() {
@@ -112,11 +109,7 @@ public class TestOSGIBase {
         RuntimeConfigRegistry.clear();
 
         try {
-            TestKillbillConfigSource config = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-
-            SHARED_CONFIG.set(config);
-            configSource = config;
-            System.setProperty("_test_config_source_created", "true");
+            configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
 
         } catch (final Exception e) {
             final AssertionError assertionError = new AssertionError("Initialization error");
@@ -152,9 +145,6 @@ public class TestOSGIBase {
             configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
         }
 */
-        if (configSource == null) {
-            configSource = SHARED_CONFIG.get();
-        }
 
         final Injector g = Guice.createInjector(Stage.PRODUCTION, new TestIntegrationModule(configSource));
         g.injectMembers(this);
@@ -186,6 +176,12 @@ public class TestOSGIBase {
         }
         if (osgiDataSource instanceof ReferenceableDataSourceSpy && ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource() instanceof HikariDataSource) {
             ((HikariDataSource) ((ReferenceableDataSourceSpy) osgiDataSource).getDataSource()).close();
+        }
+    }
+
+    protected void ensureConfigSource() {
+        if (configSource == null) {
+            throw new AssertionError("configSource is null - @BeforeSuite must have failed or didn't run on this test instance");
         }
     }
 

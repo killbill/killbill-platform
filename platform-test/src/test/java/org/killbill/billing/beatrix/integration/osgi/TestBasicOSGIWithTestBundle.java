@@ -69,7 +69,7 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
 
-
+        ensureConfigSource();
         super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
