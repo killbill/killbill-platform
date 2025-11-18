@@ -115,7 +115,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         rebuildCache();
 
 
-        System.out.println("Current2 values in propertiesCollector...");
+       /* System.out.println("Current2 values in propertiesCollector...");
         propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
             System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
         });
@@ -124,7 +124,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
             System.out.println(s);
             propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
-        });
+        });*/
 
         if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
             overrideWithEnvironmentVariables();
@@ -433,7 +433,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
         }
 
-        System.out.println("calling propertiesCollector");
+        /*System.out.println("calling propertiesCollector");
         System.out.println("Current values in propertiesCollector...");
         propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
             System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
@@ -443,7 +443,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
             System.out.println(s);
             propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
-        });
+        });*/
     }
 
     private boolean hasProperty(final String propertyName) {
