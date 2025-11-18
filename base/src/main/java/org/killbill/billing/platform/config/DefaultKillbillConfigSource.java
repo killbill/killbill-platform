@@ -192,13 +192,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             logger.info("rebuildCache() called");
             Map<String, Map<String, String>> newCache = computePropertiesBySource();
 
-            if (newCache == null) {
-                logger.error("computePropertiesBySource() returned null!");
-                cachedPropertiesBySource = Collections.emptyMap();
-            } else {
-                cachedPropertiesBySource = newCache;
-                logger.info("rebuildCache() completed with {} sources", newCache.size());
-            }
+            cachedPropertiesBySource = newCache;
+            logger.info("rebuildCache() completed with {} sources", newCache.size());
         } catch (final Exception e) {
             logger.error("Error building properties cache", e);
             cachedPropertiesBySource = Collections.emptyMap();

@@ -71,6 +71,15 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
     public void beforeClass() throws Exception {
 
        // ensureConfigSource();
+        if (configSource == null) {
+            try {
+                RuntimeConfigRegistry.clear();
+                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
+            } catch (final Exception e) {
+                throw new AssertionError("Failed to create configSource", e);
+            }
+        }
+
         super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
