@@ -53,7 +53,6 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws Exception {
         super(file, buildPropertiesMap(dbTestingHelperKlass, extraDefaults));
 
-        populateDefaultProperties(extraDefaults);
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
