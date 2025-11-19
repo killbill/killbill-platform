@@ -140,7 +140,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public String getString(final String propertyName) {
-        Map<String, Map<String, String>> bySource = getPropertiesBySource();
+        /*Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
             logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
@@ -162,14 +162,17 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
 
             final String value = sourceProps.get(propertyName);
-            if (value != null /*&& !value.trim().isEmpty()*/) {
+            if (value != null *//*&& !value.trim().isEmpty()*//*) {
                 logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
                 return value;
             }
         }
 
         logger.debug("getString({}): NOT FOUND in any source", propertyName);
-        return null;
+        return null;*/
+
+        return getProperties().getProperty(propertyName);
+
     }
 
     @Override
