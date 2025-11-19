@@ -31,6 +31,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+import javax.naming.spi.NamingManager;
 
 import org.killbill.commons.utils.Preconditions;
 import org.slf4j.Logger;
@@ -87,12 +88,43 @@ public class JNDIManager {
         }
     }
 
-    public Object lookup(final String name) {
+/*    public Object lookup(final String name) {
         Context context = null;
 
         try {
             context = getContext();
             return context.lookup(name);
+        } catch (final NamingException e) {
+            logger.warn("Error looking up " + name, e);
+        } finally {
+            if (context != null) {
+                try {
+                    context.close();
+                } catch (final NamingException e) {
+                    logger.warn("Error closing context while looking up " + name, e);
+                }
+            }
+        }
+
+        return null;
+    }*/
+
+    public Object lookup(final String name) {
+        Context context = null;
+
+        try {
+            context = getContext();
+            final Object obj = context.lookup(name);
+
+            if (obj instanceof Reference) {
+                try {
+                    return NamingManager.getObjectInstance(obj, null, null, null);
+                } catch (final Exception e) {
+                    logger.warn("Error dereferencing " + name, e);
+                }
+            }
+
+            return obj;
         } catch (final NamingException e) {
             logger.warn("Error looking up " + name, e);
         } finally {
