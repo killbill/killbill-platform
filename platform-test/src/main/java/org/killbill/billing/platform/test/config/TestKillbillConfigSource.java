@@ -52,7 +52,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws Exception {
         super(file, buildPropertiesMap(dbTestingHelperKlass, extraDefaults));
-
+        System.out.println("TestKillbillConfigSource is called....");
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -80,6 +80,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     private static Map<String, String> buildPropertiesMap(Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, Map<String, String> extraDefaults) throws Exception {
+        System.out.println("TestKillbillConfigSource -- buildPropertiesMap is called...." + extraDefaults);
         Map<String, String> props = new HashMap<>();
 
 

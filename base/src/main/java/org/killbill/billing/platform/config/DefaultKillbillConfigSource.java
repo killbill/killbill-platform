@@ -97,6 +97,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
+        System.out.println("DefaultKillbillConfigSource is called...." + extraDefaultProperties);
         this.propertiesCollector = new PropertiesWithSourceCollector();
 
         if (file == null) {
