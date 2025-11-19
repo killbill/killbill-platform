@@ -52,8 +52,8 @@ public class TestJNDIManager {
 
         System.out.println("TestJNDI setup finished....");
         System.out.println("Embedded DB values " + embeddedDB.getJdbcConnectionString() + "   username " + embeddedDB.getUsername() + "  pass  " + embeddedDB.getPassword());
-        System.setProperty("org.killbill.dao.driverClassName", "org.h2.Driver");
-        System.setProperty("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
+        //System.setProperty("org.killbill.dao.driverClassName", "org.h2.Driver");
+        //System.setProperty("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
     }
 
     @AfterMethod(groups = "slow")

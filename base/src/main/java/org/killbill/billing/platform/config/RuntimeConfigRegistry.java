@@ -36,8 +36,9 @@ public class RuntimeConfigRegistry {
 
     public static void putWithSource(final String configSource, final String key, final Object value) {
         if (value == null) {
-            return;
+            System.out.println("RuntimeConfiguration.. adding null value for key: " + key);
         }
+
         RUNTIME_CONFIGS_BY_SOURCE
                 .computeIfAbsent(configSource, k -> new ConcurrentHashMap<>())
                 .put(key, value.toString());
@@ -48,12 +49,24 @@ public class RuntimeConfigRegistry {
             return;
         }
 
-        RUNTIME_CONFIGS_BY_SOURCE
+/*        RUNTIME_CONFIGS_BY_SOURCE
                 .computeIfAbsent(configSource, k -> new ConcurrentHashMap<>())
                 .putAll(values.entrySet()
                               .stream()
                               .collect(Collectors.toMap(Map.Entry::getKey,
-                                                        e -> e.getValue() == null ? "" : e.getValue().toString())));
+                                                        e -> e.getValue() == null ? "" : e.getValue().toString())));*/
+
+        final Map<String, String> nonNullValues = values.entrySet()
+                                                        .stream()
+                                                        .filter(e -> e.getValue() != null)
+                                                        .collect(Collectors.toMap(Map.Entry::getKey,
+                                                                                  e -> e.getValue().toString()));
+
+        if (!nonNullValues.isEmpty()) {
+            RUNTIME_CONFIGS_BY_SOURCE
+                    .computeIfAbsent(configSource, k -> new ConcurrentHashMap<>())
+                    .putAll(nonNullValues);
+        }
     }
 
     public static String get(final String key) {
