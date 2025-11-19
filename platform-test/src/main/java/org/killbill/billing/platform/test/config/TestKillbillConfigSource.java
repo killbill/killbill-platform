@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -50,103 +51,15 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
     }
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws Exception {
-        //super(file);
-        super(file, mergeWithDbProperties(dbTestingHelperKlass, extraDefaults));
+        super(file, buildPropertiesMap(dbTestingHelperKlass, extraDefaults));
 
-        System.out.println("TestKillbillConfigSource constructor is called....");
-        System.out.println("extraDefaults values....");
-        extraDefaults.forEach((s, s2) -> {
-            System.out.println(s + ":  " + s2);
-        });
-
-
-        /*System.out.println("before populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("before populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });*/
-
-        populateDefaultProperties(extraDefaults);
-
-        // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
-        // driver at startup, h2 loads it statically and we need System Properties set at that point
-       /* populateDefaultProperties(extraDefaults);
-
-        System.out.println("after populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("after populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-
-        rebuildCache();
-
-        System.out.println("after rebuildCache populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("after rebuildCache populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-*/
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
             final EmbeddedDB instance = dbTestingHelper.getInstance();
             this.jdbcConnectionString = instance.getJdbcConnectionString();
             this.jdbcUsername = instance.getUsername();
             this.jdbcPassword = instance.getPassword();
-
-            if (jdbcConnectionString != null) {
-                System.setProperty("org.killbill.dao.url", jdbcConnectionString);
-                System.setProperty("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
-
-                // Detect database type and set driver
-                String driverClass = null;
-                if (jdbcConnectionString.contains(":h2:")) {
-                    driverClass = "org.h2.Driver";
-                } else if (jdbcConnectionString.contains(":postgresql:")) {
-                    driverClass = "org.postgresql.Driver";
-                } else if (jdbcConnectionString.contains(":mysql:")) {
-                    driverClass = "com.mysql.cj.jdbc.Driver";
-                } else if (jdbcConnectionString.contains(":mariadb:")) {
-                    driverClass = "org.mariadb.jdbc.Driver";
-                }
-
-                if (driverClass != null) {
-                    System.setProperty("org.killbill.dao.driverClassName", driverClass);
-                    System.setProperty("org.killbill.billing.osgi.dao.driverClassName", driverClass);
-                }
-            }
-
-            if (jdbcUsername != null) {
-                System.setProperty("org.killbill.dao.user", jdbcUsername);
-                System.setProperty("org.killbill.billing.osgi.dao.user", jdbcUsername);
-            }
-
-            if (jdbcPassword != null) {
-                System.setProperty("org.killbill.dao.password", jdbcPassword);
-                System.setProperty("org.killbill.billing.osgi.dao.password", jdbcPassword);
-            }
         } else {
-            // NoDB tests
             this.jdbcConnectionString = null;
             this.jdbcUsername = null;
             this.jdbcPassword = null;
@@ -154,54 +67,20 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
         this.extraDefaults = extraDefaults;
 
-        /*populateDefaultProperties(Collections.emptyMap());
-
-        System.out.println("before2 populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("before2 populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });
-
         populateDefaultProperties(extraDefaults);
-
-        System.out.println("after2 populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("after2 populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
-        });*/
 
         rebuildCache();
 
-        System.out.println("after2 rebuildCache populateDefaultProperties...");
-        getProperties().forEach((object, object2) -> {
-            System.out.println(object + ":  " + object2);
-        });
-
-        System.out.println("after2 rebuildCache populateDefaultProperties propertiesCollector bySource...");
-        getPropertiesBySource().forEach((s, propertyWithSources) -> {
+        System.out.println("Output of getPropertiesBySource....");
+        getPropertiesBySource().forEach((s, stringStringMap) -> {
             System.out.println(s);
-            propertyWithSources.forEach((s1, s2) -> {
-                System.out.println("  " + s1 + ":  " + s2);
-            });
+            stringStringMap.forEach((s1, s2) -> System.out.println("  " + s1 + ": " + s2));
         });
     }
 
-    private static Map<String, String> mergeWithDbProperties(Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, Map<String, String> extraDefaults) throws Exception {
-        Map<String, String> merged = new HashMap<>(extraDefaults);
+    private static Map<String, String> buildPropertiesMap(Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, Map<String, String> extraDefaults) throws Exception {
+        Map<String, String> props = new HashMap<>();
+
 
         if (dbTestingHelperKlass != null) {
             final PlatformDBTestingHelper dbTestingHelper = (PlatformDBTestingHelper) dbTestingHelperKlass.getDeclaredMethod("get").invoke(null);
@@ -212,87 +91,53 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             String password = instance.getPassword();
 
             if (jdbcUrl != null) {
-                merged.put("org.killbill.dao.url", jdbcUrl);
-                merged.put("org.killbill.billing.osgi.dao.url", jdbcUrl);
+                props.put("org.killbill.dao.url", jdbcUrl);
+                props.put("org.killbill.billing.osgi.dao.url", jdbcUrl);
 
                 if (jdbcUrl.contains(":h2:")) {
-                    merged.put("org.killbill.dao.driverClassName", "org.h2.Driver");
-                    merged.put("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
+                    props.put("org.killbill.dao.driverClassName", "org.h2.Driver");
+                    props.put("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
+                } else if (jdbcUrl.contains(":postgresql:")) {
+                    props.put("org.killbill.dao.driverClassName", "org.postgresql.Driver");
+                    props.put("org.killbill.billing.osgi.dao.driverClassName", "org.postgresql.Driver");
+                } else if (jdbcUrl.contains(":mysql:")) {
+                    props.put("org.killbill.dao.driverClassName", "com.mysql.cj.jdbc.Driver");
+                    props.put("org.killbill.billing.osgi.dao.driverClassName", "com.mysql.cj.jdbc.Driver");
                 }
             }
             if (user != null) {
-                merged.put("org.killbill.dao.user", user);
-                merged.put("org.killbill.billing.osgi.dao.user", user);
+                props.put("org.killbill.dao.user", user);
+                props.put("org.killbill.billing.osgi.dao.user", user);
             }
             if (password != null) {
-                merged.put("org.killbill.dao.password", password);
-                merged.put("org.killbill.billing.osgi.dao.password", password);
+                props.put("org.killbill.dao.password", password);
+                props.put("org.killbill.billing.osgi.dao.password", password);
             }
         }
 
-        return merged;
-    }
+        props.put("org.killbill.notificationq.main.sleep", "100");
+        props.put("org.killbill.notificationq.main.nbThreads", "1");
+        props.put("org.killbill.notificationq.main.claimed", "1");
+        props.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
 
-    @Override
-    protected Properties getDefaultProperties() {
-        final Properties properties = super.getDefaultProperties();
+        props.put("org.killbill.persistent.bus.main.sleep", "100");
+        props.put("org.killbill.persistent.bus.main.nbThreads", "1");
+        props.put("org.killbill.persistent.bus.main.claimed", "1");
+        props.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
 
-        // Setup up DAO properties (this will be a no-op for fast tests)
-        if (jdbcConnectionString != null) {
-            properties.put("org.killbill.dao.url", jdbcConnectionString);
-            properties.put("org.killbill.billing.osgi.dao.url", jdbcConnectionString);
+        props.put("org.killbill.persistent.bus.external.sleep", "100");
+        props.put("org.killbill.persistent.bus.external.nbThreads", "1");
+        props.put("org.killbill.persistent.bus.external.claimed", "1");
+        props.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
 
-            if (jdbcConnectionString.contains(":h2:")) {
-                properties.put("org.killbill.dao.driverClassName", "org.h2.Driver");
-                properties.put("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
-            } else if (jdbcConnectionString.contains(":postgresql:")) {
-                properties.put("org.killbill.dao.driverClassName", "org.postgresql.Driver");
-                properties.put("org.killbill.billing.osgi.dao.driverClassName", "org.postgresql.Driver");
-            } else if (jdbcConnectionString.contains(":mysql:")) {
-                properties.put("org.killbill.dao.driverClassName", "com.mysql.cj.jdbc.Driver");
-                properties.put("org.killbill.billing.osgi.dao.driverClassName", "com.mysql.cj.jdbc.Driver");
-            } else if (jdbcConnectionString.contains(":mariadb:")) {
-                properties.put("org.killbill.dao.driverClassName", "org.mariadb.jdbc.Driver");
-                properties.put("org.killbill.billing.osgi.dao.driverClassName", "org.mariadb.jdbc.Driver");
-            }
-        }
-        if (jdbcUsername != null) {
-            properties.put("org.killbill.dao.user", jdbcUsername);
-            properties.put("org.killbill.billing.osgi.dao.user", jdbcUsername);
-        }
-        if (jdbcPassword != null) {
-            properties.put("org.killbill.dao.password", jdbcPassword);
-            properties.put("org.killbill.billing.osgi.dao.password", jdbcPassword);
-        }
-
-        // Speed up the notification queue
-        properties.put("org.killbill.notificationq.main.sleep", "100");
-        properties.put("org.killbill.notificationq.main.nbThreads", "1");
-        properties.put("org.killbill.notificationq.main.claimed", "1");
-        properties.put("org.killbill.notificationq.main.queue.mode", "STICKY_POLLING");
-
-        //System.setProperty("org.killbill.billing.osgi.bundles.restart.delay.secs", "11s");
-
-        // Speed up the buses
-        properties.put("org.killbill.persistent.bus.main.sleep", "100");
-        properties.put("org.killbill.persistent.bus.main.nbThreads", "1");
-        properties.put("org.killbill.persistent.bus.main.claimed", "1");
-        properties.put("org.killbill.persistent.bus.main.queue.mode", "STICKY_POLLING");
-
-        properties.put("org.killbill.persistent.bus.external.sleep", "100");
-        properties.put("org.killbill.persistent.bus.external.nbThreads", "1");
-        properties.put("org.killbill.persistent.bus.external.claimed", "1");
-        properties.put("org.killbill.persistent.bus.external.queue.mode", "STICKY_POLLING");
-
-        // Temporary directory for OSGI bundles
-        properties.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
-        properties.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
+        props.put("org.killbill.osgi.root.dir", Files.createTempDirectory().getAbsolutePath());
+        props.put("org.killbill.osgi.bundle.install.dir", Files.createTempDirectory().getAbsolutePath());
 
         if (extraDefaults != null) {
-            properties.putAll(extraDefaults);
+            props.putAll(extraDefaults);
         }
 
-        return properties;
+        return props;
     }
 
     @Override
