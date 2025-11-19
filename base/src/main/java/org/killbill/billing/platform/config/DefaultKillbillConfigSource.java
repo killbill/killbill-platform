@@ -78,7 +78,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             Collections.unmodifiableList(Arrays.asList("ImmutableSystemProperties",
                                                        "EnvironmentVariables",
                                                        "RuntimeConfiguration",
-                                                       "DefaultSystemProperties",
                                                        "KillBillDefaults"));
 
     private final PropertiesWithSourceCollector propertiesCollector;
@@ -173,13 +172,25 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
 
             final String value = sourceProps.get(propertyName);
-            if (value != null /*&& !value.trim().isEmpty()*/) {
+            if (value != null && !value.trim().isEmpty()) {
                 logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
+
+
+                if (propertyName != null && propertyName.contains("osgi.dao")) {
+                    System.out.println("  Returning from source '" + entry.getKey() + "': '" + value + "'");
+                }
+
+
                 return value;
             }
         }
 
         logger.debug("getString({}): NOT FOUND in any source", propertyName);
+
+        if (propertyName != null && propertyName.contains("osgi.dao")) {
+            System.out.println("  Returning NULL - not found");
+        }
+
         return null;
     }
 
@@ -431,10 +442,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         if (!immutableProps.isEmpty()) {
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
-
+/*
         if (!defaultSystemProps.isEmpty()) {
             propertiesCollector.addProperties("DefaultSystemProperties", defaultSystemProps);
-        }
+        }*/
 
         // defaultSystemProperties.putAll(defaultProperties);
 
