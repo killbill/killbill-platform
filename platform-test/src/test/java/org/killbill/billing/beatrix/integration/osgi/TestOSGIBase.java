@@ -164,7 +164,7 @@ public class TestOSGIBase {
         if (configSource == null) {
             try {
                 System.out.println("configSource... is null in TestOSGIBase beforeClass");
-                RuntimeConfigRegistry.clear();
+                //RuntimeConfigRegistry.clear();
                 configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
             } catch (final Exception e) {
                 throw new AssertionError("Failed to create configSource", e);
