@@ -241,7 +241,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 final String propertyKey = prop.getKey();
                 final String propertyValue = prop.getValue();
 
-                if (propertyValue == null) {
+                if (propertyValue == null || propertyValue.trim().isEmpty()) {
+                    System.out.println("Property value is null or empty.. key:  " + propertyKey);
                     continue;
                 }
 
@@ -275,7 +276,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 final String propertyKey = prop.getKey();
                 final String propertyValue = prop.getValue();
 
-                if (propertyValue == null) {
+                if (propertyValue == null || propertyValue.trim().isEmpty()) {
+                    System.out.println("Property value is null or empty.. key:  " + propertyKey);
                     continue;
                 }
 
