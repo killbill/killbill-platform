@@ -78,7 +78,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             Collections.unmodifiableList(Arrays.asList("ImmutableSystemProperties",
                                                        "EnvironmentVariables",
                                                        "RuntimeConfiguration",
-                                                       "DefaultSystemProperties",
                                                        "KillBillDefaults"));
 
     private final PropertiesWithSourceCollector propertiesCollector;
@@ -98,7 +97,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
-        System.out.println("DefaultKillbillConfigSource is called...");
         this.propertiesCollector = new PropertiesWithSourceCollector();
 
         if (file == null) {
@@ -115,18 +113,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         rebuildCache();
 
-
-       /* System.out.println("Current2 values in propertiesCollector...");
-        propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
-            System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
-        });
-
-        System.out.println("Current2 values in propertiesCollector bySource...");
-        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
-        });*/
-
         if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
             overrideWithEnvironmentVariables();
             rebuildCache();
@@ -136,22 +122,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             decryptJasyptProperties();
             rebuildCache();
         }
-
-        System.out.println("Current3 values in propertiesCollector...");
-        propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
-            System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
-        });
-
-        System.out.println("Current3 values in propertiesCollector bySource...");
-        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
-        });
     }
 
     @Override
     public String getString(final String propertyName) {
-        Map<String, Map<String, String>> bySource = getPropertiesBySource();
+        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
             logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
@@ -217,17 +192,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     protected void rebuildCache() {
-        //cachedPropertiesBySource = computePropertiesBySource();
-        try {
-            logger.info("rebuildCache() called");
-            Map<String, Map<String, String>> newCache = computePropertiesBySource();
-
-            cachedPropertiesBySource = newCache;
-            logger.info("rebuildCache() completed with {} sources", newCache.size());
-        } catch (final Exception e) {
-            logger.error("Error building properties cache", e);
-            cachedPropertiesBySource = Collections.emptyMap();
-        }
+        cachedPropertiesBySource = computePropertiesBySource();
     }
 
     private void invalidateCache() {
@@ -237,7 +202,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     private Map<String, Map<String, String>> computePropertiesBySource() {
-        logger.info("=== computePropertiesBySource called ===");
         final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
         runtimeBySource.forEach((source, props) -> {
             if (!props.isEmpty()) {
@@ -327,7 +291,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-        logger.info("=== computePropertiesBySource returning {} sources ===", result.size());
         return Collections.unmodifiableMap(result);
     }
 
@@ -371,8 +334,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
 
         final Map<String, String> immutableProps = new HashMap<>();
-
-        final Map<String, String> defaultSystemProps = new HashMap<>();
 
         final Properties defaultSystemProperties = getDefaultSystemProperties();
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
@@ -432,10 +393,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
 
-        if (!defaultSystemProps.isEmpty()) {
-            propertiesCollector.addProperties("DefaultSystemProperties", defaultSystemProps);
-        }
-
         // defaultSystemProperties.putAll(defaultProperties);
 
         //  final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
@@ -444,18 +401,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         if (!defaultsToAdd.isEmpty()) {
             propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
         }
-
-        /*System.out.println("calling propertiesCollector");
-        System.out.println("Current values in propertiesCollector...");
-        propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
-            System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
-        });
-
-        System.out.println("Current values in propertiesCollector bySource...");
-        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
-            System.out.println(s);
-            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
-        });*/
     }
 
     private boolean hasProperty(final String propertyName) {
