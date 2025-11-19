@@ -172,7 +172,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
 
             final String value = sourceProps.get(propertyName);
-            if (value != null && !value.trim().isEmpty()) {
+
+            if (value != null && value.trim().isEmpty()) {
+                logger.debug("getString({}): value is  empty {}", propertyName, entry.getKey());
+            }
+
+            if (value != null /*&& !value.trim().isEmpty()*/) {
                 logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
 
 
@@ -183,6 +188,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
                 return value;
             }
+
+
         }
 
         logger.debug("getString({}): NOT FOUND in any source", propertyName);
