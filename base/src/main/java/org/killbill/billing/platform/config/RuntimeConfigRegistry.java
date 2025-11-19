@@ -36,7 +36,7 @@ public class RuntimeConfigRegistry {
 
     public static void putWithSource(final String configSource, final String key, final Object value) {
         if (value == null) {
-            System.out.println("RuntimeConfiguration.. adding null value for key: " + key);
+            return;
         }
 
         RUNTIME_CONFIGS_BY_SOURCE
