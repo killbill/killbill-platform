@@ -136,24 +136,25 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             rebuildCache();
         }
 
-        System.out.println("Current3 values in propertiesCollector...");
+        /*System.out.println("Current3 values in propertiesCollector...");
         propertiesCollector.getAllProperties().forEach(propertyWithSource -> {
             System.out.println(propertyWithSource.getSource() + "   " + propertyWithSource.getKey() + "   " + propertyWithSource.getValue());
-        });
+        }); */
 
-        System.out.println("Current3 values in propertiesCollector bySource...");
-        propertiesCollector.getPropertiesBySource().forEach((s, propertyWithSources) -> {
+        System.out.println("Current values in getPropertiesBySource...");
+        getPropertiesBySource().forEach((s, stringStringMap) -> {
             System.out.println(s);
-            propertyWithSources.forEach(propertyWithSource -> System.out.println("  " + propertyWithSource.getKey() + ": " + propertyWithSource.getValue()));
+            stringStringMap.forEach((s1, s2) -> System.out.println("  " + s1 + "  " + s2));
         });
     }
 
     @Override
     public String getString(final String propertyName) {
+        System.out.println("Get string for:   "  + propertyName);
         Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
-            logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
+            logger.info("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
             return null;
         }
 
@@ -162,12 +163,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             System.out.println("Available sources: " + bySource.keySet());
         }
 
-        logger.debug("getString({}): searching in {} sources", propertyName, bySource.size());
+        logger.info("getString({}): searching in {} sources", propertyName, bySource.size());
 
         for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
             final Map<String, String> sourceProps = entry.getValue();
             if (sourceProps == null) {
-                logger.warn("Source {} returned NULL map in getPropertiesBySource()", entry.getKey());
+                logger.info("Source {} returned NULL map in getPropertiesBySource()", entry.getKey());
                 continue;
             }
 
@@ -181,12 +182,12 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                                                  propertyName.endsWith(".dataSourceClassName"));
 
                 if (isDriverClassProperty && value.isEmpty()) {
-                    logger.debug("getString({}): ignoring empty driver class name from source {}",
+                    logger.info("getString({}): ignoring empty driver class name from source {}",
                                  propertyName, entry.getKey());
                     continue; // Skip empty driver class names, continue searching
                 }
 
-                logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
+                logger.info("getString({}): found in source {}", propertyName, entry.getKey());
 
                 if (propertyName != null && propertyName.contains("osgi.dao")) {
                     System.out.println("  Returning from source '" + entry.getKey() + "': '" + value + "'");
@@ -196,7 +197,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         }
 
-        logger.debug("getString({}): NOT FOUND in any source", propertyName);
+        logger.info("getString({}): NOT FOUND in any source", propertyName);
 
         if (propertyName != null && propertyName.contains("osgi.dao")) {
             System.out.println("  Returning NULL - not found");
