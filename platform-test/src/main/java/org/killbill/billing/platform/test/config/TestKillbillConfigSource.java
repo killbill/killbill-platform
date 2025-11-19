@@ -23,20 +23,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
-import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.commons.utils.io.Files;
-import org.skife.config.RuntimeConfigRegistry;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
@@ -55,6 +51,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
     public TestKillbillConfigSource(@Nullable final String file, @Nullable final Class<? extends PlatformDBTestingHelper> dbTestingHelperKlass, final Map<String, String> extraDefaults) throws IOException, URISyntaxException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         super(file);
+        System.out.println("TestKillbillConfigSource is called...");
 
         // Set default System Properties before creating the instance of DBTestingHelper. Whereas MySQL loads its
         // driver at startup, h2 loads it statically and we need System Properties set at that point
@@ -86,21 +83,21 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         });
     }
 
-    @Override
+  /*  @Override
     protected void test(Set<String> processedProperties, Map<String, Map<String, String>> result) {
-        /*RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+        *//*RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
-                *//*result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
-                      .put(key, value);*//*
+                *//**//*result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
+                      .put(key, value);*//**//*
                 if (value != null && !value.trim().isEmpty()) {
                     result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
                           .put(key, value);
                 }
             }
-        });*/
+        });*//*
 
         // ignored
-    }
+    }*/
 
     @Override
     protected Properties getDefaultProperties() {

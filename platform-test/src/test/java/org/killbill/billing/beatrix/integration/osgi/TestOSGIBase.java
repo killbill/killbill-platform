@@ -95,7 +95,7 @@ public class TestOSGIBase {
     protected CallContext callContext;
 
     public TestOSGIBase() {
-
+        System.out.println("TestOSGIBase is called...");
         callContext = Mockito.mock(CallContext.class);
     }
 

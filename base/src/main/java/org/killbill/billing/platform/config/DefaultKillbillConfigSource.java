@@ -97,6 +97,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
+        System.out.println("DefaultKillbillConfigSource is called...");
         this.propertiesCollector = new PropertiesWithSourceCollector();
 
         if (file == null) {
@@ -292,19 +293,19 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-        /*RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
                 result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
                       .put(key, value);
             }
-        });*/
+        });
 
-        test(processedProperties, result);
+        //test(processedProperties, result);
 
         return Collections.unmodifiableMap(result);
     }
 
-    @VisibleForTesting
+    /*@VisibleForTesting
     protected void test(Set<String> processedProperties,  Map<String, Map<String, String>> result ) {
         RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
@@ -312,7 +313,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                       .put(key, value);
             }
         });
-    }
+    }*/
 
 
     private void loadPropertiesFromFileOrSystemProperties() {
