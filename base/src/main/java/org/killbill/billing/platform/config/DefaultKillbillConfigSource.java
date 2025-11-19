@@ -78,6 +78,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             Collections.unmodifiableList(Arrays.asList("ImmutableSystemProperties",
                                                        "EnvironmentVariables",
                                                        "RuntimeConfiguration",
+                                                       "DefaultSystemProperties",
                                                        "KillBillDefaults"));
 
     private final PropertiesWithSourceCollector propertiesCollector;
@@ -155,6 +156,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         if (bySource == null) {
             logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
             return null;
+        }
+
+        if (propertyName != null && propertyName.contains("osgi.dao")) {
+            System.out.println("=== getString(" + propertyName + ") ===");
+            System.out.println("Available sources: " + bySource.keySet());
         }
 
         logger.debug("getString({}): searching in {} sources", propertyName, bySource.size());
@@ -366,6 +372,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         final Map<String, String> immutableProps = new HashMap<>();
 
+        final Map<String, String> defaultSystemProps = new HashMap<>();
+
         final Properties defaultSystemProperties = getDefaultSystemProperties();
         for (final String propertyName : defaultSystemProperties.stringPropertyNames()) {
 
@@ -422,6 +430,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         if (!immutableProps.isEmpty()) {
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
+        }
+
+        if (!defaultSystemProps.isEmpty()) {
+            propertiesCollector.addProperties("DefaultSystemProperties", defaultSystemProps);
         }
 
         // defaultSystemProperties.putAll(defaultProperties);
