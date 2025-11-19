@@ -262,7 +262,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Collections.unmodifiableMap(result);
     }
 
-
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
         // but we need to build the ConfigSource first...
