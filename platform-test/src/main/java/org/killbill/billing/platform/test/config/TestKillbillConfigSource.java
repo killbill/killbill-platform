@@ -23,16 +23,20 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
+import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.commons.utils.io.Files;
+import org.skife.config.RuntimeConfigRegistry;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
@@ -79,6 +83,20 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
             System.out.println(s);
 
             stringStringMap.forEach((s1, s2) -> System.out.println("  " + s1 + "  " + s2));
+        });
+    }
+
+    @VisibleForTesting
+    protected void test(Set<String> processedProperties, Map<String, Map<String, String>> result) {
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+            if (!processedProperties.contains(key)) {
+                /*result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
+                      .put(key, value);*/
+                if (value != null && !value.trim().isEmpty()) {
+                    result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
+                          .put(key, value);
+                }
+            }
         });
     }
 

@@ -292,19 +292,28 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+        /*RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
-                /*result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
-                      .put(key, value);*/
-                if (value != null && !value.trim().isEmpty()) {
-                    result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
-                          .put(key, value);
-                }
+                result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
+                      .put(key, value);
             }
-        });
+        });*/
+
+        test(processedProperties, result);
 
         return Collections.unmodifiableMap(result);
     }
+
+    @VisibleForTesting
+    protected void test(Set<String> processedProperties,  Map<String, Map<String, String>> result ) {
+        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+            if (!processedProperties.contains(key)) {
+                result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
+                      .put(key, value);
+            }
+        });
+    }
+
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
