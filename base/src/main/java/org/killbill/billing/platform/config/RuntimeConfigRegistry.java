@@ -35,9 +35,6 @@ public class RuntimeConfigRegistry {
     }
 
     public static void putWithSource(final String configSource, final String key, final Object value) {
-        if (value == null) {
-            return;
-        }
         RUNTIME_CONFIGS_BY_SOURCE
                 .computeIfAbsent(configSource, k -> new ConcurrentHashMap<>())
                 .put(key, value == null ? null : value.toString());
