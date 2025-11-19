@@ -150,11 +150,10 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public String getString(final String propertyName) {
-        System.out.println("Get string for:   "  + propertyName);
         Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         if (bySource == null) {
-            logger.info("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
+            logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
             return null;
         }
 
@@ -163,46 +162,23 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             System.out.println("Available sources: " + bySource.keySet());
         }
 
-        logger.info("getString({}): searching in {} sources", propertyName, bySource.size());
+        logger.debug("getString({}): searching in {} sources", propertyName, bySource.size());
 
         for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
             final Map<String, String> sourceProps = entry.getValue();
             if (sourceProps == null) {
-                logger.info("Source {} returned NULL map in getPropertiesBySource()", entry.getKey());
+                logger.warn("Source {} returned NULL map in getPropertiesBySource()", entry.getKey());
                 continue;
             }
 
             final String value = sourceProps.get(propertyName);
-
-            if (value != null) {
-                // Special case: skip empty driver class names to allow driver inference
-                // Don't trim - some properties may have whitespace with meaning
-                boolean isDriverClassProperty = propertyName != null &&
-                                                (propertyName.endsWith(".driverClassName") ||
-                                                 propertyName.endsWith(".dataSourceClassName"));
-
-                if (isDriverClassProperty && value.isEmpty()) {
-                    logger.info("getString({}): ignoring empty driver class name from source {}",
-                                 propertyName, entry.getKey());
-                    continue; // Skip empty driver class names, continue searching
-                }
-
-                logger.info("getString({}): found in source {}", propertyName, entry.getKey());
-
-                if (propertyName != null && propertyName.contains("osgi.dao")) {
-                    System.out.println("  Returning from source '" + entry.getKey() + "': '" + value + "'");
-                }
-
+            if (value != null /*&& !value.trim().isEmpty()*/) {
+                logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
                 return value;
             }
         }
 
-        logger.info("getString({}): NOT FOUND in any source", propertyName);
-
-        if (propertyName != null && propertyName.contains("osgi.dao")) {
-            System.out.println("  Returning NULL - not found");
-        }
-
+        logger.debug("getString({}): NOT FOUND in any source", propertyName);
         return null;
     }
 
