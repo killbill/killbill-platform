@@ -29,9 +29,6 @@ import org.killbill.billing.osgi.api.PaymentPluginApiWithTestControl;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApiException;
 import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
-import org.killbill.billing.platform.test.PlatformDBTestingHelper;
-import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
-import org.skife.config.RuntimeConfigRegistry;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -45,16 +42,7 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-        //super.beforeClass();
-
-
-      //  ensureConfigSource();
-       super.beforeClass();
-
-        if (osgiConfig == null) {
-            throw new AssertionError("osgiConfig was not injected by Guice!");
-        }
-
+        super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
@@ -63,8 +51,6 @@ public class TestPaymentOSGIWithTestPaymentBundle extends TestOSGIBase {
 
     @BeforeMethod(groups = "slow")
     public void beforeMethod() throws Exception {
-
-
         super.beforeMethod();
         ((PaymentPluginApiWithTestControl) getTestApi(paymentPluginApiOSGIServiceRegistration, TEST_PLUGIN_NAME)).resetToNormalBehavior();
     }

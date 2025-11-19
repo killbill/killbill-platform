@@ -44,6 +44,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.xmlloader.UriAccessor;
+import org.skife.config.RuntimeConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

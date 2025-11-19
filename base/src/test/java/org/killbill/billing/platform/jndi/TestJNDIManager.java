@@ -42,16 +42,12 @@ public class TestJNDIManager {
 
     @BeforeMethod(groups = "slow")
     public void setUp() throws Exception {
-        System.out.println("TestJNDI setup...");
         SpyLogFactory.loadSpyLogDelegator("net.sf.log4jdbc.log.slf4j.Slf4jSpyLogDelegator");
 
         final String databaseName = "killbillosgitests";
         embeddedDB = new H2EmbeddedDB(databaseName, UUID.randomUUID().toString(), UUID.randomUUID().toString(), "jdbc:h2:mem:" + databaseName + ";DB_CLOSE_ON_EXIT=FALSE");
         embeddedDB.initialize();
         embeddedDB.start();
-
-        System.out.println("TestJNDI setup finished....");
-        System.out.println("Embedded DB values " + embeddedDB.getJdbcConnectionString() + "   username " + embeddedDB.getUsername() + "  pass  " + embeddedDB.getPassword());
     }
 
     @AfterMethod(groups = "slow")
@@ -61,7 +57,6 @@ public class TestJNDIManager {
 
     @Test(groups = "slow")
     public void testExportAndLookup() throws NamingException, IOException, SQLException {
-        System.out.println("Calling TestJNDI test....");
         final JNDIManager jndiManager = new JNDIManager();
 
         // JdbcConnectionPool is not serializable unfortunately. Tests using JNDI won't work on H2 (we don't have any yet)
@@ -93,7 +88,6 @@ public class TestJNDIManager {
 
     @SuppressWarnings("unchecked")
     private <T> T testForDataSource(final JNDIManager jndiManager, final DataSource dataSource, final Class<T> klass) {
-        System.out.println("TestJNDI testForDataSource...");
         final String name = "a/b/c";
         jndiManager.export(name, dataSource);
 

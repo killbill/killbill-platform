@@ -35,16 +35,11 @@ public class PropertiesWithSourceCollector {
             final List<PropertyWithSource> updatedProperties = new ArrayList<>(properties);
 
             final Set<String> keysToAdd = props.keySet();
-            updatedProperties.removeIf(p -> p.getSource().equals(source) && keysToAdd.contains(p.getKey()));
+            updatedProperties.removeIf(property -> property.getSource().equals(source) && keysToAdd.contains(property.getKey()));
 
-           /* props.forEach((key, value) ->
-                                  updatedProperties.add(new PropertyWithSource(source, key, value)));*/
-
-            props.forEach((s, s2) -> {
-                if(s2 == null) {
-                    System.out.println("Skipping2 adding a property " + s);
-                } else {
-                    updatedProperties.add(new PropertyWithSource(source, s, s2));
+            props.forEach((key, value) -> {
+                if (value != null) {
+                    updatedProperties.add(new PropertyWithSource(source, key, value));
                 }
             });
 

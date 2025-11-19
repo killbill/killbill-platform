@@ -32,11 +32,9 @@ import org.killbill.billing.beatrix.integration.osgi.util.ExternalBusTestEvent;
 import org.killbill.billing.beatrix.integration.osgi.util.SetupBundleWithAssertion;
 import org.killbill.billing.catalog.api.Currency;
 import org.killbill.billing.notification.plugin.api.ExtBusEventType;
+import org.killbill.billing.payment.api.PluginProperty;
 import org.killbill.billing.payment.plugin.api.PaymentPluginApi;
 import org.killbill.billing.payment.plugin.api.PaymentTransactionInfoPlugin;
-import org.killbill.billing.platform.test.PlatformDBTestingHelper;
-import org.killbill.billing.platform.test.config.TestKillbillConfigSource;
-import org.skife.config.RuntimeConfigRegistry;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.IDBI;
 import org.skife.jdbi.v2.Query;
@@ -46,7 +44,6 @@ import org.skife.jdbi.v2.TransactionStatus;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.awaitility.Awaitility.await;
@@ -69,57 +66,12 @@ public class TestBasicOSGIWithTestBundle extends TestOSGIBase {
 
     @BeforeClass(groups = "slow")
     public void beforeClass() throws Exception {
-
-       // ensureConfigSource();
-/*
-        if (configSource == null) {
-            try {
-                RuntimeConfigRegistry.clear();
-                configSource = new TestKillbillConfigSource(null, PlatformDBTestingHelper.class);
-            } catch (final Exception e) {
-                throw new AssertionError("Failed to create configSource", e);
-            }
-        }
-*/
-
         super.beforeClass();
 
         final String killbillVersion = System.getProperty("killbill.version");
         final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
         setupTest.setupJavaBundle();
     }
-
-
-    @BeforeMethod(groups = "slow")
-    public void beforeMethod() throws Exception {
-
-
-        try {
-
-
-            PlatformDBTestingHelper.get().getInstance().cleanupAllTables();
-        } catch (final Exception ignored) {
-            System.out.println("confiSource.. failed " + ignored);
-        }
-
-        clock.resetDeltaFromReality();
-
-        lifecycle.fireStartupSequencePriorEventRegistration();
-        lifecycle.fireStartupSequencePostEventRegistration();
-    }
-
-/*
-    @BeforeMethod(groups = "slow")
-    public void beforeMethod() throws Exception {
-
-        // ensureConfigSource();
-        // super.beforeClass();
-
-        final String killbillVersion = System.getProperty("killbill.version");
-        final SetupBundleWithAssertion setupTest = new SetupBundleWithAssertion(BUNDLE_TEST_RESOURCE, osgiConfig, killbillVersion);
-        setupTest.setupJavaBundle();
-    }
-*/
 
     @Test(groups = "slow")
     public void testBundleTest() throws Exception {
