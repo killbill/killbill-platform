@@ -88,16 +88,18 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
     @Override
     protected void test(Set<String> processedProperties, Map<String, Map<String, String>> result) {
-        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
+        /*RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
-                /*result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
-                      .put(key, value);*/
+                *//*result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
+                      .put(key, value);*//*
                 if (value != null && !value.trim().isEmpty()) {
                     result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
                           .put(key, value);
                 }
             }
-        });
+        });*/
+
+        // ignored
     }
 
     @Override
