@@ -173,11 +173,11 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
             final String value = sourceProps.get(propertyName);
 
-            if (value != null && value.trim().isEmpty()) {
+            /*if (value != null && value.trim().isEmpty()) {
                 logger.debug("getString({}): value is  empty {}", propertyName, entry.getKey());
             }
 
-            if (value != null /*&& !value.trim().isEmpty()*/) {
+            if (value != null *//*&& !value.trim().isEmpty()*//*) {
                 logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
 
 
@@ -187,8 +187,29 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
 
                 return value;
-            }
+            }*/
 
+            if (value != null) {
+                // Special case: treat empty driver class names as "not found"
+                // This allows fallback to driver inference from JDBC URL
+                final boolean isDriverClassProperty = propertyName != null &&
+                                                      (propertyName.endsWith(".driverClassName") ||
+                                                 propertyName.endsWith(".dataSourceClassName"));
+
+                if (isDriverClassProperty && value.trim().isEmpty()) {
+                    logger.debug("getString({}): ignoring empty driver class name from source {}",
+                                 propertyName, entry.getKey());
+                    continue;
+                }
+
+                logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
+
+                if (propertyName != null && propertyName.contains("osgi.dao")) {
+                    System.out.println("  Returning from source '" + entry.getKey() + "': '" + value + "'");
+                }
+
+                return value;
+            }
 
         }
 
