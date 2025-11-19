@@ -88,27 +88,6 @@ public class JNDIManager {
         }
     }
 
-/*    public Object lookup(final String name) {
-        Context context = null;
-
-        try {
-            context = getContext();
-            return context.lookup(name);
-        } catch (final NamingException e) {
-            logger.warn("Error looking up " + name, e);
-        } finally {
-            if (context != null) {
-                try {
-                    context.close();
-                } catch (final NamingException e) {
-                    logger.warn("Error closing context while looking up " + name, e);
-                }
-            }
-        }
-
-        return null;
-    }*/
-
     public Object lookup(final String name) {
         Context context = null;
 
