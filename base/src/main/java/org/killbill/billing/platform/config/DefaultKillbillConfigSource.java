@@ -173,33 +173,17 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
             final String value = sourceProps.get(propertyName);
 
-            /*if (value != null && value.trim().isEmpty()) {
-                logger.debug("getString({}): value is  empty {}", propertyName, entry.getKey());
-            }
-
-            if (value != null *//*&& !value.trim().isEmpty()*//*) {
-                logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
-
-
-                if (propertyName != null && propertyName.contains("osgi.dao")) {
-                    System.out.println("  Returning from source '" + entry.getKey() + "': '" + value + "'");
-                }
-
-
-                return value;
-            }*/
-
             if (value != null) {
-                // Special case: treat empty driver class names as "not found"
-                // This allows fallback to driver inference from JDBC URL
-                final boolean isDriverClassProperty = propertyName != null &&
-                                                      (propertyName.endsWith(".driverClassName") ||
+                // Special case: skip empty driver class names to allow driver inference
+                // Don't trim - some properties may have whitespace with meaning
+                boolean isDriverClassProperty = propertyName != null &&
+                                                (propertyName.endsWith(".driverClassName") ||
                                                  propertyName.endsWith(".dataSourceClassName"));
 
-                if (isDriverClassProperty && value.trim().isEmpty()) {
+                if (isDriverClassProperty && value.isEmpty()) {
                     logger.debug("getString({}): ignoring empty driver class name from source {}",
                                  propertyName, entry.getKey());
-                    continue;
+                    continue; // Skip empty driver class names, continue searching
                 }
 
                 logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
@@ -210,7 +194,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
                 return value;
             }
-
         }
 
         logger.debug("getString({}): NOT FOUND in any source", propertyName);
