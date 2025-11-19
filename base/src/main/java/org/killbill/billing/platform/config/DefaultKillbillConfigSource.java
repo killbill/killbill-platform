@@ -96,7 +96,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     }
 
     public DefaultKillbillConfigSource(@Nullable final String file, final Map<String, String> extraDefaultProperties) throws URISyntaxException, IOException {
-        System.out.println("DefaultKillbillConfigSource is called...");
         this.propertiesCollector = new PropertiesWithSourceCollector();
 
         if (file == null) {
@@ -124,55 +123,9 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         }
     }
 
-/*    @Override
-    public String getString(final String propertyName) {
-        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
-
-        for (final Map<String, String> sourceProps : bySource.values()) {
-            final String value = sourceProps.get(propertyName);
-            if (value != null) {
-                return value;
-            }
-        }
-
-        return null;
-    } */
-
     @Override
     public String getString(final String propertyName) {
-        /*Map<String, Map<String, String>> bySource = getPropertiesBySource();
-
-        if (bySource == null) {
-            logger.error("getString({}): bySource is NULL even after getPropertiesBySource()!", propertyName);
-            return null;
-        }
-
-        if (propertyName != null && propertyName.contains("osgi.dao")) {
-            System.out.println("=== getString(" + propertyName + ") ===");
-            System.out.println("Available sources: " + bySource.keySet());
-        }
-
-        logger.debug("getString({}): searching in {} sources", propertyName, bySource.size());
-
-        for (final Map.Entry<String, Map<String, String>> entry : bySource.entrySet()) {
-            final Map<String, String> sourceProps = entry.getValue();
-            if (sourceProps == null) {
-                logger.warn("Source {} returned NULL map in getPropertiesBySource()", entry.getKey());
-                continue;
-            }
-
-            final String value = sourceProps.get(propertyName);
-            if (value != null *//*&& !value.trim().isEmpty()*//*) {
-                logger.debug("getString({}): found in source {}", propertyName, entry.getKey());
-                return value;
-            }
-        }
-
-        logger.debug("getString({}): NOT FOUND in any source", propertyName);
-        return null;*/
-
         return getProperties().getProperty(propertyName);
-
     }
 
     @Override
@@ -299,21 +252,8 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
-        //test(processedProperties, result);
-
         return Collections.unmodifiableMap(result);
     }
-
-    /*@VisibleForTesting
-    protected void test(Set<String> processedProperties,  Map<String, Map<String, String>> result ) {
-        RuntimeConfigRegistry.getAll().forEach((key, value) -> {
-            if (!processedProperties.contains(key)) {
-                result.computeIfAbsent("RuntimeConfigRegistry", k -> new LinkedHashMap<>())
-                      .put(key, value);
-            }
-        });
-    }*/
-
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
