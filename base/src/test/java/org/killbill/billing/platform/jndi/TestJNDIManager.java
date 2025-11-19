@@ -62,6 +62,7 @@ public class TestJNDIManager {
     @Test(groups = "slow")
     public void testExportAndLookup() throws NamingException, IOException, SQLException {
         System.out.println("Calling TestJNDI test....");
+        System.setProperty("org.killbill.billing.osgi.dao.driverClassName", "org.h2.Driver");
         final JNDIManager jndiManager = new JNDIManager();
 
         // JdbcConnectionPool is not serializable unfortunately. Tests using JNDI won't work on H2 (we don't have any yet)
