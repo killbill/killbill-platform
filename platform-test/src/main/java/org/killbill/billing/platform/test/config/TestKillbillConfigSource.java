@@ -74,7 +74,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this.extraDefaults = extraDefaults;
         // extraDefaults changed, need to reload defaults
         populateDefaultProperties(extraDefaults);
-        RuntimeConfigRegistry.clear();
+        // RuntimeConfigRegistry.clear();
         rebuildCache();
 
         System.out.println("TestKillbillConfigSource get properties by source.....");
