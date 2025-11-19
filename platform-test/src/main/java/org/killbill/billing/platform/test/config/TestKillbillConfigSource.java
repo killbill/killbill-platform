@@ -33,6 +33,7 @@ import org.killbill.billing.platform.config.DefaultKillbillConfigSource;
 import org.killbill.billing.platform.test.PlatformDBTestingHelper;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.utils.io.Files;
+import org.skife.config.RuntimeConfigRegistry;
 
 public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
 
@@ -73,6 +74,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this.extraDefaults = extraDefaults;
         // extraDefaults changed, need to reload defaults
         populateDefaultProperties(extraDefaults);
+        RuntimeConfigRegistry.clear();
         rebuildCache();
 
         System.out.println("TestKillbillConfigSource get properties by source.....");
