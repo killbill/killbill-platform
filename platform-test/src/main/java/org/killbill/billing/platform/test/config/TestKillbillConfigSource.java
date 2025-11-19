@@ -86,7 +86,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         });
     }
 
-    @VisibleForTesting
+    @Override
     protected void test(Set<String> processedProperties, Map<String, Map<String, String>> result) {
         RuntimeConfigRegistry.getAll().forEach((key, value) -> {
             if (!processedProperties.contains(key)) {
