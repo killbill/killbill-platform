@@ -44,6 +44,7 @@ import org.killbill.billing.platform.api.KillbillConfigSource;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.annotation.VisibleForTesting;
 import org.killbill.xmlloader.UriAccessor;
+import org.skife.config.RuntimeConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +126,16 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     @Override
     public String getString(final String propertyName) {
-        return getProperties().getProperty(propertyName);
+        final Map<String, Map<String, String>> bySource = getPropertiesBySource();
+
+        for (final Map<String, String> sourceProps : bySource.values()) {
+            final String value = sourceProps.get(propertyName);
+            if (value != null) {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -194,8 +204,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 final String propertyKey = prop.getKey();
                 final String propertyValue = prop.getValue();
 
-                if (propertyValue == null || propertyValue.trim().isEmpty()) {
-                    System.out.println("Property value is null or empty.. key:  " + propertyKey);
+                if (propertyValue == null) {
                     continue;
                 }
 
@@ -229,8 +238,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 final String propertyKey = prop.getKey();
                 final String propertyValue = prop.getValue();
 
-                if (propertyValue == null || propertyValue.trim().isEmpty()) {
-                    System.out.println("Property value is null or empty.. key:  " + propertyKey);
+                if (propertyValue == null) {
                     continue;
                 }
 
@@ -254,6 +262,7 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         return Collections.unmodifiableMap(result);
     }
+
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
