@@ -111,21 +111,21 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
         populateDefaultProperties(extraDefaultProperties);
 
-        //rebuildCache();
-
         if (Boolean.parseBoolean(getString(LOOKUP_ENVIRONMENT_VARIABLES))) {
             overrideWithEnvironmentVariables();
-          //  rebuildCache();
         }
 
         if (Boolean.parseBoolean(getString(ENABLE_JASYPT_DECRYPTION))) {
             decryptJasyptProperties();
-            //rebuildCache();
         }
     }
 
     @Override
     public String getString(final String propertyName) {
+        if (cachedPropertiesBySource == null) {
+            return getPropertyDirect(propertyName);
+        }
+
         final Map<String, Map<String, String>> bySource = getPropertiesBySource();
 
         for (final Map<String, String> sourceProps : bySource.values()) {
@@ -172,13 +172,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
 
     private Map<String, Map<String, String>> computePropertiesBySource() {
         final Map<String, Map<String, String>> runtimeBySource = RuntimeConfigRegistry.getAllBySource();
-
-        System.out.println("RuntimeConfigRegistry.getAllBySource...");
-        runtimeBySource.forEach((s, stringStringMap) -> {
-            System.out.println(s);
-            stringStringMap.forEach((s1, s2) -> System.out.println("  " + s1 + ":  " + s2));
-        });
-
         runtimeBySource.forEach((source, props) -> {
             if (!props.isEmpty()) {
                 propertiesCollector.addProperties(source, props);
@@ -270,7 +263,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         return Collections.unmodifiableMap(result);
     }
 
-
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
         // but we need to build the ConfigSource first...
@@ -338,7 +330,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
                 TimeZone.setDefault(TimeZone.getTimeZone(GMT_ID));
 
                 immutableProps.put(PROP_USER_TIME_ZONE, GMT_ID);
-                // defaultsToAdd.put(propertyName, GMT_ID);
 
                 continue;
             }
@@ -368,11 +359,6 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         if (!immutableProps.isEmpty()) {
             propertiesCollector.addProperties("ImmutableSystemProperties", immutableProps);
         }
-
-        // defaultSystemProperties.putAll(defaultProperties);
-
-        //  final Map<String, String> propsMap = propertiesToMap(defaultSystemProperties);
-        //  propertiesCollector.addProperties("KillBillDefaults", propsMap);
 
         if (!defaultsToAdd.isEmpty()) {
             propertiesCollector.addProperties("KillBillDefaults", defaultsToAdd);
@@ -451,6 +437,33 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
     @VisibleForTesting
     String fromEnvVariableName(final String key) {
         return key.replace(ENVIRONMENT_VARIABLE_PREFIX, "").replaceAll("_", "\\.");
+    }
+
+    private String getPropertyDirect(final String propertyName) {
+        final Map<String, List<PropertyWithSource>> collectorBySource = propertiesCollector.getPropertiesBySource();
+
+        for (final String source : HIGH_TO_LOW_PRIORITY_ORDER) {
+            final List<PropertyWithSource> properties = collectorBySource.get(source);
+            if (properties != null) {
+                for (final PropertyWithSource prop : properties) {
+                    if (prop.getKey().equals(propertyName)) {
+                        return prop.getValue();
+                    }
+                }
+            }
+        }
+
+        for (final Map.Entry<String, List<PropertyWithSource>> entry : collectorBySource.entrySet()) {
+            if (!HIGH_TO_LOW_PRIORITY_ORDER.contains(entry.getKey())) {
+                for (final PropertyWithSource prop : entry.getValue()) {
+                    if (prop.getKey().equals(propertyName)) {
+                        return prop.getValue();
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     private void decryptJasyptProperties() {

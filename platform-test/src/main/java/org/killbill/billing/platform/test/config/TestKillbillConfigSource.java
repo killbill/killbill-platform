@@ -72,6 +72,7 @@ public class TestKillbillConfigSource extends DefaultKillbillConfigSource {
         this.extraDefaults = extraDefaults;
         // extraDefaults changed, need to reload defaults
         populateDefaultProperties(extraDefaults);
+        rebuildCache();
     }
 
     @Override
