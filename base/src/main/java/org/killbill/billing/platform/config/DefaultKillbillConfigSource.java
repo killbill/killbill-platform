@@ -122,6 +122,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             decryptJasyptProperties();
             rebuildCache();
         }
+
+        System.out.println("DefaultKillbillConfigSource output....");
+        getPropertiesBySource().forEach((s, stringStringMap) -> {
+            System.out.println(s);
+
+            stringStringMap.forEach((s1, s2) -> {
+                System.out.println("  " + s1 + ": " + s2);
+            });
+        });
     }
 
     @Override
@@ -179,6 +188,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
         });
 
         final Map<String, List<PropertyWithSource>> collectorBySource = propertiesCollector.getPropertiesBySource();
+
+        System.out.println("values of collectorBySource....");
+        collectorBySource.forEach((s, propertyWithSources) -> {
+            System.out.println(s);
+            propertyWithSources.forEach(propertyWithSource -> {
+                System.out.println(propertyWithSource.getSource());
+                System.out.println("  " + propertyWithSource.getKey() + ":  " + propertyWithSource.getValue());
+            });
+        });
 
         final Map<String, List<String>> propertyToSources = new HashMap<>();
         collectorBySource.forEach((source, properties) -> {
@@ -260,8 +278,15 @@ public class DefaultKillbillConfigSource implements KillbillConfigSource, OSGICo
             }
         });
 
+        System.out.println("computePropertiesBySource... result");
+        result.forEach((s, stringStringMap) -> {
+            System.out.println(s);
+            stringStringMap.forEach((s1, s2) -> System.out.println(" " + s1 + ":  " + s2));
+        });
+
         return Collections.unmodifiableMap(result);
     }
+
 
     private void loadPropertiesFromFileOrSystemProperties() {
         // Chicken-egg problem. It would be nice to have the property in e.g. KillbillServerConfig,
