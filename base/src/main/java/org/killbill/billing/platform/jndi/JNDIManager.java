@@ -31,6 +31,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
+import javax.naming.spi.NamingManager;
 
 import org.killbill.commons.utils.Preconditions;
 import org.slf4j.Logger;
@@ -92,7 +93,17 @@ public class JNDIManager {
 
         try {
             context = getContext();
-            return context.lookup(name);
+            final Object obj = context.lookup(name);
+
+            if (obj instanceof Reference) {
+                try {
+                    return NamingManager.getObjectInstance(obj, null, null, null);
+                } catch (final Exception e) {
+                    logger.warn("Failed to dereference JNDI Reference for {}, returning Reference object", name, e);
+                }
+            }
+
+            return obj;
         } catch (final NamingException e) {
             logger.warn("Error looking up " + name, e);
         } finally {

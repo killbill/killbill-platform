@@ -21,8 +21,12 @@ package org.killbill.billing.platform.config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.exceptions.EncryptionOperationNotPossibleException;
@@ -55,6 +59,101 @@ public class TestDefaultKillbillConfigSource {
         System.clearProperty(ENCRYPTED_PROPERTY_2);
     }
 
+    @Test
+    public void testGetPropertiesBySourceContainsExpectedSources() throws URISyntaxException, IOException {
+        final Map<String, String> runtimeConfig = new HashMap<>();
+        runtimeConfig.put("org.killbill.dao.user", "root");
+
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, runtimeConfig) {
+            @Override
+            protected Map<String, String> getEnvironmentVariables() {
+                final Map<String, String> mockEnv = new HashMap<>();
+                mockEnv.put(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_dao_user", "root");
+                return mockEnv;
+            }
+        };
+
+        final Map<String, Map<String, String>> propsBySource = configSource.getPropertiesBySource();
+
+        Assert.assertTrue(propsBySource.containsKey("ImmutableSystemProperties"));
+        Assert.assertTrue(propsBySource.containsKey("EnvironmentVariables"));
+        Assert.assertTrue(propsBySource.containsKey("RuntimeConfiguration"));
+        Assert.assertTrue(propsBySource.containsKey("KillBillDefaults"));
+    }
+
+    @Test(groups = "fast")
+    public void testGetPropertiesAndGetPropertiesBySourceAreInSync() throws URISyntaxException, IOException {
+        // RuntimeConfiguration
+        System.setProperty("org.killbill.dao.user", "root");
+        System.setProperty("org.killbill.dao.password", "password");
+
+        // KillBillDefaults
+        final Map<String, String> killbillDefaultConfig = new HashMap<>();
+        killbillDefaultConfig.put("org.killbill.server.shutdownDelay", "3s");
+        killbillDefaultConfig.put("org.killbill.billing.osgi.dao.logLevel", "INFO");
+
+        // ImmutableSystemProperties
+        killbillDefaultConfig.put("user.timezone", "GMT");
+
+        // EnvironmentVariables
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, killbillDefaultConfig) {
+            @Override
+            protected Map<String, String> getEnvironmentVariables() {
+                final Map<String, String> mockEnv = new HashMap<>();
+                mockEnv.put(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_dao_healthCheckConnectionTimeout", "11s");
+                return mockEnv;
+            }
+        };
+
+        final Properties mergedProperties = configSource.getProperties();
+        final Map<String, Map<String, String>> propertiesBySource = configSource.getPropertiesBySource();
+
+        final Map<String, String> allProperties = new HashMap<>();
+        propertiesBySource.forEach((source, props) -> allProperties.putAll(props));
+
+        for (final String key : mergedProperties.stringPropertyNames()) {
+            final String valueFromFlat = mergedProperties.getProperty(key);
+            final String valueFromSource = allProperties.get(key);
+
+            Assert.assertNotNull(valueFromSource);
+            Assert.assertEquals(valueFromFlat, valueFromSource);
+        }
+
+        // Verify that no property appears in multiple sources
+        final Map<String, Integer> propertyCount = new HashMap<>();
+        propertiesBySource.forEach((source, props) -> {
+            props.keySet().forEach(key -> propertyCount.put(key, propertyCount.getOrDefault(key, 0) + 1));
+        });
+
+        propertyCount.forEach((key, count) -> {
+            Assert.assertEquals(count.intValue(), 1);
+        });
+
+        Assert.assertEquals(mergedProperties.size(), allProperties.size());
+    }
+
+    @Test
+    public void testConflictResolutionPriority() throws Exception {
+        // RuntimeConfiguration
+        System.setProperty("org.killbill.test", "lowValue");
+
+        final DefaultKillbillConfigSource testSource = new DefaultKillbillConfigSource((String) null) {
+            @Override
+            protected Map<String, String> getEnvironmentVariables() {
+                final Map<String, String> mockEnv = new HashMap<>();
+                mockEnv.put(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_test", "highValue");
+                return mockEnv;
+            }
+        };
+
+        testSource.setProperty("org.killbill.test", "lowValue");
+
+        final Properties properties = testSource.getProperties();
+
+        final String effectiveValue = properties.getProperty("org.killbill.test");
+        Assert.assertEquals(effectiveValue, "highValue");
+    }
+
     @Test(groups = "fast")
     public void testGetProperties() throws URISyntaxException, IOException {
         final Map<String, String> configuration = new HashMap<>();
@@ -70,21 +169,66 @@ public class TestDefaultKillbillConfigSource {
 
     @Test(groups = "fast")
     public void testGetPropertiesBySource() throws URISyntaxException, IOException {
-        final Map<String, String> configuration = new HashMap<>();
-        configuration.put("org.killbill.dao.user", "root");
-        configuration.put("org.killbill.dao.password", "password");
+        // RuntimeConfiguration
+        System.setProperty("org.killbill.dao.user", "root");
+        System.setProperty("org.killbill.dao.password", "password");
 
-        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, configuration);
+        // KillBillDefaults
+        final Map<String, String> killbillDefaultConfig = new HashMap<>();
+        killbillDefaultConfig.put("org.killbill.server.shutdownDelay", "3s");
+        killbillDefaultConfig.put("org.killbill.billing.osgi.dao.logLevel", "INFO");
+
+        // ImmutableSystemProperties
+        killbillDefaultConfig.put("user.timezone", "GMT");
+
+        // EnvironmentVariables
+        final OSGIConfigProperties configSource = new DefaultKillbillConfigSource(null, killbillDefaultConfig) {
+            @Override
+            protected Map<String, String> getEnvironmentVariables() {
+                final Map<String, String> mockEnv = new HashMap<>();
+                mockEnv.put(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_dao_healthCheckConnectionTimeout", "11s");
+                mockEnv.put(ENVIRONMENT_VARIABLE_PREFIX + "org_killbill_billing_osgi_dao_maxActive", "99");
+
+                return mockEnv;
+            }
+        };
 
         final Map<String, Map<String, String>> propsBySource = configSource.getPropertiesBySource();
 
         Assert.assertNotNull(propsBySource);
         Assert.assertFalse(propsBySource.isEmpty());
 
-        final Map<String, String> defaultProps = propsBySource.get("ExtraDefaultProperties");
-        Assert.assertNotNull(defaultProps);
-        Assert.assertEquals(defaultProps.get("org.killbill.dao.user"), "root");
-        Assert.assertEquals(defaultProps.get("org.killbill.dao.password"), "password");
+        Assert.assertTrue(propsBySource.containsKey("ImmutableSystemProperties"));
+
+        final Map<String, String> immutableProps = propsBySource.get("ImmutableSystemProperties");
+        Assert.assertEquals(immutableProps.get("user.timezone"), "GMT");
+
+        Assert.assertTrue(propsBySource.containsKey("EnvironmentVariables"));
+
+        final Map<String, String> environmentVariables = propsBySource.get("EnvironmentVariables");
+        Assert.assertEquals(environmentVariables.get("org.killbill.dao.healthCheckConnectionTimeout"), "11s");
+        Assert.assertEquals(environmentVariables.get("org.killbill.billing.osgi.dao.maxActive"), "99");
+
+        Assert.assertTrue(propsBySource.containsKey("RuntimeConfiguration"));
+
+        final Map<String, String> runtimeConfig = propsBySource.get("RuntimeConfiguration");
+        Assert.assertEquals(runtimeConfig.get("org.killbill.dao.user"), "root");
+        Assert.assertEquals(runtimeConfig.get("org.killbill.dao.password"), "password");
+
+        Assert.assertTrue(propsBySource.containsKey("KillBillDefaults"));
+
+        final Map<String, String> killBillDefaults = propsBySource.get("KillBillDefaults");
+        Assert.assertEquals(killBillDefaults.get("org.killbill.server.shutdownDelay"), "3s");
+        Assert.assertEquals(killBillDefaults.get("org.killbill.billing.osgi.dao.logLevel"), "INFO");
+
+        final List<String> actualSourceOrder = new ArrayList<>(propsBySource.keySet());
+
+        final List<String> expectedPrecedenceOrder = Arrays.asList("ImmutableSystemProperties",
+                                                                   "EnvironmentVariables",
+                                                                   "RuntimeConfiguration",
+                                                                   "KillBillDefaults");
+
+        Assert.assertEquals(actualSourceOrder, expectedPrecedenceOrder);
     }
 
     @Test(groups = "fast")
