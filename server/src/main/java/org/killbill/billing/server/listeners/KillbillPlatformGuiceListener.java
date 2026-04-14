@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.lifecycle.api.Lifecycle;

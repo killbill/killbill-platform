@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.killbill.billing.osgi.api.Healthcheck;
 import org.killbill.billing.osgi.api.Healthcheck.HealthStatus;

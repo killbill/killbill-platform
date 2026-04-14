@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Singleton;
-import javax.servlet.Servlet;
+import jakarta.inject.Singleton;
+import jakarta.servlet.Servlet;
 
 import org.killbill.billing.osgi.api.OSGIServiceDescriptor;
 import org.killbill.billing.osgi.api.OSGIServiceRegistration;

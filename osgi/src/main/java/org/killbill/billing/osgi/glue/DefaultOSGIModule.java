@@ -19,9 +19,9 @@
 
 package org.killbill.billing.osgi.glue;
 
-import javax.inject.Provider;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.inject.Provider;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
 import javax.sql.DataSource;
 
 import org.killbill.billing.osgi.BundleRegistry;

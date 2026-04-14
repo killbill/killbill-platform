@@ -215,7 +215,7 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "javax.transaction.xa," +
              // XML (sax parser)
              "javax.xml," +
-             "javax.xml.bind," +
+             "jakarta.xml.bind," +
              "javax.xml.validation," +
              "javax.xml.namespace," +
              "javax.xml.parsers," +
@@ -254,15 +254,15 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.xml.sax," +
              "org.xml.sax.ext," +
              "org.xml.sax.helpers," +
-             // javax.servlet and javax.servlet.http are not exported by default - we
+             // jakarta.servlet and jakarta.servlet.http are not exported by default - we
              // need the bundles to see them for them to be able to register their servlets.
-             // Note: bundles should mark javax.servlet:servlet-api as provided
+             // Note: bundles should mark jakarta.servlet:jakarta.servlet-api as provided
              "sun.misc," +
              "sun.misc.unsafe," +
              "sun.security," +
              "sun.security.util," +
-             "javax.servlet;version=4.0," +
-             "javax.servlet.http;version=4.0")
+             "jakarta.servlet;version=5.0," +
+             "jakarta.servlet.http;version=5.0")
     @Description("Java extension/platform Packages to export from the system bundle")
     public String getSystemBundleExportPackagesJava();
 

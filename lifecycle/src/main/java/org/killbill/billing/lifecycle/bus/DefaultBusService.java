@@ -19,7 +19,7 @@
 
 package org.killbill.billing.lifecycle.bus;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.lifecycle.api.BusService;
 import org.killbill.billing.platform.api.LifecycleHandlerType;

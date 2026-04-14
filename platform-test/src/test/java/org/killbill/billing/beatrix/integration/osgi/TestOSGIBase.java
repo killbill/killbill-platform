@@ -21,8 +21,8 @@ package org.killbill.billing.beatrix.integration.osgi;
 
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 import javax.sql.DataSource;
 
 import org.killbill.billing.beatrix.integration.osgi.glue.TestIntegrationModule;

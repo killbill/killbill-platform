@@ -22,10 +22,10 @@ package org.killbill.billing.osgi.http;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletException;
 
 import org.killbill.billing.osgi.ContextClassLoaderHelper;
 import org.killbill.commons.metrics.api.MetricRegistry;

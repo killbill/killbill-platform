@@ -22,8 +22,8 @@ package org.killbill.billing.osgi.bundles.kpm;
 import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.http.HttpServlet;
 
 import org.jooby.json.Jackson;
 import org.killbill.billing.osgi.api.OSGIKillbillRegistrar;

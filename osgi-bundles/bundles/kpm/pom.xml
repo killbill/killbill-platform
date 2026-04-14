@@ -70,8 +70,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.inject</groupId>
-            <artifactId>javax.inject</artifactId>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>
@@ -79,12 +79,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jooby</groupId>
-            <artifactId>jooby</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jooby</groupId>
-            <artifactId>jooby-jackson</artifactId>
+            <groupId>org.kill-bill.commons</groupId>
+            <artifactId>killbill-jooby</artifactId>
+            <exclusions>
+                <!-- slf4j-api is marked as provided: ignore RequireUpperBoundDeps errors -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.billing</groupId>

@@ -29,9 +29,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.Servlet;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.Servlet;
 import javax.sql.DataSource;
 
 import org.killbill.billing.catalog.plugin.api.CatalogPluginApi;

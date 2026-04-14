@@ -55,12 +55,8 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.jooby</groupId>
-            <artifactId>funzy</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jooby</groupId>
-            <artifactId>jooby</artifactId>
+            <groupId>org.kill-bill.commons</groupId>
+            <artifactId>killbill-jooby</artifactId>
             <exclusions>
                 <!-- slf4j-api is marked as provided: ignore RequireUpperBoundDeps errors -->
                 <exclusion>

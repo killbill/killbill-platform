@@ -26,9 +26,9 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.joda.time.DateTime;

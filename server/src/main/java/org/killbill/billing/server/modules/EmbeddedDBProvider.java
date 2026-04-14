@@ -31,8 +31,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import org.killbill.billing.server.dao.EmbeddedDBFactory;
 import org.killbill.commons.embeddeddb.EmbeddedDB;

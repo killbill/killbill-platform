@@ -19,7 +19,7 @@ package org.killbill.billing.osgi.bundles.prometheus;
 
 import java.util.Hashtable;
 
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 
 import org.killbill.billing.osgi.api.OSGIPluginProperties;
 import org.killbill.billing.osgi.libs.killbill.KillbillActivatorBase;

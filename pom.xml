@@ -56,7 +56,21 @@
         <check.fail-spotbugs>true</check.fail-spotbugs>
         <!-- Bug with maven-deploy-plugin -->
         <deploy.deploy-at-end>false</deploy.deploy-at-end>
+        <extra-enforcer-rules.version>1.12.0</extra-enforcer-rules.version>
+        <guice.version>7.0.0</guice.version>
+        <jakarta.activation-api.version>2.1.0</jakarta.activation-api.version>
+        <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
+        <jakarta.inject-api.version>2.0.1</jakarta.inject-api.version>
+        <jakarta.servlet-api.version>5.0.0</jakarta.servlet-api.version>
+        <jakarta.ws.rs-api.version>3.0.0</jakarta.ws.rs-api.version>
+        <jaxb-api.version>4.0.0</jaxb-api.version>
+        <jaxb-runtime.version>4.0.0</jaxb-runtime.version>
+        <jetty.version>11.0.24</jetty.version>
+        <killbill-commons.version>0.27.0</killbill-commons.version>
+        <killbill-jooby.version>0.27.0</killbill-jooby.version>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
+        <project.build.targetJdk>21</project.build.targetJdk>
+        <spotbugs-maven-plugin.version>4.9.8.3</spotbugs-maven-plugin.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -193,6 +207,36 @@
                 <artifactId>killbill-platform-test</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${jakarta.inject-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.kill-bill.commons</groupId>
+                <artifactId>killbill-jooby</artifactId>
+                <version>${killbill-jooby.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs-maven-plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>extra-enforcer-rules</artifactId>
+                        <version>${extra-enforcer-rules.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 </project>
