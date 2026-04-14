@@ -41,7 +41,6 @@ import org.killbill.billing.osgi.api.OSGIServiceRegistration;
 import org.killbill.billing.osgi.api.PluginsInfoApi;
 import org.killbill.billing.osgi.api.config.PluginConfigServiceApi;
 import org.killbill.billing.osgi.config.OSGIConfig;
-import org.killbill.billing.osgi.http.DefaultHttpService;
 import org.killbill.billing.osgi.http.DefaultServletRouter;
 import org.killbill.billing.osgi.http.OSGIServlet;
 import org.killbill.billing.osgi.pluginconf.DefaultPluginConfigServiceApi;
@@ -52,7 +51,6 @@ import org.killbill.billing.platform.glue.KillBillPlatformModuleBase;
 import org.killbill.billing.platform.glue.ReferenceableDataSourceSpyProvider;
 import org.killbill.commons.embeddeddb.EmbeddedDB;
 import org.killbill.commons.jdbi.guice.DaoConfig;
-import org.osgi.service.http.HttpService;
 import org.skife.config.AugmentedConfigurationObjectFactory;
 
 import com.google.inject.TypeLiteral;
@@ -115,15 +113,10 @@ public class DefaultOSGIModule extends KillBillPlatformModuleBase {
         bind(PluginsInfoApi.class).to(DefaultPluginsInfoApi.class).asEagerSingleton();
     }
 
-    protected void installHttpService() {
-        bind(HttpService.class).to(DefaultHttpService.class).asEagerSingleton();
-    }
-
     @Override
     protected void configure() {
         installConfig();
         installOSGIServlet();
-        installHttpService();
         installDataSource();
         installOSGIComponents();
     }

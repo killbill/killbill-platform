@@ -63,7 +63,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.event.Event;
-import org.osgi.service.http.HttpService;
 import org.osgi.service.log.LogService;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.Logger;
@@ -80,7 +79,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
     private static final String LOG_SERVICE_NAME = "org.osgi.service.log.LogService";
 
     private final OSGIKillbill osgiKillbill;
-    private final HttpService defaultHttpService;
     private final DataSource dataSource;
     private final Clock clock;
     private final KillbillEventRetriableBusHandler killbillEventRetriableBusHandler;
@@ -103,7 +101,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
                              final OSGIKillbill osgiKillbill,
                              final Clock clock,
                              final BundleRegistry bundleRegistry,
-                             final HttpService defaultHttpService,
                              final KillbillEventRetriableBusHandler killbillEventRetriableBusHandler,
                              final KillbillEventObservable observable,
                              final OSGIConfigProperties configProperties,
@@ -112,7 +109,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
                              final JNDIManager jndiManager) {
         this.osgiKillbill = osgiKillbill;
         this.bundleRegistry = bundleRegistry;
-        this.defaultHttpService = defaultHttpService;
         this.dataSource = dataSource;
         this.clock = clock;
         this.killbillEventRetriableBusHandler = killbillEventRetriableBusHandler;
@@ -208,7 +204,6 @@ public class KillbillActivator implements BundleActivator, AllServiceListener {
         killbillEventRetriableBusHandler.register();
 
         registrar.registerService(context, OSGIKillbill.class, osgiKillbill, props);
-        registrar.registerService(context, HttpService.class, defaultHttpService, props);
         registrar.registerService(context, Observable.class, observable, props);
         registrar.registerService(context, DataSource.class, dataSource, props);
         registrar.registerService(context, OSGIConfigProperties.class, configProperties, props);

@@ -75,6 +75,42 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-servlet</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${jakarta.activation-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${jakarta.inject-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jaxb-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jaxb-runtime.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.activation</groupId>
+                        <artifactId>jakarta.activation</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-api</artifactId>
                 <version>${project.version}</version>
@@ -206,11 +242,6 @@
                 <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-test</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>jakarta.inject</groupId>
-                <artifactId>jakarta.inject-api</artifactId>
-                <version>${jakarta.inject-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.kill-bill.commons</groupId>

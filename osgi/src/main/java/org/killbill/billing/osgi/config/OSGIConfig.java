@@ -256,7 +256,6 @@ public interface OSGIConfig extends KillbillPlatformConfig {
              "org.xml.sax.helpers," +
              // jakarta.servlet and jakarta.servlet.http are not exported by default - we
              // need the bundles to see them for them to be able to register their servlets.
-             // Note: bundles should mark jakarta.servlet:jakarta.servlet-api as provided
              "sun.misc," +
              "sun.misc.unsafe," +
              "sun.security," +
