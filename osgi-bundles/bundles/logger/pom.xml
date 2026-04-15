@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.kill-bill.billing</groupId>
         <artifactId>killbill-platform-osgi-bundles</artifactId>
-        <version>0.41.20-SNAPSHOT</version>
+        <version>0.42.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>killbill-platform-osgi-bundles-logger</artifactId>
@@ -55,17 +55,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.kill-bill.commons</groupId>
-            <artifactId>killbill-jooby</artifactId>
-            <exclusions>
-                <!-- slf4j-api is marked as provided: ignore RequireUpperBoundDeps errors -->
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.kill-bill.billing</groupId>
             <artifactId>killbill-api</artifactId>
             <scope>provided</scope>
@@ -94,6 +83,17 @@
         <dependency>
             <groupId>org.kill-bill.commons</groupId>
             <artifactId>killbill-concurrent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kill-bill.commons</groupId>
+            <artifactId>killbill-jooby</artifactId>
+            <exclusions>
+                <!-- slf4j-api is marked as provided: ignore RequireUpperBoundDeps errors -->
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.kill-bill.commons</groupId>
