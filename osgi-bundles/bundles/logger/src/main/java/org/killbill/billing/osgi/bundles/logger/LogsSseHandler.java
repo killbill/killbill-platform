@@ -34,6 +34,9 @@ import org.killbill.commons.concurrent.Executors;
 
 public class LogsSseHandler implements Sse.Handler, Closeable {
 
+    private static final long INITIAL_DELAY_MS = 200;
+    private static final long PERIOD_MS = 1000;
+
     private final LogEntriesManager logEntriesManager;
     private final ScheduledExecutorService scheduledExecutorService;
 
@@ -54,7 +57,7 @@ public class LogsSseHandler implements Sse.Handler, Closeable {
         final UUID cacheId = UUID.fromString(sse.id());
         logEntriesManager.subscribe(cacheId, lastEventId);
 
-        final AtomicReference<UUID> lastLogId = new AtomicReference<UUID>();
+        final AtomicReference<UUID> lastLogId = new AtomicReference<>();
         final ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -71,7 +74,7 @@ public class LogsSseHandler implements Sse.Handler, Closeable {
                     }
                 }
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, INITIAL_DELAY_MS, PERIOD_MS, TimeUnit.MILLISECONDS);
 
         sse.onClose(new Throwing.Runnable() {
             @Override
