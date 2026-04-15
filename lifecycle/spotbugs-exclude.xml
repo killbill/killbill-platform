@@ -39,4 +39,21 @@
         <Method name="doFireStage" />
         <Bug pattern="DM_EXIT" />
     </Match>
+
+    <!-- justification: constructor eagerly discovers services and may fail fast on injector/bootstrap problems during lifecycle startup -->
+    <Match>
+        <Class name="org.killbill.billing.lifecycle.DefaultLifecycle" />
+        <Or>
+            <Method name="&lt;init&gt;" params="com.google.inject.Injector, org.killbill.billing.lifecycle.config.LifecycleConfig" />
+            <Method name="&lt;init&gt;" params="java.lang.Iterable" />
+        </Or>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+
+    <!-- justification: constructor performs classpath scanning immediately and intentionally fails fast if service discovery cannot be initialized -->
+    <Match>
+        <Class name="org.killbill.billing.lifecycle.ServiceFinder" />
+        <Method name="&lt;init&gt;" params="java.lang.ClassLoader, java.lang.String" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 </FindBugsFilter>

@@ -45,4 +45,25 @@
         <Method name="uninstall" params="java.lang.String, java.lang.String" />
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
     </Match>
+
+    <!-- Justification: default bundles path intentionally falls back to the standard on-disk plugin install root when no property is configured -->
+    <Match>
+        <Class name="org.killbill.billing.osgi.bundles.kpm.KpmProperties" />
+        <Method name="getBundlesPath" />
+        <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
+    </Match>
+
+    <!-- Justification: constructor eagerly initializes downloader/DAO state and must fail fast when plugin management dependencies cannot be created -->
+    <Match>
+        <Class name="org.killbill.billing.osgi.bundles.kpm.impl.DefaultPluginManager" />
+        <Method name="&lt;init&gt;" params="org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI, org.killbill.billing.osgi.bundles.kpm.KpmProperties" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+
+    <!-- Justification: constructor creates the persistent identifiers directory/file up front and intentionally aborts plugin management startup on filesystem initialization errors -->
+    <Match>
+        <Class name="org.killbill.billing.osgi.bundles.kpm.impl.FileBasedPluginIdentifiersDAO" />
+        <Method name="&lt;init&gt;" params="org.killbill.billing.osgi.bundles.kpm.KpmProperties" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 </FindBugsFilter>

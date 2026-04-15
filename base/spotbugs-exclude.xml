@@ -37,4 +37,26 @@
         <Method name="getDelegate" />
         <Bug pattern="EI_EXPOSE_REP" />
     </Match>
+
+    <!-- justification: constructors intentionally validate configuration and bootstrap external resources; these types are not finalizable and the warning is not actionable here -->
+    <Match>
+        <Class name="org.killbill.billing.platform.config.DefaultKillbillConfigSource" />
+        <Or>
+            <Method name="&lt;init&gt;" params="" />
+            <Method name="&lt;init&gt;" params="java.util.Map" />
+            <Method name="&lt;init&gt;" params="java.lang.String" />
+            <Method name="&lt;init&gt;" params="java.lang.String, java.util.Map" />
+        </Or>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+
+    <!-- justification: constructor bootstraps the in-memory RMI registry and may legitimately throw RemoteException during startup; this manager is not intended for finalization-sensitive inheritance -->
+    <Match>
+        <Class name="org.killbill.billing.platform.jndi.JNDIManager" />
+        <Or>
+            <Method name="&lt;init&gt;" params="" />
+            <Method name="&lt;init&gt;" params="int" />
+        </Or>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 </FindBugsFilter>

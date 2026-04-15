@@ -38,5 +38,25 @@
         </Or>
         <Bug pattern="EI_EXPOSE_REP" />
     </Match>
+    <!-- justification: test helper intentionally uses a lazy singleton entry point while keeping the constructor
+         non-private for subclass-based test customization in this module -->
+    <Match>
+        <Class name="org.killbill.billing.platform.test.PlatformDBTestingHelper" />
+        <Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR" />
+    </Match>
+    <!-- justification: test config source fails fast during bootstrap when loading defaults or creating the DB-backed
+         helper, and this constructor is only used in test infrastructure -->
+    <Match>
+        <Class name="org.killbill.billing.platform.test.config.TestKillbillConfigSource" />
+        <Method name="&lt;init&gt;" params="java.lang.String,java.lang.Class"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+    <!-- justification: test config source eagerly validates file/default setup and DB helper wiring before tests run,
+         so constructor exceptions are expected bootstrap failures rather than production object-lifecycle issues -->
+    <Match>
+        <Class name="org.killbill.billing.platform.test.config.TestKillbillConfigSource" />
+        <Method name="&lt;init&gt;" params="java.lang.String,java.lang.Class,java.util.Map"/>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 
 </FindBugsFilter>
