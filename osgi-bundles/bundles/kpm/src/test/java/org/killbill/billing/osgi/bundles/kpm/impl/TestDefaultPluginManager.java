@@ -23,6 +23,7 @@ import org.killbill.billing.osgi.bundles.kpm.KPMPluginException;
 import org.killbill.billing.osgi.bundles.kpm.KpmProperties;
 import org.killbill.billing.osgi.bundles.kpm.PluginIdentifiersDAO;
 import org.killbill.billing.osgi.bundles.kpm.PluginManager.GetAvailablePluginsModel;
+import org.killbill.billing.osgi.bundles.kpm.TestUtils;
 import org.killbill.billing.osgi.libs.killbill.OSGIKillbillAPI;
 import org.killbill.billing.util.nodes.KillbillNodesApi;
 import org.killbill.billing.util.nodes.NodeInfo;
@@ -47,7 +48,7 @@ public class TestDefaultPluginManager {
         final OSGIKillbillAPI osgiKillbillAPI = Mockito.mock(OSGIKillbillAPI.class);
         Mockito.when(osgiKillbillAPI.getKillbillNodesApi()).thenReturn(nodesApi);
 
-        final Properties properties = new Properties();
+        final Properties properties = TestUtils.getTestProperties();
         properties.setProperty("org.killbill.billing.plugin.kpm.availablePlugins.cache.enabled", "true");
         final KpmProperties kpmProperties = new KpmProperties(properties);
 
