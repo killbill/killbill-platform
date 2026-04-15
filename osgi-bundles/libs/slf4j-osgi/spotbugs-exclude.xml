@@ -35,4 +35,17 @@
         <Bug pattern="EI_EXPOSE_REP,MS_EXPOSE_REP" />
     </Match>
 
+    <!-- justification: vendored SLF4J SimpleLogger initializes these process-wide configuration flags once during bootstrap and then treats them as global logger settings -->
+    <Match>
+        <Class name="org.slf4j.impl.SimpleLogger" />
+        <Or>
+            <Field name="LEVEL_IN_BRACKETS" />
+            <Field name="SHOW_DATE_TIME" />
+            <Field name="SHOW_LOG_NAME" />
+            <Field name="SHOW_SHORT_LOG_NAME" />
+            <Field name="SHOW_THREAD_NAME" />
+        </Or>
+        <Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE" />
+    </Match>
+
 </FindBugsFilter>

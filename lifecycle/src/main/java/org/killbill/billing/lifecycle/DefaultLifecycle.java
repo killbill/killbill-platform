@@ -32,7 +32,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.lifecycle.api.Lifecycle;
 import org.killbill.billing.lifecycle.config.LifecycleConfig;

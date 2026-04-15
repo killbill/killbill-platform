@@ -19,8 +19,8 @@
 
 package org.killbill.billing.server.modules;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 import org.killbill.billing.server.config.KillbillServerConfig;
 import org.killbill.clock.DistributedClockMock;

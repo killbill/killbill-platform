@@ -19,10 +19,10 @@
 
 package org.killbill.billing.server.modules;
 
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.inject.Singleton;
-import javax.servlet.ServletContext;
+import jakarta.inject.Named;
+import jakarta.inject.Provider;
+import jakarta.inject.Singleton;
+import jakarta.servlet.ServletContext;
 import javax.sql.DataSource;
 
 import org.killbill.billing.lifecycle.glue.BusModule;

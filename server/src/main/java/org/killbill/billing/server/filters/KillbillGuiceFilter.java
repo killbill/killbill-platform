@@ -19,8 +19,8 @@
 
 package org.killbill.billing.server.filters;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
 
 import org.killbill.billing.server.healthchecks.KillbillHealthcheck;
 import org.killbill.billing.server.updatechecker.UpdateChecker;

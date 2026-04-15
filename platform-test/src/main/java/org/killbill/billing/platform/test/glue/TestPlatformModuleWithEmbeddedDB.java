@@ -20,8 +20,8 @@
 package org.killbill.billing.platform.test.glue;
 
 import javax.annotation.Nullable;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import javax.sql.DataSource;
 
 import org.killbill.billing.osgi.api.OSGIConfigProperties;

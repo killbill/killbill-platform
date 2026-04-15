@@ -22,7 +22,7 @@ package org.killbill.billing.server.updatechecker;
 import java.net.InetAddress;
 import java.util.Objects;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.killbill.commons.utils.StandardSystemProperty;
 import org.killbill.commons.utils.Strings;

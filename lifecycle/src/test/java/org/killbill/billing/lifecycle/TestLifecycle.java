@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.lifecycle.DefaultLifecycle.LifecycleHandler;
 import org.killbill.billing.platform.api.KillbillService;

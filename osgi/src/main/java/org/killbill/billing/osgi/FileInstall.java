@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.osgi.api.KillbillNodesApiHolder;
 import org.killbill.billing.osgi.api.config.PluginConfig;

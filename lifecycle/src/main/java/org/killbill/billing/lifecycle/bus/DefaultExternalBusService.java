@@ -19,8 +19,8 @@
 
 package org.killbill.billing.lifecycle.bus;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.killbill.billing.lifecycle.api.ExternalBusService;
 import org.killbill.billing.lifecycle.glue.BusModule;
