@@ -66,6 +66,8 @@
         <jaxb-api.version>4.0.0</jaxb-api.version>
         <jaxb-runtime.version>4.0.0</jaxb-runtime.version>
         <jetty.version>11.0.24</jetty.version>
+        <killbill-api.version>0.55.0-370fa77-SNAPSHOT</killbill-api.version>
+        <killbill-base-plugin.version>5.2.0-a5c0ade-SNAPSHOT</killbill-base-plugin.version>
         <killbill-commons.version>0.27.0</killbill-commons.version>
         <killbill-jooby.version>0.27.0</killbill-jooby.version>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
