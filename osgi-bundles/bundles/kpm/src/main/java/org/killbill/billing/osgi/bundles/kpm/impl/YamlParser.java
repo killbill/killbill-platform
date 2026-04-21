@@ -26,7 +26,6 @@ import java.util.Set;
 import org.killbill.commons.utils.collect.Iterables;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.inspector.TrustedTagInspector;
 
 class YamlParser {
 
@@ -40,7 +39,9 @@ class YamlParser {
 
     private static Yaml createYaml() {
         final LoaderOptions options = new LoaderOptions();
-        options.setTagInspector(new TrustedTagInspector());
+        // Deny all global (custom) tags to prevent arbitrary object deserialization (CVE-2022-1471).
+        // The plugins_directory.yml only uses standard YAML types (maps, strings), which are always allowed.
+        options.setTagInspector(tag -> false);
         return new Yaml(options);
     }
 
