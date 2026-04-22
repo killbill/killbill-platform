@@ -26,7 +26,6 @@ import java.util.Set;
 import org.killbill.commons.utils.collect.Iterables;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.inspector.TrustedTagInspector;
 
 class YamlParser {
 
@@ -40,7 +39,9 @@ class YamlParser {
 
     private static Yaml createYaml() {
         final LoaderOptions options = new LoaderOptions();
-        options.setTagInspector(new TrustedTagInspector());
+        // The TrustedTagInspector gone in v.2.1, but so far, it is pretty safe to just return true because this is
+        // only used to load plugins_directory.yml
+        options.setTagInspector(tag -> true);
         return new Yaml(options);
     }
 
