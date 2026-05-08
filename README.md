@@ -72,11 +72,6 @@ Add the relevant submodule(s) to a project:
 </dependency>
 <dependency>
     <groupId>org.kill-bill.billing</groupId>
-    <artifactId>killbill-platform-osgi-bundles-eureka</artifactId>
-    <version>... release version ...</version>
-</dependency>
-<dependency>
-    <groupId>org.kill-bill.billing</groupId>
     <artifactId>killbill-platform-osgi-bundles-graphite</artifactId>
     <version>... release version ...</version>
 </dependency>

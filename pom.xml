@@ -114,11 +114,6 @@
             </dependency>
             <dependency>
                 <groupId>org.kill-bill.billing</groupId>
-                <artifactId>killbill-platform-osgi-bundles-eureka</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.kill-bill.billing</groupId>
                 <artifactId>killbill-platform-osgi-bundles-graphite</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -195,17 +190,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>sonatype-snapshots</id>
-            <name>Sonatype Snapshots</name>
-            <url>https://central.sonatype.com/repository/maven-snapshots</url>
-        </repository>
-    </repositories>
 </project>
