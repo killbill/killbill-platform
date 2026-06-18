@@ -21,8 +21,8 @@ package org.killbill.billing.osgi.bundles.kpm;
 
 import java.util.Optional;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 import org.jooby.Result;
 import org.jooby.Results;

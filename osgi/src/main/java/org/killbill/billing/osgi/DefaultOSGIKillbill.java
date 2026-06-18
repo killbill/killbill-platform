@@ -20,7 +20,7 @@
 package org.killbill.billing.osgi;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.account.api.AccountUserApi;
 import org.killbill.billing.catalog.api.CatalogUserApi;

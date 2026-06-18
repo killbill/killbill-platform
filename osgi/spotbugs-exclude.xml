@@ -68,10 +68,11 @@
         <Class name="org.killbill.billing.osgi.DefaultOSGIKillbill" />
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
     </Match>
-    <Match>
-        <Class name="org.killbill.billing.osgi.http.DefaultHttpService" />
-        <Method name="&lt;init&gt;"/>
-        <Bug pattern="EI_EXPOSE_REP2" />
-    </Match>
 
+    <!-- justification: constructor validates plugin layout eagerly and intentionally throws when the plugin directory does not contain a usable bundle jar -->
+    <Match>
+        <Class name="org.killbill.billing.osgi.pluginconf.DefaultPluginJavaConfig" />
+        <Method name="&lt;init&gt;" params="java.lang.String, java.lang.String, java.lang.String, java.io.File, java.util.Properties, boolean, boolean" />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 </FindBugsFilter>

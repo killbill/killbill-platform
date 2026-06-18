@@ -22,8 +22,8 @@ package org.killbill.billing.osgi;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.killbill.billing.notification.plugin.api.ExtBusEvent;
 import org.killbill.billing.osgi.api.KillbillEventRetriableBusHandlerService;

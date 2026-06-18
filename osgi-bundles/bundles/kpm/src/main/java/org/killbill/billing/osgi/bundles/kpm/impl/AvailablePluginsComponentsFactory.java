@@ -18,6 +18,7 @@
 package org.killbill.billing.osgi.bundles.kpm.impl;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -37,7 +38,7 @@ import org.killbill.billing.util.nodes.NodeInfo;
 import org.killbill.commons.utils.Preconditions;
 import org.killbill.commons.utils.Strings;
 import org.killbill.commons.utils.cache.Cache;
-import org.killbill.commons.utils.cache.DefaultCache;
+import org.killbill.commons.utils.cache.CacheBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +74,14 @@ public class AvailablePluginsComponentsFactory {
         if (this.isCacheEnabled) {
             // We cant set cache loaders in constructor, because "forceDownload" parameter also needed to determine
             // if we need to load remotely or not
-            versionsProviderCache = new DefaultCache<>(cacheSize, expirationSec, DefaultCache.noCacheLoader());
-            pluginDirectoryCache = new DefaultCache<>(cacheSize, expirationSec, DefaultCache.noCacheLoader());
+            versionsProviderCache = CacheBuilder.<CacheKey, VersionsProvider>newBuilder()
+                                                .maximumSize(cacheSize)
+                                                .expireAfterWrite(Duration.ofSeconds(expirationSec))
+                                                .build();
+            pluginDirectoryCache = CacheBuilder.<CacheKey, Set<PluginsDirectoryModel>>newBuilder()
+                                               .maximumSize(cacheSize)
+                                               .expireAfterWrite(Duration.ofSeconds(expirationSec))
+                                               .build();
         } else {
             versionsProviderCache = null;
             pluginDirectoryCache = null;

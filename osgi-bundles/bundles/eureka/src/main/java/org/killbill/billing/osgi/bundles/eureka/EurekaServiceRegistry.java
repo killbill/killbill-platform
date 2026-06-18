@@ -19,7 +19,7 @@
 
 package org.killbill.billing.osgi.bundles.eureka;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.osgi.api.ServiceDiscoveryRegistry;
 import org.slf4j.Logger;

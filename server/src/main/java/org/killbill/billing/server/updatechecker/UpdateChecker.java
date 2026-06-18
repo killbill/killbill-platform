@@ -21,7 +21,7 @@ package org.killbill.billing.server.updatechecker;
 
 import java.io.IOException;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.killbill.billing.server.config.UpdateCheckConfig;
 import org.skife.config.ConfigSource;

@@ -38,8 +38,7 @@ import org.killbill.commons.profiling.Profiling.WithProfilingCallback;
 import org.killbill.commons.profiling.ProfilingFeature.ProfilingFeatureType;
 import org.killbill.commons.utils.Joiner;
 import org.killbill.commons.utils.cache.Cache;
-import org.killbill.commons.utils.cache.DefaultCache;
-import org.killbill.commons.utils.cache.DefaultSynchronizedCache;
+import org.killbill.commons.utils.cache.CacheBuilder;
 import org.killbill.commons.utils.reflect.AbstractInvocationHandler;
 
 public class ContextClassLoaderHelper {
@@ -170,7 +169,7 @@ public class ContextClassLoaderHelper {
         }
 
         private void initializeMetricCaches() {
-            timerMetricCache = new DefaultSynchronizedCache<>(Integer.MAX_VALUE, DefaultCache.NO_TIMEOUT, methodName -> {
+            timerMetricCache = CacheBuilder.<String, Timer>newBuilder().build(methodName -> {
                 final String timerMetricName = DOT_JOINER.join("killbill-service",
                                                                "kb_plugin_latency",
                                                                serviceName,
@@ -179,7 +178,7 @@ public class ContextClassLoaderHelper {
 
                 return metricRegistry.timer(timerMetricName);
             });
-            errorMetricCache = new DefaultSynchronizedCache<>(Integer.MAX_VALUE, DefaultCache.NO_TIMEOUT, methodName -> {
+            errorMetricCache = CacheBuilder.<String, Meter>newBuilder().build(methodName -> {
                 final String counterMetricName = DOT_JOINER.join("killbill-service",
                                                                  "kb_plugin_errors",
                                                                  serviceName,

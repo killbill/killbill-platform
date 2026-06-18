@@ -37,7 +37,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.killbill.billing.osgi.api.config.PluginConfig;
 import org.killbill.billing.osgi.api.config.PluginJavaConfig;
