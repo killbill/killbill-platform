@@ -48,7 +48,7 @@ class DefaultNexusMetadataFiles implements NexusMetadataFiles {
         this.mavenMetadataXmlUrl = mavenMetadataXmlUrl;
         this.killbillVersionOrLatest = killbillVersionOrLatest;
 
-        logger.debug("Will get killbill info from sonatype repository with basePath:{}, and killbillVersion:{}", uriResolver.getBaseUri(), killbillVersionOrLatest);
+        logger.debug("Will get Kill Bill repository with basePath:{}, and killbillVersion:{}", uriResolver.getBaseUri(), killbillVersionOrLatest);
     }
 
     @Override
@@ -96,11 +96,13 @@ class DefaultNexusMetadataFiles implements NexusMetadataFiles {
 
     @VisibleForTesting
     Path getMavenMetadataXml() {
+        if (mavenMetadataXmlUrl.contains("oss.sonatype.org")) {
+            throw new IllegalStateException(String.format("Unsupported repository URL '%s': oss.sonatype.org is no longer supported.", mavenMetadataXmlUrl));
+        }
         final String[] fileNameAndExt = {"maven-metadata", ".xml"};
         // Do not send any header if it is public repository
         if (uriResolver.getAuthMethod() == AuthenticationMethod.NONE ||
-            mavenMetadataXmlUrl.contains("repo1.maven.org") ||
-            mavenMetadataXmlUrl.contains("oss.sonatype.org")) {
+            mavenMetadataXmlUrl.contains("repo1.maven.org")) {
             return httpClient.downloadToTempOS(mavenMetadataXmlUrl, fileNameAndExt);
         } else {
             return httpClient.downloadToTempOS(mavenMetadataXmlUrl, uriResolver.getHeaders(), fileNameAndExt);

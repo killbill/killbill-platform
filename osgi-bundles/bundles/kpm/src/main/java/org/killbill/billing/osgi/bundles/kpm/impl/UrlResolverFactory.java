@@ -31,18 +31,6 @@ public class UrlResolverFactory {
         this.kpmProperties = kpmProperties;
     }
 
-    // This is for backward compatibility: by default, nexusUrl is "https://oss.sonatype.org/" and
-    // nexusRepository is "releases". But if we just simply concat them like 'https://oss.sonatype.org/releases',
-    // this is not valid sonatype URL.
-    // However, this is only applied to 'NONE' authentication method, because for other authentication methods, it is
-    // very likely that users have another url other than 'https://oss.sonatype.org/' and 'releases'. We can't guess and
-    // add something like "/content/repositories" at this point.
-    private String getValidUrlIfSonatype(final String url) {
-        return url.contains("oss.sonatype.org") ?
-               kpmProperties.getNexusUrl().concat("/content/repositories").concat(kpmProperties.getNexusRepository()) :
-               url;
-    }
-
     /**
      * Will create {@link UriResolver} instance for configuration:
      * <ul>
@@ -54,19 +42,18 @@ public class UrlResolverFactory {
      */
     public UriResolver getVersionsProviderUrlResolver() {
         final AuthenticationMethod authMethod = AuthenticationMethod.valueOf(kpmProperties.getNexusAuthMethod().toUpperCase());
+        final String baseUrl = kpmProperties.getNexusUrl() + kpmProperties.getNexusRepository();
         switch (authMethod) {
             case NONE:
-                String baseUrl = getValidUrlIfSonatype(kpmProperties.getNexusUrl() + kpmProperties.getNexusRepository());
+
                 return new NoneUriResolver(baseUrl);
 
             case BASIC:
-                baseUrl = kpmProperties.getNexusUrl().concat(kpmProperties.getNexusRepository());
                 final String username = kpmProperties.getNexusAuthUsername();
                 final String password = kpmProperties.getNexusAuthPassword();
                 return new BasicUriResolver(baseUrl, username, password);
 
             case TOKEN:
-                baseUrl = kpmProperties.getNexusUrl().concat(kpmProperties.getNexusRepository());
                 return new TokenUriResolver(baseUrl, kpmProperties.getNexusAuthToken());
 
             default: throw new IllegalStateException("Unknown authentication method: " + kpmProperties.getNexusAuthMethod());
@@ -83,7 +70,7 @@ public class UrlResolverFactory {
         final AuthenticationMethod authMethod = AuthenticationMethod.valueOf(pluginsDirectory.getAuthMethod());
         switch (authMethod) {
             case NONE:
-                return new NoneUriResolver(getValidUrlIfSonatype(pluginsDirectory.getUrl()));
+                return new NoneUriResolver(pluginsDirectory.getUrl());
 
             case BASIC:
                 return new BasicUriResolver(pluginsDirectory.getUrl(), pluginsDirectory.getAuthUsername(), pluginsDirectory.getAuthPassword());
@@ -106,7 +93,7 @@ public class UrlResolverFactory {
         final AuthenticationMethod authMethod = AuthenticationMethod.valueOf(pluginsInstallCoordinate.getAuthMethod());
         switch (authMethod) {
             case NONE:
-                return new NoneUriResolver(getValidUrlIfSonatype(pluginsInstallCoordinate.getUrl()));
+                return new NoneUriResolver(pluginsInstallCoordinate.getUrl());
 
             case BASIC:
                 return new BasicUriResolver(pluginsInstallCoordinate.getUrl(),
