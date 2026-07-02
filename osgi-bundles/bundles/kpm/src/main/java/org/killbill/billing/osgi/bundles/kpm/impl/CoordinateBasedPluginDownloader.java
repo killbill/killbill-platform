@@ -42,7 +42,7 @@ class CoordinateBasedPluginDownloader {
 
     private static final String KILLBILL_GROUP_ID = "org.kill-bill.billing.plugin.java";
 
-    private static final String SONATYPE_RELEASE_URL = "https://oss.sonatype.org/content/repositories/releases/";
+    private static final String PUBLIC_RELEASE_URL = "https://repo1.maven.org/maven2/";
 
     private final KPMClient httpClient;
     private final Sha1Checker sha1Checker;
@@ -60,6 +60,10 @@ class CoordinateBasedPluginDownloader {
         this.uriResolver = uriResolver;
         this.sha1Checker = new Sha1Checker(httpClient, shouldVerify);
         this.shouldTryPublicRepository = shouldTryPublicRepository;
+
+        if (this.uriResolver.getBaseUri().contains("oss.sonatype.org")) {
+            throw new IllegalStateException(String.format("Unsupported repository URL '%s': oss.sonatype.org is no longer supported.", this.uriResolver.getBaseUri()));
+        }
     }
 
     DownloadResult download(final String pluginKey,
@@ -150,14 +154,12 @@ class CoordinateBasedPluginDownloader {
     private Path downloadFromPublicKillbill(final String pluginKey, final String groupId, final String artifactId, final String version) {
         // If downloadFromNexusUri() already from sonatype/maven, then do not repeat.
         // If shouldTryPublicRepository = false, then do not download.
-        if (uriResolver.getBaseUri().startsWith("https://oss.sonatype.org") ||
-            uriResolver.getBaseUri().startsWith("https://repo1.maven.org/maven2") ||
-            !this.shouldTryPublicRepository) {
+        if (uriResolver.getBaseUri().startsWith("https://repo1.maven.org/maven2") || !this.shouldTryPublicRepository) {
             return null;
         }
 
-        final String jarUrl =  SONATYPE_RELEASE_URL + coordinateToUri(groupId, artifactId, version, ".jar");
-        final String sha1Url = SONATYPE_RELEASE_URL + coordinateToUri(groupId, artifactId, version, ".jar.sha1");
+        final String jarUrl = PUBLIC_RELEASE_URL + coordinateToUri(groupId, artifactId, version, ".jar");
+        final String sha1Url = PUBLIC_RELEASE_URL + coordinateToUri(groupId, artifactId, version, ".jar.sha1");
         logger.debug("#downloadFromPublicKillbill() . jarUrl: {}, sha1Url: {}", jarUrl, sha1Url);
 
         return doDownloadValidateAndVerify(pluginKey, version, jarUrl, sha1Url);

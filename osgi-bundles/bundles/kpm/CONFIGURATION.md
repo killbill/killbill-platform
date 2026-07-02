@@ -20,10 +20,8 @@ org.killbill.billing.plugin.kpm.connectTimeoutSec=60
 # 1. Backward compatibility with older configuration
 # 2. This is a "fallback" for pluginsInstall.coordinate configuration if "url/authMethod/authUsername/authPassword/authToken" not set.
 # 3. This is a required configuration to get Kill Bill version (See more AvailablePluginsComponentsFactory.createVersionsProvider() )
-# In codebase, if *.kpm.nexusUrl value not set, or contains "oss.sonatype.org", the final construct of URL would be 
-# ${*.kpm.nexusUrl} + "/content/repositories" + ${*.kpm.nexusRepository}. 
-org.killbill.billing.plugin.kpm.nexusUrl=https://oss.sonatype.org
-org.killbill.billing.plugin.kpm.nexusRepository=/releases
+org.killbill.billing.plugin.kpm.nexusUrl=https://repo1.maven.org
+org.killbill.billing.plugin.kpm.nexusRepository=/maven2
 
 # How Authentication header will construct. If none, then KPMPlugin will not send "Authorization" header when download 
 # any files. If BASIC, then *.kpm.nexusAuthToken value will be ignored and will use username/password values). 
@@ -74,7 +72,7 @@ org.killbill.billing.plugin.kpm.pluginsDirectory.authToken=VALID_TOKEN
 # pluginManager.install(pluginKey, kbVersion, groupId, artifactId, pluginVersion, forceDownload)
 # called.
 org.killbill.billing.plugin.kpm.pluginInstall.coordinate.verifySHA1=false
-org.killbill.billing.plugin.kpm.pluginInstall.coordinate.url=https://oss.sonatype.org/content/repositories/releases
+org.killbill.billing.plugin.kpm.pluginInstall.coordinate.url=https://repo1.maven.org/maven2
 org.killbill.billing.plugin.kpm.pluginInstall.coordinate.authMethod=NONE|BASIC|TOKEN
 org.killbill.billing.plugin.kpm.pluginInstall.coordinate.authUsername=VALID_USERNAME|KPM_NEXUS_AUTH_USERNAME
 org.killbill.billing.plugin.kpm.pluginInstall.coordinate.authPassword=VALID_PASSWORD|KPM_NEXUS_AUTH_PASSWORD
