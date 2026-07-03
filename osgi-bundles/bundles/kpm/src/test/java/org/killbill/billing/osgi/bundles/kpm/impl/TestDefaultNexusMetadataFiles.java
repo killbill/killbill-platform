@@ -61,7 +61,7 @@ public class TestDefaultNexusMetadataFiles {
     }
 
     private void testGetKillbillPomXml(final String kbVersion) throws Exception {
-        final UriResolver uriResolver = new NoneUriResolver("https://oss.sonatype.org/content/repositories/releases");
+        final UriResolver uriResolver = new NoneUriResolver("https://repo1.maven.org/maven2");
 
         nexusMetadataFiles = spyNexusMetadataFiles(kpmClient, uriResolver, MAVEN_METADATA_XML, kbVersion);
         final Path killbillPom = nexusMetadataFiles.getKillbillPomXml();
@@ -89,7 +89,7 @@ public class TestDefaultNexusMetadataFiles {
     }
 
     private void testGetOssParentPomXml(final String kbVersion) throws Exception {
-        final UriResolver uriResolver = new NoneUriResolver("https://oss.sonatype.org/content/repositories/releases");
+        final UriResolver uriResolver = new NoneUriResolver("https://repo1.maven.org/maven2");
 
         nexusMetadataFiles = spyNexusMetadataFiles(kpmClient, uriResolver, MAVEN_METADATA_XML, kbVersion);
         final Path ossParentPomXml = nexusMetadataFiles.getOssParentPomXml();

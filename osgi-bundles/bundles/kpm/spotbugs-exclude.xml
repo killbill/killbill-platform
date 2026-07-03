@@ -45,4 +45,17 @@
         <Method name="uninstall" params="java.lang.String, java.lang.String" />
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
     </Match>
+
+    <Match>
+        <Class name="org.killbill.billing.osgi.bundles.kpm.impl.CoordinateBasedPluginDownloader" />
+        <Method name="&lt;init&gt;"
+                params="
+                    org.killbill.billing.osgi.bundles.kpm.KPMClient,
+                    org.killbill.billing.osgi.bundles.kpm.impl.ArtifactAndVersionFinder,
+                    org.killbill.billing.osgi.bundles.kpm.UriResolver,
+                    boolean,
+                    boolean"
+        />
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
 </FindBugsFilter>
