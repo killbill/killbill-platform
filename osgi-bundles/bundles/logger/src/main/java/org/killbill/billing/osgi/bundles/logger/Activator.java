@@ -44,6 +44,7 @@ public class Activator extends KillbillActivatorBase {
 
     @Override
     public void start(final BundleContext context) throws Exception {
+        super.start(context);
         loggerFactory = new KillbillLoggerFactory(context.getBundle());
         logEntriesManager = new LogEntriesManager();
         killbillLogListener = new KillbillLogWriter(logEntriesManager, loggerFactory);
@@ -58,7 +59,7 @@ public class Activator extends KillbillActivatorBase {
         registrar = new OSGIKillbillRegistrar();
 
         final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).build();
-        logsSseHandler = new LogsSseHandler(logEntriesManager);
+        logsSseHandler = new LogsSseHandler(logEntriesManager, killbillAPI.getRecordIdApi());
         pluginApp.sse("/", logsSseHandler);
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
         registerServlet(context, httpServlet);
