@@ -30,7 +30,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jooby.Request;
 import org.jooby.Sse;
 import org.jooby.funzy.Throwing;
+import org.killbill.billing.util.api.RecordIdApi;
 import org.killbill.commons.concurrent.Executors;
+import org.killbill.commons.utils.collect.Iterables;
 
 public class LogsSseHandler implements Sse.Handler, Closeable {
 
@@ -38,10 +40,12 @@ public class LogsSseHandler implements Sse.Handler, Closeable {
     private static final long PERIOD_MS = 1000;
 
     private final LogEntriesManager logEntriesManager;
+    private final RecordIdApi recordIdApi;
     private final ScheduledExecutorService scheduledExecutorService;
 
-    public LogsSseHandler(final LogEntriesManager logEntriesManager) {
+    public LogsSseHandler(final LogEntriesManager logEntriesManager, final RecordIdApi recordIdApi) {
         this.logEntriesManager = logEntriesManager;
+        this.recordIdApi = recordIdApi;
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor("LogsSseHandler");
     }
 
@@ -57,22 +61,35 @@ public class LogsSseHandler implements Sse.Handler, Closeable {
         final UUID cacheId = UUID.fromString(sse.id());
         logEntriesManager.subscribe(cacheId, lastEventId);
 
+        final LogEntriesFilter entriesFilter = new LogEntriesFilter(req, this.recordIdApi);
+
         final AtomicReference<UUID> lastLogId = new AtomicReference<>();
         final ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 final Iterable<LogEntryJson> logEntries = logEntriesManager.drain(cacheId);
-                if (!logEntries.iterator().hasNext()) {
-                    // In case we have nothing to send, send a heartbeat to verify the client is still around
-                    // That way, we can more quickly cleanup our subscriptions
-                    // Note that we set the id as the last log id, so that we can easily resume
-                    sse.event("heartbeat").id(lastLogId.get()).send();
+                if (Iterables.isEmpty(logEntries)) {
+                    sendHeartbeat();
                 } else {
-                    for (final LogEntryJson logEntryJson : logEntries) {
+                    for (final LogEntryJson logEntryJson : entriesFilter.apply(logEntries)) {
                         sse.event(logEntryJson).id(logEntryJson.getId()).send();
                         lastLogId.set(logEntryJson.getId());
                     }
+                    // Filtered clients may never match any entry. Without a periodic write,
+                    // proxies/load balancers may kill idle connections and server won't detect dead peers.
+                    if (entriesFilter.hasNoResult()) {
+                        sendHeartbeat();
+                    }
                 }
+            }
+
+            void sendHeartbeat() {
+                // send heartbeat. ID, if any, is the last log id so resume works correctly.
+                final Sse.Event heartbeat = sse.event("heartbeat");
+                if (lastLogId.get() != null) {
+                    heartbeat.id(lastLogId.get());
+                }
+                heartbeat.send();
             }
         }, INITIAL_DELAY_MS, PERIOD_MS, TimeUnit.MILLISECONDS);
 
