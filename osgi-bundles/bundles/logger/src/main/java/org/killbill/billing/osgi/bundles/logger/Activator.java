@@ -37,16 +37,14 @@ public class Activator extends KillbillActivatorBase {
 
     public static final String PLUGIN_NAME = "killbill-osgi-logger";
 
-    private LogEntriesManager logEntriesManager;
     private LogsSseHandler logsSseHandler;
-    private KillbillLogWriter killbillLogListener;
-    private KillbillLoggerFactory loggerFactory;
 
     @Override
     public void start(final BundleContext context) throws Exception {
-        loggerFactory = new KillbillLoggerFactory(context.getBundle());
-        logEntriesManager = new LogEntriesManager();
-        killbillLogListener = new KillbillLogWriter(logEntriesManager, loggerFactory);
+        super.start(context);
+        final KillbillLoggerFactory loggerFactory = new KillbillLoggerFactory(context.getBundle());
+        final LogEntriesManager logEntriesManager = new LogEntriesManager();
+        final KillbillLogWriter killbillLogListener = new KillbillLogWriter(logEntriesManager, loggerFactory);
         context.addBundleListener(killbillLogListener);
         context.addFrameworkListener(killbillLogListener);
         context.addServiceListener(killbillLogListener);
@@ -58,6 +56,9 @@ public class Activator extends KillbillActivatorBase {
         registrar = new OSGIKillbillRegistrar();
 
         final PluginApp pluginApp = new PluginAppBuilder(PLUGIN_NAME).build();
+        // Require HTTP Basic credentials (validated against Kill Bill RBAC), since /plugins/** is not authenticated
+        // by the Kill Bill server by default. See BasicAuthFilter for details.
+        pluginApp.use("*", new BasicAuthFilter(killbillAPI.getSecurityApi()));
         logsSseHandler = new LogsSseHandler(logEntriesManager);
         pluginApp.sse("/", logsSseHandler);
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
@@ -74,7 +75,7 @@ public class Activator extends KillbillActivatorBase {
     }
 
     private void registerServlet(final BundleContext context, final HttpServlet servlet) {
-        final Hashtable<String, String> props = new Hashtable<String, String>();
+        final Hashtable<String, String> props = new Hashtable<>();
         props.put(OSGIPluginProperties.PLUGIN_NAME_PROP, PLUGIN_NAME);
         registrar.registerService(context, Servlet.class, servlet, props);
     }
