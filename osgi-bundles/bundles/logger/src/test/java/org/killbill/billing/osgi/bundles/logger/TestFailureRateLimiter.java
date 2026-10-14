@@ -129,16 +129,16 @@ public class TestFailureRateLimiter {
         }
         Assert.assertTrue(limiter.size() > 10_000);
 
-        // Expire all of the above, then add one more failure right away: since the minimum cleanup interval hasn't
-        // elapsed since the burst above already attempted (and failed) a cleanup, this must not re-scan yet.
-        clock.advance(WINDOW.plusSeconds(1));
-        limiter.recordFailure("key-after-expiry-1");
+        // A few seconds later (window not yet expired, throttle interval not yet elapsed): a cleanup attempt must
+        // not be allowed to re-scan the whole map again so soon after the burst's own (no-op) attempt.
+        clock.advance(Duration.ofSeconds(5));
+        limiter.recordFailure("key-after-burst-1");
         Assert.assertTrue(limiter.size() > 10_000, "cleanup should not have run again before the throttle interval elapsed");
 
-        // Once the throttle interval has also elapsed, the next recordFailure() should finally be allowed to sweep
-        // out all of the now-expired entries.
-        clock.advance(Duration.ofSeconds(10));
-        limiter.recordFailure("key-after-expiry-2");
+        // Once both the failure window and the throttle interval have elapsed, the next recordFailure() should
+        // finally be allowed to sweep out all of the now-expired entries.
+        clock.advance(WINDOW);
+        limiter.recordFailure("key-after-burst-2");
         Assert.assertTrue(limiter.size() < 10_000, "cleanup should have run once the throttle interval elapsed");
     }
 
