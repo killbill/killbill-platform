@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jooby.Request;
 import org.jooby.Sse;
-import org.jooby.funzy.Throwing;
 import org.killbill.commons.concurrent.Executors;
 
 public class LogsSseHandler implements Sse.Handler, Closeable {
@@ -53,35 +52,38 @@ public class LogsSseHandler implements Sse.Handler, Closeable {
 
     @Override
     public void handle(final Request req, final Sse sse) {
+        // Resolved (and validated) by LogsSseFilter
+        final SseParamsCriteria filter = req.<SseParamsCriteria>ifGet(SseParamsCriteria.REQUEST_KEY).orElse(SseParamsCriteria.NONE);
         final UUID lastEventId = sse.lastEventId(UUID.class).orElse(null);
         final UUID cacheId = UUID.fromString(sse.id());
         logEntriesManager.subscribe(cacheId, lastEventId);
 
         final AtomicReference<UUID> lastLogId = new AtomicReference<>();
-        final ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                final Iterable<LogEntryJson> logEntries = logEntriesManager.drain(cacheId);
-                if (!logEntries.iterator().hasNext()) {
-                    // In case we have nothing to send, send a heartbeat to verify the client is still around
-                    // That way, we can more quickly cleanup our subscriptions
-                    // Note that we set the id as the last log id, so that we can easily resume
-                    sse.event("heartbeat").id(lastLogId.get()).send();
-                } else {
-                    for (final LogEntryJson logEntryJson : logEntries) {
-                        sse.event(logEntryJson).id(logEntryJson.getId()).send();
-                        lastLogId.set(logEntryJson.getId());
-                    }
+        final ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
+            final Iterable<LogEntryJson> logEntries = filter.apply(logEntriesManager.drain(cacheId));
+            if (!logEntries.iterator().hasNext()) {
+                // In case we have nothing to send, send a heartbeat to verify the client is still around
+                // That way, we can more quickly cleanup our subscriptions
+                // Note that we set the id as the last log id, so that we can easily resume
+                // The id is omitted when no entry was sent yet (e.g. a filter matching nothing): Event#id rejects null,
+                // and the exception would silently cancel this periodic task
+                final Sse.Event heartbeat = sse.event("heartbeat");
+                final UUID lastId = lastLogId.get();
+                if (lastId != null) {
+                    heartbeat.id(lastId);
+                }
+                heartbeat.send();
+            } else {
+                for (final LogEntryJson logEntryJson : logEntries) {
+                    sse.event(logEntryJson).id(logEntryJson.getId()).send();
+                    lastLogId.set(logEntryJson.getId());
                 }
             }
         }, INITIAL_DELAY_MS, PERIOD_MS, TimeUnit.MILLISECONDS);
 
-        sse.onClose(new Throwing.Runnable() {
-            @Override
-            public void tryRun() throws Throwable {
-                future.cancel(true);
-                logEntriesManager.unsubscribe(cacheId);
-            }
+        sse.onClose(() -> {
+            future.cancel(true);
+            logEntriesManager.unsubscribe(cacheId);
         });
     }
 }
