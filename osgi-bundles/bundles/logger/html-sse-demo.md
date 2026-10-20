@@ -4,25 +4,28 @@
 2. Copy the JAR to `platform` plugin directory
 3. Copy HTML content below to `<any-directory>`
 4. Run this using `python3 -m http.server 3000 -d <any-directory>` or `npx serve -l 3000 <any-directory>`
-5. Open `http://localhost:3000`, fill in the Base URL and your Kill Bill username/password, then click **Connect**
+5. Open `http://localhost:3000`, fill in the Base URL and your Kill Bill username/password, optionally the tenant API key/secret and the filters, then click **Connect**
 
-**Auth note:** this plugin's `/plugins/killbill-osgi-logger/**` endpoint now requires HTTP Basic Auth
-(see `BasicAuthFilter`, registered on this plugin's Jooby app only — other plugins are unaffected). The
-native browser `EventSource` API cannot set custom request headers (no way to send `Authorization: Basic
-...`), so this demo bundles [EventSource/eventsource](https://github.com/EventSource/eventsource) (MIT
-license, v5.1.2), a browser-compatible `EventSource` polyfill/replacement built on `fetch`, which supports
-a `fetch` override — used here to inject the Basic Auth header per request. It's bundled as a single
-minified IIFE (via `esbuild`, no build step required on your end) and pasted directly into the
-`<script>` tag below, so there's still nothing to install — just copy the HTML and go.
+### Filter combinations
 
-**CORS note:** this setup is cross-origin (demo on :3000, Kill Bill on :8080). Sending a custom
-`Authorization` header triggers a CORS preflight (`OPTIONS`); `BasicAuthFilter` explicitly lets
-`OPTIONS` through unauthenticated for this reason. If you serve the demo from the same origin as
-Kill Bill instead, the preflight doesn't happen at all.
+Filters combine with AND. Empty fields are ignored. Entries lacking the filtered attribute are excluded.
+`multitenant=false` servers skip the tenant checks (no `401`/`403`).
 
-**Filter note:** the `accountId`/`userToken` query-param filtering (`LogEntriesFilter`) is a separate,
-not-yet-merged feature (`platform-163`) and isn't wired up on this branch. The corresponding UI fields
-are kept below, commented out, so they're easy to restore once that feature lands here.
+| API key + secret | accountId | userToken | Result |
+|---|---|---|---|
+| - | - | - | Every entry, all tenants |
+| valid | - | - | Entries of that tenant |
+| valid | valid UUID, known | - | Entries of that tenant and account |
+| valid | valid UUID, unknown or other tenant's | - | Connected, heartbeats only |
+| - | - | token | Entries with that token, all tenants |
+| valid | - | token | Entries of that tenant with that token |
+| valid | valid UUID, known | token | Entries of that tenant and account with that token |
+| wrong, or only key or only secret | any | any | `401` |
+| - | any `accountId` | any | `403` |
+| valid | not a UUID | any | `400` |
+| any | `accountId` or `userToken` given twice | any | `400` |
+
+### HTML
 
 ```html
 <!DOCTYPE html>
@@ -70,17 +73,22 @@ are kept below, commented out, so they're easy to restore once that feature land
             <label>Password</label>
             <input id="password" type="password" placeholder="password" />
         </div>
-        <!--
-        TODO: re-enable once LogEntriesFilter / RecordIdApi (platform-163) lands on this branch.
         <div class="field">
-            <label>accountId (UUID)</label>
+            <label>X-Killbill-ApiKey (tenant)</label>
+            <input id="apiKey" placeholder="optional" />
+        </div>
+        <div class="field">
+            <label>X-Killbill-ApiSecret (tenant)</label>
+            <input id="apiSecret" type="password" placeholder="optional" />
+        </div>
+        <div class="field">
+            <label>accountId (UUID, needs API key/secret)</label>
             <input id="accountId" placeholder="optional" />
         </div>
         <div class="field">
             <label>userToken</label>
             <input id="userToken" placeholder="optional" />
         </div>
-        -->
         <button id="connectBtn">Connect</button>
         <button id="clearBtn">Clear</button>
         <span id="status" class="status closed">● Disconnected</span>
@@ -115,14 +123,12 @@ ${n}`,h++;break;case"id":n.includes("\0")||(f=n);break;case"retry":/^\d+$/.test(
 
         function buildUrl() {
             const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
-            // TODO: re-enable once LogEntriesFilter / RecordIdApi (platform-163) lands on this branch.
-            // const accountId = document.getElementById('accountId').value.trim();
-            // const userToken = document.getElementById('userToken').value.trim();
-            // const params = [];
-            // if (accountId) params.push('accountId=' + encodeURIComponent(accountId));
-            // if (userToken) params.push('userToken=' + encodeURIComponent(userToken));
-            // return params.length > 0 ? base + '/?' + params.join('&') : base + '/';
-            return base + '/';
+            const accountId = document.getElementById('accountId').value.trim();
+            const userToken = document.getElementById('userToken').value.trim();
+            const params = [];
+            if (accountId) params.push('accountId=' + encodeURIComponent(accountId));
+            if (userToken) params.push('userToken=' + encodeURIComponent(userToken));
+            return params.length > 0 ? base + '/?' + params.join('&') : base + '/';
         }
 
         function buildAuthHeader() {
@@ -133,6 +139,17 @@ ${n}`,h++;break;case"id":n.includes("\0")||(f=n);break;case"retry":/^\d+$/.test(
             // UTF-8, so non-Latin-1 characters (e.g. accented letters) would otherwise throw
             // InvalidCharacterError here. This UTF-8-safe encoding round-trips correctly either way.
             return 'Basic ' + utf8ToBase64(username + ':' + password);
+        }
+
+        // Tenant headers, only when both are filled in; a half-filled pair is sent as is so the
+        // server's 401 for an incomplete pair can be observed.
+        function buildTenantHeaders() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const apiSecret = document.getElementById('apiSecret').value.trim();
+            const headers = {};
+            if (apiKey) headers['X-Killbill-ApiKey'] = apiKey;
+            if (apiSecret) headers['X-Killbill-ApiSecret'] = apiSecret;
+            return headers;
         }
 
         function utf8ToBase64(str) {
@@ -177,13 +194,15 @@ ${n}`,h++;break;case"id":n.includes("\0")||(f=n);break;case"retry":/^\d+$/.test(
 
             const url = buildUrl();
             const authHeader = buildAuthHeader();
+            const tenantHeaders = buildTenantHeaders();
             appendMessage('Connecting to: ' + url, 'msg-system');
 
-            // Custom fetch: injects the Basic Auth header on every (re)connect attempt, since the
-            // native EventSource API has no way to set request headers at all.
+            // Custom fetch: injects the Basic Auth and tenant headers on every (re)connect attempt,
+            // since the native EventSource API has no way to set request headers at all.
             const authFetch = function(input, init) {
                 const headers = new Headers((init && init.headers) || {});
                 if (authHeader) headers.set('Authorization', authHeader);
+                Object.keys(tenantHeaders).forEach(function(name) { headers.set(name, tenantHeaders[name]); });
                 return fetch(input, Object.assign({}, init, { headers: headers }));
             };
 
@@ -224,7 +243,14 @@ ${n}`,h++;break;case"id":n.includes("\0")||(f=n);break;case"retry":/^\d+$/.test(
                 // leave a stale instance quietly reconnecting in the background after we've already
                 // torn down the UI/state for it (which otherwise looks like "stuck/always connected"
                 // and makes the Disconnect button appear to do nothing).
-                const detail = event.code ? (' (HTTP ' + event.code + (event.message ? ': ' + event.message : '') + ')') : '';
+                const hints = {
+                    400: 'accountId is not a UUID, or accountId/userToken is repeated',
+                    401: 'bad Basic Auth credentials, or a wrong/incomplete API key + secret',
+                    403: 'accountId requires the API key + secret',
+                    429: 'too many failed attempts, retry later'
+                };
+                const hint = hints[event.code] ? ' - ' + hints[event.code] : '';
+                const detail = event.code ? (' (HTTP ' + event.code + (event.message ? ': ' + event.message : '') + hint + ')') : '';
                 appendMessage('Connection error' + detail, 'msg-error');
                 if (eventSource) {
                     eventSource.close();
