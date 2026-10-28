@@ -59,6 +59,9 @@ public class Activator extends KillbillActivatorBase {
         // Require HTTP Basic credentials (validated against Kill Bill RBAC), since /plugins/** is not authenticated
         // by the Kill Bill server by default. See BasicAuthFilter for details.
         pluginApp.use("*", new BasicAuthFilter(killbillAPI.getSecurityApi()));
+        // TenantFilter is only installed when multi-tenancy is enabled (the default, when the property is missing)
+        final boolean multiTenant = !"false".equalsIgnoreCase(configProperties.getString("org.killbill.server.multitenant"));
+        pluginApp.use("*", new LogsSseFilter(killbillAPI.getRecordIdApi(), multiTenant));
         logsSseHandler = new LogsSseHandler(logEntriesManager);
         pluginApp.sse("/", logsSseHandler);
         final HttpServlet httpServlet = PluginApp.createServlet(pluginApp);
